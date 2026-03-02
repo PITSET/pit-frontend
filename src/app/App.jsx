@@ -1,6 +1,9 @@
-import React from "react";
-import Navbar from "../components/Navbar";
+import { RouterProvider } from "react-router-dom";
 
-export default function App() {
-  return <Navbar />;
+import router from "./router";
+
+function App() {
+  return <RouterProvider router={router} />;
 }
+
+export default App;
