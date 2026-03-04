@@ -7,11 +7,9 @@ import {
   UserGroupIcon,
   EnvelopeIcon,
   ArrowRightOnRectangleIcon,
-  XMarkIcon,
   ChevronDownIcon,
 } from "@heroicons/react/24/outline";
 import { Squares2X2Icon as Squares2X2SolidIcon } from "@heroicons/react/24/solid";
-import admin_logo from "../../assets/admin_logo.svg";
 import logo_image from "../../assets/logo_image.svg";
 
 const iconClass = "h-5 w-5 shrink-0";
@@ -179,7 +177,7 @@ export default function Sidebar({ isOpen = false, onClose }) {
             <span className="bg-[linear-gradient(90deg,#F98349_0%,#F65919_33.41%,#FF2F39_100%)] bg-clip-text text-transparent font-bold">
               PIT
             </span>{" "}
-            <span className="text-slate-200/90">Admin</span>
+            <span className="text-white">Admin</span>
           </span>
         </a>
       </div>
