@@ -24,7 +24,7 @@ export default function Sidebar({ isOpen = false, onClose }) {
   const showExpanded = isExpanded || isOpen;
 
   const activeDropdown = useMemo(() => {
-    if (pathname.startsWith("/admin/content-management")) return "content";
+    if (pathname.startsWith("/admin/content")) return "content";
     if (pathname.startsWith("/admin/academics")) return "academics";
     if (pathname.startsWith("/admin/team")) return "team";
     return null;
@@ -198,8 +198,8 @@ export default function Sidebar({ isOpen = false, onClose }) {
           icon={DocumentTextIcon}
           label="Content"
         >
-          <SubNavItem to="/admin/content-management/home">Home</SubNavItem>
-          <SubNavItem to="/admin/content-management/about">About</SubNavItem>
+          <SubNavItem to="/admin/content/home">Home</SubNavItem>
+          <SubNavItem to="/admin/content/about">About</SubNavItem>
         </Section>
 
         <Section

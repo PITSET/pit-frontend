@@ -22,11 +22,11 @@ const router = createBrowserRouter([
       { index: true, element: <Navigate to="/admin/dashboard" replace /> },
       { path: "dashboard", element: <Dashboard /> },
       {
-        path: "content-management",
-        element: <Navigate to="/admin/content-management/home" replace />,
+        path: "content",
+        element: <Navigate to="/admin/content/home" replace />,
       },
-      { path: "content-management/home", element: <AdminHome /> },
-      { path: "content-management/about", element: <Dashboard /> },
+      { path: "content/home", element: <AdminHome /> },
+      { path: "content/about", element: <Dashboard /> },
       {
         path: "academics",
         element: <Navigate to="/admin/academics/programs" replace />,
