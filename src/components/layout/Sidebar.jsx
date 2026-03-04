@@ -12,14 +12,18 @@ import {
 } from "@heroicons/react/24/outline";
 import { Squares2X2Icon as Squares2X2SolidIcon } from "@heroicons/react/24/solid";
 import admin_logo from "../../assets/admin_logo.svg";
+import logo_image from "../../assets/logo_image.svg";
 
 const iconClass = "h-5 w-5 shrink-0";
 
 export default function Sidebar({ isOpen = false, onClose }) {
+  const [isExpanded, setIsExpanded] = useState(false);
   const [contentOpen, setContentOpen] = useState(false);
   const [academicsOpen, setAcademicsOpen] = useState(false);
   const [teamOpen, setTeamOpen] = useState(false);
   const { pathname } = useLocation();
+
+  const showExpanded = isExpanded || isOpen;
 
   const activeDropdown = useMemo(() => {
     if (pathname.startsWith("/admin/content-management")) return "content";
@@ -50,10 +54,26 @@ export default function Sidebar({ isOpen = false, onClose }) {
   const subNavLink = `flex items-center gap-3 pl-4 py-2.5 text-white no-underline hover:bg-white/10 ${listItemBase}`;
   const subNavLinkActive = `flex items-center gap-3 pl-4 py-2.5 text-white no-underline ${primaryGradient} rounded-md cursor-default focus-visible:ring-2 focus-visible:ring-[#F65919]/40 focus-visible:ring-inset`;
 
+  const navLinkCollapsed =
+    "flex items-center justify-center px-0 py-3 text-white no-underline hover:bg-white/10 rounded-md " +
+    listItemBase;
+  const navLinkActiveCollapsed =
+    "flex items-center justify-center px-0 py-3 text-white no-underline rounded-md " +
+    primaryGradient +
+    " cursor-default focus-visible:ring-2 focus-visible:ring-[#F65919]/40 focus-visible:ring-inset";
+
   const NavItem = ({ to, icon: Icon, activeIcon: ActiveIcon, children }) => (
     <NavLink
       to={to}
-      className={({ isActive }) => (isActive ? navLinkActive : navLink)}
+      className={({ isActive }) =>
+        showExpanded
+          ? isActive
+            ? navLinkActive
+            : navLink
+          : isActive
+            ? navLinkActiveCollapsed
+            : navLinkCollapsed
+      }
       onClick={() => {
         closeAllDropdowns();
         onClose?.();
@@ -66,73 +86,102 @@ export default function Sidebar({ isOpen = false, onClose }) {
           ) : (
             <Icon className={iconClass} />
           )}
-          {children}
+          {showExpanded && (
+            <span className="whitespace-nowrap">{children}</span>
+          )}
         </>
       )}
     </NavLink>
   );
 
-  const SubNavItem = ({ to, children }) => (
-    <NavLink
-      to={to}
-      className={({ isActive }) => (isActive ? subNavLinkActive : subNavLink)}
-      onClick={() => onClose?.()}
-    >
-      {children}
-    </NavLink>
-  );
+  const SubNavItem = ({ to, children }) =>
+    showExpanded ? (
+      <NavLink
+        to={to}
+        className={({ isActive }) => (isActive ? subNavLinkActive : subNavLink)}
+        onClick={() => onClose?.()}
+      >
+        {children}
+      </NavLink>
+    ) : null;
 
   const Section = ({ open, onToggle, icon: Icon, label, children }) => (
     <div>
       <button
         type="button"
         onClick={onToggle}
-        className={`flex w-full items-center justify-between gap-3 px-4 py-3 text-left hover:bg-white/10 ${
-          open ? "bg-slate-800/70 text-white" : "text-slate-200"
-        } ${listItemBase}`}
+        className={
+          showExpanded
+            ? `flex w-full items-center justify-between gap-3 px-4 py-3 text-left hover:bg-white/10 ${
+                open ? "bg-slate-800/70 text-white" : "text-slate-200"
+              } ${listItemBase}`
+            : `flex w-full items-center justify-center px-0 py-3 text-slate-200 hover:bg-white/10 ${listItemBase}`
+        }
       >
         <div className="flex items-center gap-3">
           <Icon
             className={`${iconClass} ${
-              open ? "text-[#F98349]" : "text-slate-200"
+              showExpanded && open ? "text-[#F98349]" : "text-slate-200"
             }`}
           />
-          {label}
+          {showExpanded && <span className="whitespace-nowrap">{label}</span>}
         </div>
-        <ChevronDownIcon
-          strokeWidth={2.5}
-          className={`h-4 w-4 shrink-0 transition-transform ${
-            open ? "rotate-180 text-[#F98349]" : "text-white/60"
-          }`}
-        />
+        {showExpanded && (
+          <ChevronDownIcon
+            strokeWidth={2.5}
+            className={`h-4 w-4 shrink-0 transition-transform ${
+              open ? "rotate-180 text-[#F98349]" : "text-white/60"
+            }`}
+          />
+        )}
       </button>
-      {open && <div className="pl-1">{children}</div>}
+      {showExpanded && open && <div className="pl-1">{children}</div>}
     </div>
   );
 
   return (
     <aside
-      className={`fixed inset-y-0 left-0 z-40 flex h-full w-64 shrink-0 flex-col bg-slate-900 transition-transform duration-200 ease-in-out md:static md:z-auto md:translate-x-0 ${
+      onMouseEnter={() => setIsExpanded(true)}
+      onMouseLeave={() => setIsExpanded(false)}
+      className={`fixed inset-y-0 left-0 z-40 flex h-full shrink-0 flex-col overflow-hidden bg-slate-900 transition-[width,transform] duration-200 ease-in-out md:static md:z-auto md:translate-x-0 ${
+        showExpanded ? "w-64" : "w-16"
+      } ${
         isOpen ? "translate-x-0 shadow-xl shadow-black/30" : "-translate-x-full"
       }`}
     >
       {/* Header */}
-      <div className="flex items-center justify-between gap-2 px-4 py-5">
-        <a href="/">
-          <img
-            src={admin_logo}
-            alt="admin logo"
-            className="hover:cursor-pointer"
-          />
-        </a>
-        <button
-          type="button"
-          onClick={() => onClose?.()}
-          className="inline-flex items-center justify-center rounded-md p-2 text-slate-200 hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/30 md:hidden"
+      <div className="relative flex min-h-24 items-center justify-center px-4 py-6">
+        {/* Brand */}
+        <a
+          href="/admin/dashboard"
+          className="flex items-center gap-3 overflow-hidden"
         >
-          <span className="sr-only">Close sidebar</span>
-          <XMarkIcon className="h-5 w-5" />
-        </button>
+          {/* Logo */}
+          <img
+            src={logo_image}
+            alt="logo"
+            className="h-16 w-16 object-contain"
+          />
+
+          {/* Animated Text */}
+          <span
+            className={`
+            text-2xl whitespace-nowrap font-semibold tracking-wide
+            transition-all duration-300 ease-in-out
+            ${
+              showExpanded
+                ? "max-w-[200px] opacity-100 translate-x-0"
+                : "max-w-0 opacity-0 -translate-x-2"
+            }
+            overflow-hidden
+          `}
+          >
+            <span className="bg-[linear-gradient(90deg,#F98349_0%,#F65919_33.41%,#FF2F39_100%)] bg-clip-text text-transparent font-bold">
+              PIT
+            </span>{" "}
+            <span className="text-slate-200/90">Admin</span>
+          </span>
+        </a>
       </div>
 
       {/* Nav */}
@@ -183,10 +232,12 @@ export default function Sidebar({ isOpen = false, onClose }) {
       <div className="p-3">
         <a
           href="#logout"
-          className={`flex items-center gap-3 px-4 py-2 text-red-400 no-underline hover:bg-red-500/10 hover:text-red-300 ${listItemBase} active:bg-red-500/20 focus-visible:ring-red-400/50`}
+          className={`flex items-center text-red-400 no-underline hover:bg-red-500/10 hover:text-red-300 ${listItemBase} active:bg-red-500/20 focus-visible:ring-red-400/50 ${
+            showExpanded ? "gap-3 px-4 py-2" : "justify-center px-0 py-2"
+          }`}
         >
           <ArrowRightOnRectangleIcon className={iconClass} />
-          Logout
+          {showExpanded && <span className="whitespace-nowrap">Logout</span>}
         </a>
       </div>
     </aside>
