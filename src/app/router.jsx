@@ -10,6 +10,7 @@ import Dashboard from "../pages/admin/Dashboard";
 import AdminHome from "../pages/admin/AdminHome";
 import ProtectedRoute from "../components/admin_ui/ProtectdRoute";
 import Login from "../pages/admin/Login";
+import AdminContact from "../pages/admin/AdminContact";
 
 const router = createBrowserRouter([
   {
@@ -50,7 +51,7 @@ const router = createBrowserRouter([
       },
       { path: "team/instructors", element: <Dashboard /> },
       { path: "team/founder", element: <Dashboard /> },
-      { path: "contact", element: <Dashboard /> },
+      { path: "contact", element: <AdminContact /> },
     ],
   },
 ]);
