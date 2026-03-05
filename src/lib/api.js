@@ -23,7 +23,12 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response && error.response.status === 401) {
+    // skip auto logout for login endpoint
+    if (
+      error.response &&
+      error.response.status === 401 &&
+      !error.config.url.includes("/auth/login")
+    ) {
       console.warn("Unauthorized. Logging out...");
       localStorage.removeItem("token");
       window.location.href = "/admin/login";

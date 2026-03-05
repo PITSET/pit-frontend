@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
-import api from "../../lib/api";
+import { login } from "../../utils/auth";
 import logo_image from "../../assets/logo/logo_image.svg";
 
 export default function Login() {
@@ -31,28 +31,25 @@ export default function Login() {
     setSuccess("");
 
     try {
-      const res = await api.post("/auth/login", {
-        email,
-        password,
-      });
+      const res = await login(email, password);
 
-      // Save token
-      localStorage.setItem("token", res.data.token);
+      // save token
+      localStorage.setItem("token", res.token);
 
       setSuccess("Login successful! Redirecting...");
 
-      // redirect after short delay
       setTimeout(() => {
         window.location.href = "/admin/dashboard";
       }, 1200);
     } catch (err) {
-      // if backend sends message
       if (err.response?.data?.message) {
         setError(err.response.data.message);
+      } else if (err.response?.data?.error) {
+        setError(err.response.data.error);
       } else if (err.response?.status === 401) {
-        setError("Incorrect password.");
-      } else if (err.response?.status === 404) {
-        setError("Email not found.");
+        setError("Invalid email or password");
+      } else if (err.response?.status === 400) {
+        setError("Email and password are required");
       } else {
         setError("Login failed. Please try again.");
       }
@@ -86,7 +83,7 @@ export default function Login() {
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Email */}
+            {/* EMAIL */}
             <input
               type="email"
               placeholder="Email"
@@ -96,7 +93,7 @@ export default function Login() {
               onChange={(e) => setEmail(e.target.value)}
             />
 
-            {/* Password */}
+            {/* PASSWORD */}
             <div className="relative">
               <input
                 type={showPassword ? "text" : "password"}
@@ -120,14 +117,14 @@ export default function Login() {
               </button>
             </div>
 
-            {/* SUCCESS MESSAGE */}
+            {/* SUCCESS */}
             {success && (
               <div className="bg-green-100 text-green-700 px-4 py-2 rounded-lg text-sm">
                 {success}
               </div>
             )}
 
-            {/* ERROR MESSAGE */}
+            {/* ERROR */}
             {error && (
               <div className="bg-red-100 text-red-700 px-4 py-2 rounded-lg text-sm">
                 {error}

@@ -6,11 +6,12 @@ export const login = async (email, password) => {
     password,
   });
 
-  const token = res.data.token;
+  const { token, user } = res.data;
 
+  // store token
   localStorage.setItem("token", token);
 
-  return res.data.user;
+  return { token, user };
 };
 
 export const logout = () => {
