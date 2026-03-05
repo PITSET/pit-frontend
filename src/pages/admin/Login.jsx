@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { login } from "../utils/auth";
+import { login } from "../../utils/auth";
 
 export default function Login() {
   const [email, setEmail] = useState("");

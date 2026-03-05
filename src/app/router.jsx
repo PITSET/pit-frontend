@@ -8,6 +8,8 @@ import Home from "../pages/public/Home";
 // Admin Pages
 import Dashboard from "../pages/admin/Dashboard";
 import AdminHome from "../pages/admin/AdminHome";
+import ProtectedRoute from "../components/admin_ui/ProtectdRoute";
+import Login from "../pages/admin/Login";
 
 const router = createBrowserRouter([
   {
@@ -16,8 +18,17 @@ const router = createBrowserRouter([
   },
 
   {
+    path: "/admin/login",
+    element: <Login />,
+  },
+
+  {
     path: "/admin",
-    element: <AdminLayout />,
+    element: (
+      <ProtectedRoute>
+        <AdminLayout />
+      </ProtectedRoute>
+    ),
     children: [
       { index: true, element: <Navigate to="/admin/dashboard" replace /> },
       { path: "dashboard", element: <Dashboard /> },
