@@ -15,7 +15,7 @@ export const login = async (email, password) => {
 
 export const logout = () => {
   localStorage.removeItem("token");
-  window.location.href = "/login";
+  window.location.href = "/admin/login";
 };
 
 export const isAuthenticated = () => {

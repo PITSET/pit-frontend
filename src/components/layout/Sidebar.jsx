@@ -11,6 +11,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { Squares2X2Icon as Squares2X2SolidIcon } from "@heroicons/react/24/solid";
 import logo_image from "../../assets/logo_image.svg";
+import { logout } from "../../utils/auth";
 
 const iconClass = "h-5 w-5 shrink-0";
 
@@ -229,7 +230,7 @@ export default function Sidebar({ isOpen = false, onClose }) {
       {/* Logout */}
       <div className="p-3">
         <a
-          href="#logout"
+          onClick={logout}
           className={`flex items-center text-red-400 no-underline hover:bg-red-500/10 hover:text-red-300 ${listItemBase} active:bg-red-500/20 focus-visible:ring-red-400/50 ${
             showExpanded ? "gap-3 px-4 py-2" : "justify-center px-0 py-2"
           }`}
