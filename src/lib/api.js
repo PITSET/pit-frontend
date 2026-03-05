@@ -26,7 +26,7 @@ api.interceptors.response.use(
     if (error.response && error.response.status === 401) {
       console.warn("Unauthorized. Logging out...");
       localStorage.removeItem("token");
-      window.location.href = "/login";
+      window.location.href = "/admin/login";
     }
 
     return Promise.reject(error);

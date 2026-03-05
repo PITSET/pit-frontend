@@ -5,7 +5,7 @@ import {
   FaInstagram,
   FaXTwitter,
 } from "react-icons/fa6";
-import logo from "../../assets/logo.svg";
+import logo from "../../assets/logo/logo.svg";
 
 export default function Footer() {
   const year = new Date().getFullYear();
@@ -13,10 +13,8 @@ export default function Footer() {
   return (
     <footer className="bg-footerBg font-roboto mt-auto">
       <div className="max-w-7xl mx-auto px-6 md:px-12 py-14">
-
         {/* Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-10">
-
           {/* Logo */}
           <div>
             <img src={logo} alt="logo" className="h-10" />
@@ -27,40 +25,58 @@ export default function Footer() {
 
           {/* About */}
           <div>
-            <h3 className="font-bold text-base text-gray-900 mb-4">
-              About
-            </h3>
+            <h3 className="font-bold text-base text-gray-900 mb-4">About</h3>
             <ul className="space-y-2 text-sm uppercase tracking-wide text-gray-700">
-              <li className="hover:text-black transition cursor-pointer">About</li>
-              <li className="hover:text-black transition cursor-pointer">Contact Us</li>
-              <li className="hover:text-black transition cursor-pointer">History</li>
-              <li className="hover:text-black transition cursor-pointer">Vision</li>
-              <li className="hover:text-black transition cursor-pointer">Mission</li>
+              <li className="hover:text-black transition cursor-pointer">
+                About
+              </li>
+              <li className="hover:text-black transition cursor-pointer">
+                Contact Us
+              </li>
+              <li className="hover:text-black transition cursor-pointer">
+                History
+              </li>
+              <li className="hover:text-black transition cursor-pointer">
+                Vision
+              </li>
+              <li className="hover:text-black transition cursor-pointer">
+                Mission
+              </li>
             </ul>
           </div>
 
           {/* Programs */}
           <div>
-            <h3 className="font-bold text-base text-gray-900 mb-4">
-              Programs
-            </h3>
+            <h3 className="font-bold text-base text-gray-900 mb-4">Programs</h3>
             <ul className="space-y-2 text-sm uppercase tracking-wide text-gray-700">
-              <li className="hover:text-black transition cursor-pointer">ME Program</li>
-              <li className="hover:text-black transition cursor-pointer">JME Program</li>
-              <li className="hover:text-black transition cursor-pointer">SE Program</li>
-              <li className="hover:text-black transition cursor-pointer">Instructor</li>
+              <li className="hover:text-black transition cursor-pointer">
+                ME Program
+              </li>
+              <li className="hover:text-black transition cursor-pointer">
+                JME Program
+              </li>
+              <li className="hover:text-black transition cursor-pointer">
+                SE Program
+              </li>
+              <li className="hover:text-black transition cursor-pointer">
+                Instructor
+              </li>
             </ul>
           </div>
 
           {/* Projects */}
           <div>
-            <h3 className="font-bold text-base text-gray-900 mb-4">
-              Projects
-            </h3>
+            <h3 className="font-bold text-base text-gray-900 mb-4">Projects</h3>
             <ul className="space-y-2 text-sm uppercase tracking-wide text-gray-700">
-              <li className="hover:text-black transition cursor-pointer">SE Projects</li>
-              <li className="hover:text-black transition cursor-pointer">JME Projects</li>
-              <li className="hover:text-black transition cursor-pointer">ME Projects</li>
+              <li className="hover:text-black transition cursor-pointer">
+                SE Projects
+              </li>
+              <li className="hover:text-black transition cursor-pointer">
+                JME Projects
+              </li>
+              <li className="hover:text-black transition cursor-pointer">
+                ME Projects
+              </li>
             </ul>
           </div>
 
@@ -99,8 +115,8 @@ export default function Footer() {
 
         {/* Bottom */}
         <div className="text-center text-xs text-gray-600 mt-5 tracking-wide">
-          © {year} Prometheus Institute of Technology | 
-          All Rights Reserved | Terms and Conditions | Privacy Policy
+          © {year} Prometheus Institute of Technology | All Rights Reserved |
+          Terms and Conditions | Privacy Policy
         </div>
       </div>
     </footer>

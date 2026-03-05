@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import logo from "../../assets/logo.svg";
+import logo from "../../assets/logo/logo.svg";
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -14,17 +14,13 @@ export default function Navbar() {
   ];
 
   const toggleMobileProgram = (program) => {
-    setActiveMobileProgram(
-      activeMobileProgram === program ? null : program
-    );
+    setActiveMobileProgram(activeMobileProgram === program ? null : program);
   };
 
   return (
     <div className="w-full bg-white shadow-md relative z-50">
-      
       {/* ================= NAVBAR ================= */}
       <header className="flex justify-between items-center h-[90px] px-8 lg:px-24 relative">
-        
         {/* Logo */}
         <a href="/" className="flex items-center">
           <img src={logo} alt="logo" className="h-16" />
@@ -32,7 +28,6 @@ export default function Navbar() {
 
         {/* ================= DESKTOP MENU ================= */}
         <ul className="hidden lg:flex items-center gap-16 font-medium text-gray-700 text-[17px] relative">
-
           <li className="hover:text-red-600 transition cursor-pointer">
             About
           </li>
@@ -67,7 +62,6 @@ export default function Navbar() {
             >
               <div className="bg-white rounded-2xl shadow-2xl border border-gray-100">
                 <div className="p-10 grid grid-cols-3 gap-14">
-
                   {programs.map((program) => (
                     <div key={program}>
                       <h3 className="text-red-600 font-semibold text-lg mb-5">
@@ -75,7 +69,6 @@ export default function Navbar() {
                       </h3>
 
                       <ul className="space-y-6">
-
                         {/* Program Info */}
                         <li className="group cursor-pointer">
                           <div className="text-gray-800 font-medium group-hover:text-red-600 transition">
@@ -105,21 +98,17 @@ export default function Navbar() {
                             List of all instructors
                           </div>
                         </li>
-
                       </ul>
                     </div>
                   ))}
-
                 </div>
               </div>
             </div>
-
           </li>
 
           <li className="hover:text-red-600 transition cursor-pointer">
             Contact
           </li>
-
         </ul>
 
         {/* ================= MOBILE BUTTON ================= */}
@@ -129,7 +118,6 @@ export default function Navbar() {
         >
           ☰
         </div>
-
       </header>
 
       {/* ================= MOBILE MENU ================= */}
@@ -139,7 +127,6 @@ export default function Navbar() {
         }`}
       >
         <div className="space-y-6 font-medium">
-
           <div className="hover:text-red-600 cursor-pointer transition">
             About
           </div>
@@ -149,9 +136,7 @@ export default function Navbar() {
               className="flex justify-between items-center cursor-pointer"
               onClick={() => setIsProgramOpen(!isProgramOpen)}
             >
-              <span className="hover:text-red-600 transition">
-                Programs
-              </span>
+              <span className="hover:text-red-600 transition">Programs</span>
               <span>{isProgramOpen ? "−" : "+"}</span>
             </div>
 
@@ -164,14 +149,11 @@ export default function Navbar() {
                       onClick={() => toggleMobileProgram(program)}
                     >
                       <span>{program}</span>
-                      <span>
-                        {activeMobileProgram === program ? "−" : "+"}
-                      </span>
+                      <span>{activeMobileProgram === program ? "−" : "+"}</span>
                     </div>
 
                     {activeMobileProgram === program && (
                       <div className="mt-3 pl-4 space-y-4">
-
                         <div>
                           <div className="font-medium">Program Info</div>
                           <div className="text-sm text-gray-400">
@@ -192,7 +174,6 @@ export default function Navbar() {
                             List of all instructors
                           </div>
                         </div>
-
                       </div>
                     )}
                   </div>
@@ -204,10 +185,8 @@ export default function Navbar() {
           <div className="hover:text-red-600 cursor-pointer transition">
             Contact
           </div>
-
         </div>
       </div>
-
     </div>
   );
 }

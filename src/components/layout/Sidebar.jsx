@@ -10,7 +10,7 @@ import {
   ChevronDownIcon,
 } from "@heroicons/react/24/outline";
 import { Squares2X2Icon as Squares2X2SolidIcon } from "@heroicons/react/24/solid";
-import logo_image from "../../assets/logo_image.svg";
+import logo_image from "../../assets/logo/logo_image.svg";
 import { logout } from "../../utils/auth";
 
 const iconClass = "h-5 w-5 shrink-0";
