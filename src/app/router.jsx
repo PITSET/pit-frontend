@@ -7,7 +7,7 @@ import Home from "../pages/public/Home";
 
 // Admin Pages
 import Dashboard from "../pages/admin/Dashboard";
-import AdminHome from "../pages/admin/adminHome";
+import AdminHome from "../pages/admin/AdminHome";
 
 const router = createBrowserRouter([
   {
