@@ -50,7 +50,6 @@ const router = createBrowserRouter([
         element: <Navigate to="/admin/team/instructors" replace />,
       },
       { path: "team/instructors", element: <Dashboard /> },
-      { path: "team/founder", element: <Dashboard /> },
       { path: "contact", element: <AdminContact /> },
     ],
   },
