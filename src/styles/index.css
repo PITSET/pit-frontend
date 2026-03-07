@@ -1,1 +1,6 @@
+@theme {
+  --font-family-roboto: 'Roboto', sans-serif;
+  --font-family-robotoCondensed: 'Roboto Condensed', sans-serif;
+}
+
 @import "tailwindcss";
