@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import api from "../../lib/api";
 
 const instructors = [
   {
@@ -33,10 +34,83 @@ const instructors = [
   },
 ];
 
+// Default content when backend has no data
+const defaultWhoWeAre = {
+  title: "Building Future Innovators",
+  content:
+    "Our institute is committed to empowering students with the knowledge and skills required in the modern technology world. Through innovative teaching, practical training, and strong industry connections, we prepare students to become leaders in technology and engineering.",
+  image_url: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f",
+};
+const defaultHistory = {
+  title: "History",
+  content:
+    "Since our founding, we have focused on delivering quality education that bridges academic knowledge with real-world experience. Our programs continuously evolve to match industry needs and technological advancements.",
+  image_url: "https://images.unsplash.com/photo-1551836022-d5d88e9218df",
+};
+const defaultMission = {
+  title: "Mission",
+  content:
+    "To deliver practical, high-quality technology education that builds strong technical skills, creativity, and problem-solving abilities. We aim to prepare students for real-world careers through hands-on learning, innovation, and continuous growth.",
+  image_url: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee",
+};
+const defaultVision = {
+  title: "Vision",
+  content:
+    "To become a leading modern technology institute that inspires innovation, nurtures talent, and empowers students to become confident future technologists.",
+  image_url: "https://images.unsplash.com/photo-1518770660439-4636190af475",
+};
+
 export default function About() {
+  const [sections, setSections] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchAbout = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const res = await api.get("/about");
+        if (res.data?.success && Array.isArray(res.data.data)) {
+          setSections(res.data.data);
+        }
+      } catch (err) {
+        setError(err.message || "Failed to load about content");
+        setSections([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchAbout();
+  }, []);
+
+  const getSection = (sectionType) =>
+    sections.find((s) => s.section_type === sectionType);
+
+  const whoWeAre = getSection("who_we_are") || defaultWhoWeAre;
+  const history = getSection("history") || defaultHistory;
+  const mission = getSection("mission") || defaultMission;
+  const vision = getSection("vision") || defaultVision;
+
+  if (loading) {
+    return (
+      <div className="bg-[#E9E9EB] py-16 px-6 font-['Roboto'] min-h-[50vh] flex items-center justify-center">
+        <p className="text-gray-600">Loading...</p>
+      </div>
+    );
+  }
+
+  const whoWeAreTitleParts = (whoWeAre.title || "").split(" ");
+  const whoWeAreLine1 = whoWeAreTitleParts[0] || "Building";
+  const whoWeAreLine2 = whoWeAreTitleParts.slice(1).join(" ") || "Future Innovators";
+
   return (
     <div className="bg-[#E9E9EB] py-16 px-6 font-['Roboto']">
-
+      {error && (
+        <div className="max-w-[1248px] mx-auto mb-4 p-3 bg-amber-100 text-amber-800 rounded">
+          {error}
+        </div>
+      )}
       <div className="max-w-[1248px] mx-auto">
 
         {/* WHO WE ARE */}
@@ -56,20 +130,16 @@ export default function About() {
 
             </div>
 
-            <h1 className="text-4xl font-bold text-red-600 mb-2">
-              Building
+            <h1 className="font-['Roboto_Condensed'] text-[64px] font-bold text-red-600 leading-none">
+              {whoWeAreLine1}
             </h1>
 
-            <h1 className="text-4xl font-bold text-red-600 mb-6">
-              Future Innovators
+            <h1 className="font-['Roboto_Condensed'] text-[64px] font-bold text-red-600 mb-6 leading-none">
+              {whoWeAreLine2}
             </h1>
 
             <p className="text-gray-600 leading-relaxed">
-              Our institute is committed to empowering students with the
-              knowledge and skills required in the modern technology world.
-              Through innovative teaching, practical training, and strong
-              industry connections, we prepare students to become leaders
-              in technology and engineering.
+              {whoWeAre.content}
             </p>
 
           </div>
@@ -77,7 +147,7 @@ export default function About() {
           <div className="flex justify-end">
 
             <img
-              src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f"
+              src={whoWeAre.image_url}
               alt="students"
               className="w-[633px] h-[686px] object-cover"
             />
@@ -92,7 +162,7 @@ export default function About() {
           <div className="flex justify-center">
 
             <img
-              src="https://images.unsplash.com/photo-1551836022-d5d88e9218df"
+              src={history.image_url}
               alt="history"
               className="w-[400px] h-[400px] object-cover rounded-[16px]"
             />
@@ -102,89 +172,79 @@ export default function About() {
           <div>
 
             <h2 className="text-3xl font-bold text-red-600 mb-4">
-              History
+              {history.title}
             </h2>
 
             <p className="text-gray-600 leading-relaxed">
-              Since our founding, we have focused on delivering quality
-              education that bridges academic knowledge with real-world
-              experience. Our programs continuously evolve to match
-              industry needs and technological advancements.
+              {history.content}
             </p>
 
           </div>
 
         </div>
 
-       {/* MISSION */}
-<div className="grid md:grid-cols-2 gap-16 items-start mt-[320px]">
+        {/* MISSION */}
+        <div className="grid md:grid-cols-2 gap-16 items-start mt-[320px]">
 
-{/* Image */}
-<div className="flex justify-center">
-  <img
-    src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee"
-    alt="mission"
-    className="w-[400px] h-[400px] object-cover rounded-[16px]"
-  />
-</div>
+          <div className="flex justify-center">
+            <img
+              src={mission.image_url}
+              alt="mission"
+              className="w-[400px] h-[400px] object-cover rounded-[16px]"
+            />
+          </div>
 
-{/* Text */}
-<div className="flex gap-18 mt-30">
+          <div className="flex gap-10 mt-20">
 
-  <div className="w-[3px] h-[137px] bg-gradient-to-b from-[#FD1722] via-[#FF884D] to-[#76191F]"></div>
+            <div className="w-[3px] h-[137px] bg-gradient-to-b from-[#FD1722] via-[#FF884D] to-[#76191F]"></div>
 
-  <div>
-    <h2 className="text-2xl font-bold text-[#FD1722] mb-1">
-      Mission
-    </h2>
+            <div>
 
-    <p className="text-gray-600 leading-relaxed max-w-md">
-      To deliver practical, high-quality technology education
-      that builds strong technical skills, creativity, and
-      problem-solving abilities. We aim to prepare students
-      for real-world careers through hands-on learning,
-      innovation, and continuous growth.
-    </p>
-  </div>
+              <h2 className="text-2xl font-bold text-[#FD1722] mb-1">
+                {mission.title}
+              </h2>
 
-</div>
+              <p className="text-gray-600 leading-relaxed max-w-md">
+                {mission.content}
+              </p>
 
-</div>
+            </div>
+
+          </div>
+
+        </div>
 
 
-{/* VISION */}
-<div className="grid md:grid-cols-2 gap-16 items-start mt-[140px]">
+        {/* VISION */}
+        <div className="grid md:grid-cols-2 gap-16 items-start mt-[140px]">
 
-{/* Text */}
-<div className="flex gap-10 justify-end mt-35">
+          <div className="flex gap-10 justify-end mt-24">
 
-  <div>
-    <h2 className="text-2xl font-bold text-[#FD1722] mb-2">
-      Vision
-    </h2>
+            <div>
 
-    <p className="text-gray-600 leading-relaxed max-w-md">
-      To become a leading modern technology institute that
-      inspires innovation, nurtures talent, and empowers
-      students to become confident future technologists.
-     
-    </p>
-  </div>
+              <h2 className="text-2xl font-bold text-[#FD1722] mb-2">
+                {vision.title}
+              </h2>
 
-  <div className="w-[3px] h-[137px] bg-gradient-to-b from-[#FD1722] via-[#FF884D] to-[#76191F]"></div>
+              <p className="text-gray-600 leading-relaxed max-w-md">
+                {vision.content}
+              </p>
 
-</div>
+            </div>
 
-{/* Image */}
-<div className="flex justify-center">
-  <img
-    src="https://images.unsplash.com/photo-1518770660439-4636190af475"
-    alt="vision"
-    className="w-[400px] h-[400px] object-cover rounded-[16px]"
-  />
-</div>
+            <div className="w-[3px] h-[137px] bg-gradient-to-b from-[#FD1722] via-[#FF884D] to-[#76191F]"></div>
 
-</div>
+          </div>
+
+          <div className="flex justify-center">
+            <img
+              src={vision.image_url}
+              alt="vision"
+              className="w-[400px] h-[400px] object-cover rounded-[16px]"
+            />
+          </div>
+
+        </div>
 
         {/* INSTRUCTORS */}
         <div className="mt-24">
@@ -198,14 +258,12 @@ export default function About() {
             {instructors.map((inst, index) => (
               <div key={index} className="w-[312px]">
 
-                {/* Instructor Image */}
                 <img
                   src={inst.image}
                   alt={inst.name}
                   className="w-[312px] h-[390px] object-cover"
                 />
 
-                {/* Text Frame */}
                 <div className="h-[108px] bg-[#F2F2F2] px-3 pt-4">
 
                   <p className="text-[12px] text-gray-500">
@@ -226,7 +284,6 @@ export default function About() {
         </div>
 
       </div>
-
     </div>
   );
 }
