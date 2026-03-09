@@ -1,6 +1,10 @@
 import { useEffect, useState } from "react";
 import { getHomeSections } from "../../lib/services/homeService";
-import { PencilSquareIcon } from "@heroicons/react/24/outline";
+import {
+  PencilSquareIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+} from "@heroicons/react/24/outline";
 
 import HomeModal from "../../components/admin_ui/HomeModal";
 
@@ -11,6 +15,10 @@ export default function HomePage() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 4;
 
   const fetchHome = async () => {
     try {
@@ -27,11 +35,21 @@ export default function HomePage() {
     fetchHome();
   }, []);
 
+  // Calculate pagination
+  const totalPages = Math.ceil(data.length / itemsPerPage);
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = data.slice(indexOfFirstItem, indexOfLastItem);
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
+
   if (loading) return <p className="p-8">Loading...</p>;
   if (error) return <p className="p-8 text-red-500">{error}</p>;
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
+    <div className="p-6 max-w-7xl mx-auto mb-6">
       <h1 className="text-3xl font-semibold mb-8">Home Page</h1>
 
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
@@ -46,7 +64,7 @@ export default function HomePage() {
           </thead>
 
           <tbody className="divide-y divide-gray-200">
-            {data.map((item) => (
+            {currentItems.map((item) => (
               <tr key={item.id} className="hover:bg-gray-100 transition">
                 <td className="px-8 py-4 text-center">
                   <div className="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden mx-auto">
@@ -63,7 +81,9 @@ export default function HomePage() {
                 </td>
 
                 <td className="px-8 py-6 text-gray-600 text-left max-w-xl">
-                  {item.content || "No description available"}
+                  <p className="line-clamp-3">
+                    {item.content || "No description available"}
+                  </p>
                 </td>
 
                 <td className="px-8 py-6 text-center">
@@ -81,6 +101,47 @@ export default function HomePage() {
             ))}
           </tbody>
         </table>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between px-4 py-3 bg-gray-50 border-t border-gray-200">
+            <div className="text-sm text-gray-600">
+              Showing {indexOfFirstItem + 1} to{" "}
+              {Math.min(indexOfLastItem, data.length)} of {data.length} results
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="p-2 rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition"
+              >
+                <ChevronLeftIcon className="w-4 h-4 text-gray-600" />
+              </button>
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                (page) => (
+                  <button
+                    key={page}
+                    onClick={() => handlePageChange(page)}
+                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition ${
+                      currentPage === page
+                        ? "bg-orange-500 text-white"
+                        : "border border-gray-300 text-gray-600 hover:bg-gray-100"
+                    }`}
+                  >
+                    {page}
+                  </button>
+                ),
+              )}
+              <button
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className="p-2 rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition"
+              >
+                <ChevronRightIcon className="w-4 h-4 text-gray-600" />
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Modal */}
