@@ -4,7 +4,7 @@ import toast from "react-hot-toast";
 // heroicons
 import {
   XMarkIcon,
-  HomeIcon,
+  InformationCircleIcon,
   ArrowUpTrayIcon,
   ArrowTopRightOnSquareIcon,
   CheckCircleIcon,
@@ -12,10 +12,10 @@ import {
 } from "@heroicons/react/24/outline";
 
 // api
-import { updateHomeSection } from "../../lib/services/homeService";
+import { updateAboutSection } from "../../lib/services/aboutService";
 import { supabase } from "../../lib/supabaseClient";
 
-export default function HomeModal({ isOpen, onClose, onRefresh, item }) {
+export default function AboutModal({ isOpen, onClose, onRefresh, item }) {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [image, setImage] = useState(null);
@@ -203,14 +203,14 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item }) {
           .replace(/\s+/g, "-")
           .toLowerCase();
 
-        const fileName = `home-${safeSection}.webp`;
+        const fileName = `about-${safeSection}.webp`;
 
         toast.loading("Compressing & uploading image...", { id: toastId });
 
         const webpImage = await convertToWebp(image);
 
         const { error: uploadError } = await supabase.storage
-          .from("home_images")
+          .from("about_images")
           .upload(fileName, webpImage, {
             upsert: true,
             cacheControl: "3600",
@@ -222,7 +222,7 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item }) {
         }
 
         const { data } = supabase.storage
-          .from("home_images")
+          .from("about_images")
           .getPublicUrl(fileName);
 
         // prevent browser cache
@@ -230,7 +230,7 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item }) {
       }
 
       // update database
-      await updateHomeSection(item.id, {
+      await updateAboutSection(item.id, {
         title,
         content,
         image_url: imageUrl,
@@ -279,17 +279,17 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item }) {
         <div className="flex-shrink-0 bg-white rounded-t-2xl px-6 py-4 border-b border-gray-200">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="bg-red-200 p-3 rounded-xl">
-                <HomeIcon className="w-6 h-6 text-red-500" />
+              <div className="bg-blue-200 p-3 rounded-xl">
+                <InformationCircleIcon className="w-6 h-6 text-blue-500" />
               </div>
 
               <div>
                 <h2 className="text-2xl font-bold">
-                  Update Home ({item.section_type})
+                  Update About ({item.section_type})
                 </h2>
 
                 <p className="text-sm text-gray-500">
-                  Edit your home information
+                  Edit your about information
                 </p>
               </div>
             </div>

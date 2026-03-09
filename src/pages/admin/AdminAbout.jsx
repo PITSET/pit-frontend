@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
-import { getHomeSections } from "../../lib/services/homeService";
+import { getAboutSections } from "../../lib/services/aboutService";
 import { PencilSquareIcon } from "@heroicons/react/24/outline";
 
-import HomeModal from "../../components/admin_ui/HomeModal";
+import AboutModal from "../../components/admin_ui/AboutModal";
 
-export default function HomePage() {
+export default function AboutPage() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -12,19 +12,19 @@ export default function HomePage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
 
-  const fetchHome = async () => {
+  const fetchAbout = async () => {
     try {
-      const response = await getHomeSections();
+      const response = await getAboutSections();
       setData(response.data);
     } catch (err) {
-      setError("Failed to fetch home data");
+      setError("Failed to fetch about data");
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchHome();
+    fetchAbout();
   }, []);
 
   if (loading) return <p className="p-8">Loading...</p>;
@@ -32,7 +32,7 @@ export default function HomePage() {
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
-      <h1 className="text-3xl font-semibold mb-8">Home Page</h1>
+      <h1 className="text-3xl font-semibold mb-8">About Page</h1>
 
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
         <table className="w-full">
@@ -84,10 +84,10 @@ export default function HomePage() {
       </div>
 
       {/* Modal */}
-      <HomeModal
+      <AboutModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onRefresh={fetchHome}
+        onRefresh={fetchAbout}
         item={selectedItem}
       />
     </div>
