@@ -9,6 +9,7 @@ import {
 
 //import home api services
 import { updateHomeSection } from "../../lib/services/homeService";
+import { supabase } from "../../lib/supabaseClient";
 
 export default function HomeModal({ isOpen, onClose, item }) {
   const [title, setTitle] = useState("");
@@ -37,15 +38,43 @@ export default function HomeModal({ isOpen, onClose, item }) {
     try {
       setLoading(true);
 
-      const formData = new FormData();
-      formData.append("title", title);
-      formData.append("content", content);
+      let imageUrl = item.image_url; // keep existing image if user didn't upload new one
 
+      /**
+       * STEP 1
+       * Upload new image if user selected one
+       */
       if (image) {
-        formData.append("image", image);
+        const fileName = `${Date.now()}-${image.name}`;
+
+        const { data, error } = await supabase.storage
+          .from("home-images")
+          .upload(fileName, image);
+
+        if (error) {
+          throw error;
+        }
+
+        /**
+         * STEP 2
+         * Get public URL of uploaded image
+         */
+        const { data: publicUrlData } = supabase.storage
+          .from("home-images")
+          .getPublicUrl(fileName);
+
+        imageUrl = publicUrlData.publicUrl;
       }
 
-      await updateHomeSection(item.id, formData);
+      /**
+       * STEP 3
+       * Send updated data to backend
+       */
+      await updateHomeSection(item.id, {
+        title,
+        content,
+        image_url: imageUrl,
+      });
 
       onClose();
     } catch (error) {
