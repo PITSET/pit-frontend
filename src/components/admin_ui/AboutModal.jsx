@@ -161,8 +161,8 @@ export default function AboutModal({ isOpen, onClose, onRefresh, item }) {
         <div className="flex-shrink-0 bg-white rounded-t-2xl px-6 py-4 border-b border-gray-200">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="bg-blue-200 p-3 rounded-xl">
-                <InformationCircleIcon className="w-6 h-6 text-blue-500" />
+              <div className="bg-red-200 p-3 rounded-xl">
+                <InformationCircleIcon className="w-6 h-6 text-red-500" />
               </div>
 
               <div>
