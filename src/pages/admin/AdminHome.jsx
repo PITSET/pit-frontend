@@ -12,18 +12,18 @@ export default function HomePage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
 
-  useEffect(() => {
-    const fetchHome = async () => {
-      try {
-        const response = await api.get("/home");
-        setData(response.data.data);
-      } catch (err) {
-        setError("Failed to fetch home data");
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchHome = async () => {
+    try {
+      const response = await api.get("/home");
+      setData(response.data.data);
+    } catch (err) {
+      setError("Failed to fetch home data");
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchHome();
   }, []);
 
@@ -87,6 +87,7 @@ export default function HomePage() {
       <HomeModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
+        onRefresh={fetchHome}
         item={selectedItem}
       />
     </div>

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import toast from "react-hot-toast";
 
 // heroicons
 import {
@@ -11,7 +12,7 @@ import {
 import { updateHomeSection } from "../../lib/services/homeService";
 import { supabase } from "../../lib/supabaseClient";
 
-export default function HomeModal({ isOpen, onClose, item }) {
+export default function HomeModal({ isOpen, onClose, onRefresh, item }) {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [image, setImage] = useState(null);
@@ -32,17 +33,18 @@ export default function HomeModal({ isOpen, onClose, item }) {
     if (!file) return;
 
     if (!file.type.startsWith("image/")) {
-      alert("Please upload an image file");
+      toast.error("Please upload an image file");
       return;
     }
 
     // limit file size (10MB)
     if (file.size > 10 * 1024 * 1024) {
-      alert("Image must be smaller than 10MB");
+      toast.error("Image must be smaller than 10MB");
       return;
     }
 
     setImage(file);
+    toast.success("Image selected");
   };
 
   // Convert image to WEBP (compression + resize)
@@ -80,24 +82,12 @@ export default function HomeModal({ isOpen, onClose, item }) {
     });
   };
 
-  // handle refresh data
-  const refreshData = async () => {
-    const { data, error } = await supabase
-      .from("homepage")
-      .select("*")
-      .single();
-
-    if (!error && data) {
-      setFormData(data);
-    }
-  };
-
   // Save changes
   const handleSave = async () => {
+    const toastId = toast.loading("Saving changes...");
+
     try {
       setLoading(true);
-
-      console.log("Saving section id:", item.id);
 
       let imageUrl = item.image_url;
 
@@ -108,13 +98,11 @@ export default function HomeModal({ isOpen, onClose, item }) {
 
         const fileName = `home-${safeSection}.webp`;
 
-        console.log("Compressing image...");
+        toast.loading("Compressing & uploading image...", { id: toastId });
 
         const webpImage = await convertToWebp(image);
 
-        console.log("Uploading image:", fileName);
-
-        const { error } = await supabase.storage
+        const { error: uploadError } = await supabase.storage
           .from("home_images")
           .upload(fileName, webpImage, {
             upsert: true,
@@ -122,9 +110,8 @@ export default function HomeModal({ isOpen, onClose, item }) {
             contentType: "image/webp",
           });
 
-        if (error) {
-          console.error("Upload error:", error);
-          throw error;
+        if (uploadError) {
+          throw uploadError;
         }
 
         const { data } = supabase.storage
@@ -133,23 +120,26 @@ export default function HomeModal({ isOpen, onClose, item }) {
 
         // prevent browser cache
         imageUrl = `${data.publicUrl}?t=${Date.now()}`;
-
-        console.log("Image URL:", imageUrl);
       }
 
       // update database
-      const res = await updateHomeSection(item.id, {
+      await updateHomeSection(item.id, {
         title,
         content,
         image_url: imageUrl,
       });
 
-      console.log("Update response:", res);
+      toast.success("Section updated successfully!", { id: toastId });
+
+      // auto-refresh parent data
+      if (onRefresh) {
+        await onRefresh();
+      }
 
       onClose();
     } catch (error) {
       console.error("Failed to update:", error);
-      alert("Failed to update section");
+      toast.error("Failed to update section", { id: toastId });
     } finally {
       setLoading(false);
     }
