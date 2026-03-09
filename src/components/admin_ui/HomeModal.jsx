@@ -6,6 +6,9 @@ import {
   XMarkIcon,
   HomeIcon,
   ArrowUpTrayIcon,
+  ArrowTopRightOnSquareIcon,
+  CheckCircleIcon,
+  ExclamationCircleIcon,
 } from "@heroicons/react/24/outline";
 
 // api
@@ -18,15 +21,57 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item }) {
   const [image, setImage] = useState(null);
   const [loading, setLoading] = useState(false);
   const [videoUrl, setVideoUrl] = useState("");
+  const [urlValidation, setUrlValidation] = useState({
+    isValid: null,
+    message: "",
+  });
 
-  // Load existing data
-  useEffect(() => {
-    if (item) {
-      setTitle(item.title || "");
-      setContent(item.content || "");
-      setVideoUrl(item.video_url || "");
+  // Validate URL format
+  const validateUrl = (url) => {
+    if (!url) {
+      setUrlValidation({ isValid: null, message: "" });
+      return false;
     }
-  }, [item]);
+
+    try {
+      const urlObj = new URL(url);
+      if (!["http:", "https:"].includes(urlObj.protocol)) {
+        setUrlValidation({
+          isValid: false,
+          message: "Invalid protocol. Use http or https",
+        });
+        return false;
+      }
+      setUrlValidation({ isValid: true, message: "Valid URL format" });
+      return true;
+    } catch (e) {
+      setUrlValidation({ isValid: false, message: "Invalid URL format" });
+      return false;
+    }
+  };
+
+  // Handle video URL change with validation
+  const handleVideoUrlChange = (e) => {
+    const value = e.target.value;
+    setVideoUrl(value);
+    validateUrl(value);
+  };
+
+  // Open video URL in new tab
+  const handleTestVideoUrl = () => {
+    if (!videoUrl) {
+      toast.error("Please enter a video URL first");
+      return;
+    }
+
+    if (!validateUrl(videoUrl)) {
+      toast.error("Please enter a valid URL");
+      return;
+    }
+
+    window.open(videoUrl, "_blank", "noopener,noreferrer");
+    toast.success("Opening video link in new tab");
+  };
 
   // Handle image select
   const handleImageChange = (e) => {
@@ -154,7 +199,15 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item }) {
     setContent(item.content || "");
     setImage(null);
     setVideoUrl(item.video_url || "");
+    validateUrl(item.video_url || "");
   };
+
+  // Load initial data when modal opens
+  useEffect(() => {
+    if (isOpen && item) {
+      resetForm();
+    }
+  }, [isOpen, item]);
 
   if (!isOpen || !item) return null;
 
@@ -250,14 +303,44 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item }) {
                 <label className="text-sm font-medium text-gray-700">
                   Video URL
                 </label>
-                <input
-                  type="url"
-                  value={videoUrl}
-                  placeholder="https://www.youtube.com/embed/..."
-                  onChange={(e) => setVideoUrl(e.target.value)}
-                  className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm shadow-sm
-                  focus:outline-none focus:ring-2 focus:ring-orange-400 transition"
-                />
+                <div className="flex gap-2">
+                  <input
+                    type="url"
+                    value={videoUrl}
+                    placeholder="https://www.youtube.com/embed/..."
+                    onChange={handleVideoUrlChange}
+                    className={`flex-1 rounded-lg border bg-white px-4 py-2.5 text-sm shadow-sm
+                      focus:outline-none focus:ring-2 focus:ring-orange-400 transition
+                      ${urlValidation.isValid === false ? "border-red-400 focus:ring-red-400" : "border-gray-300"}`}
+                  />
+                  <button
+                    type="button"
+                    onClick={handleTestVideoUrl}
+                    disabled={!videoUrl}
+                    className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-gray-300 bg-white text-sm font-medium text-gray-700
+                      hover:bg-gray-50 hover:border-gray-400 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    title="Test video link"
+                  >
+                    <ArrowTopRightOnSquareIcon className="w-4 h-4" />
+                    Test
+                  </button>
+                </div>
+
+                {/* URL Validation Feedback */}
+                {urlValidation.isValid !== null && (
+                  <div
+                    className={`flex items-center gap-1.5 text-xs ${
+                      urlValidation.isValid ? "text-green-600" : "text-red-500"
+                    }`}
+                  >
+                    {urlValidation.isValid ? (
+                      <CheckCircleIcon className="w-4 h-4" />
+                    ) : (
+                      <ExclamationCircleIcon className="w-4 h-4" />
+                    )}
+                    <span>{urlValidation.message}</span>
+                  </div>
+                )}
               </div>
             </div>
 
