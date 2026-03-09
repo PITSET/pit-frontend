@@ -49,7 +49,7 @@ export default function HomePage() {
   if (error) return <p className="p-8 text-red-500">{error}</p>;
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
+    <div className="p-6 max-w-7xl mx-auto mb-6">
       <h1 className="text-3xl font-semibold mb-8">Home Page</h1>
 
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
