@@ -4,25 +4,24 @@ import AdminLayout from "../components/layout/AdminLayout";
 
 // Public Pages
 import Home from "../pages/public/Home";
+import About from "../pages/public/About";
 
 // Admin Pages
 import Dashboard from "../pages/admin/Dashboard";
 import AdminHome from "../pages/admin/AdminHome";
+import AdminAbout from "../pages/admin/AdminAbout";
 import ProtectedRoute from "../components/admin_ui/ProtectdRoute";
 import Login from "../pages/admin/Login";
 import AdminContact from "../pages/admin/AdminContact";
-import About from "../pages/public/About";
 
 const router = createBrowserRouter([
   {
     element: <PublicLayout />,
-    children: 
-    [
+    children: [
       { path: "/", element: <Home /> },
-    { path: "/about", element: <About /> },
-    { path: "/contact", element: <About /> },
-
-  ],
+      { path: "/about", element: <About /> },
+      { path: "/contact", element: <About /> },
+    ],
   },
 
   {
@@ -45,7 +44,7 @@ const router = createBrowserRouter([
         element: <Navigate to="/admin/content/home" replace />,
       },
       { path: "content/home", element: <AdminHome /> },
-      { path: "content/about", element: <Dashboard /> },
+      { path: "content/about", element: <AdminAbout /> },
       {
         path: "academics",
         element: <Navigate to="/admin/academics/programs" replace />,
