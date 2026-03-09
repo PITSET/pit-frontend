@@ -101,11 +101,11 @@ export default function About() {
   }
 
   return (
-    <div className="bg-[#E9E9EB] py-0 px-0 font-['Roboto']">
+    <div className="bg-[#E9E9EB] py-0 px-4 md:px-0 font-['Roboto']">
       <div className="max-w-[1248px] mx-auto">
 
         {/* WHO WE ARE */}
-        <div className="grid md:grid-cols-2 gap-12 items-center">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
 
           <div>
 
@@ -133,7 +133,7 @@ export default function About() {
 
           </div>
 
-          <div className="flex justify-end">
+          <div className="flex justify-center md:justify-end">
             <img
               src={whoWeAre.image_url}
               alt="who we are"
@@ -142,101 +142,111 @@ export default function About() {
           </div>
 
         </div>
+{/* HISTORY */}
+<div className="max-w-[950px] mx-auto grid grid-cols-1 md:grid-cols-2 items-center gap-1 mt-[300px]">
 
-        {/* HISTORY */}
-        <div className="grid md:grid-cols-2 gap-6 items-center mt-[200px]">
+  {/* IMAGE */}
+  <div className="flex justify-center md:justify-start">
+    <img
+      src={history.image_url}
+      alt="history"
+      className="w-[400px] h-[400px] object-cover rounded-xl"
+    />
+  </div>
 
-          <img
-            src={history.image_url}
-            alt="history"
-            className="w-[400px] h-[400px] object-cover rounded-[16px]"
-          />
+  {/* TEXT */}
+  <div className="max-w-[480px]">
 
-          <div>
-            <h2 className="text-3xl font-bold text-red-600 mb-4">
-              {history.title}
-            </h2>
+    <h2 className="font-['Roboto_Condensed'] font-bold text-[56px] text-[#D32F2F] mb-4">
+      {history.title}
+    </h2>
 
-            <p className="text-gray-600">
-              {history.content}
-            </p>
+    <p className="text-gray-600 text-[16px] leading-relaxed">
+      Prometheus Institute of Technology was founded with a clear vision—to
+      create a modern learning environment where technology education is
+      practical, relevant, and future-focused. From the beginning, the
+      institute worked to bridge the gap between traditional academic
+      learning and the rapidly evolving digital world while empowering
+      students with real-world technical skills and innovation.
+    </p>
+
+  </div>
+
+</div>
+        {/* MISSION (UNCHANGED) */}
+        <div className="mx-0 grid grid-cols-1 md:grid-cols-2 items-center gap-10 mt-[330px]">
+
+          <div className="flex justify-center md:justify-end">
+            <img
+              src={mission.image_url}
+              alt="mission"
+              className="w-[400px] h-[400px] object-cover rounded-[16px]"
+            />
+          </div>
+
+          <div className="flex items-start gap-6">
+
+            <div className="w-[3px] h-[137px] bg-gradient-to-b from-[#FD1722] via-[#FF884D] to-[#76191F]" />
+
+            <div>
+
+              <h2 className="font-['Roboto_Condensed'] font-bold text-[40px] text-[#FD1722] mb-3">
+                {mission.title}
+              </h2>
+
+              <p className="font-['Roboto'] text-[16px] text-gray-600 max-w-md leading-relaxed">
+                {mission.content}
+              </p>
+
+            </div>
+
           </div>
 
         </div>
 
-{/* MISSION */}
-<div className="mx-32 grid md:grid-cols-2 items-center gap-8 mt-[250px]">
+   {/* VISION */}
+<div className="mx-4 md:mx-16 lg:mx-32 grid grid-cols-1 md:grid-cols-2 items-center gap-10 mt-[120px] md:mt-[50px]">
 
-  {/* Image */}
-  <div className="flex justify-end">
-    <img
-      src={mission.image_url}
-      alt="mission"
-      className="w-[400px] h-[400px] object-cover rounded-[16px]"
-    />
-  </div>
+{/* TEXT SECTION */}
+<div className="flex items-start gap-6">
 
   {/* Text */}
-  <div className="flex items-start gap-6">
+  <div className="flex flex-col">
 
-    <div className="w-[3px] h-[137px] bg-gradient-to-b from-[#FD1722] via-[#FF884D] to-[#76191F]" />
+    <h2 className="font-['Roboto_Condensed'] font-bold text-[28px] md:text-[40px] text-[#FD1722] mb-3 md:ml-20">
+      {vision.title}
+    </h2>
 
-    <div>
-      <h2 className="text-2xl font-bold text-[#FD1722] mb-2">
-        {mission.title}
-      </h2>
-
-      <p className="text-gray-600 max-w-md leading-relaxed">
-        {mission.content}
-      </p>
-    </div>
+    <p className="font-['Roboto'] text-[16px] text-gray-600 max-w-md leading-relaxed md:ml-20">
+      {vision.content}
+    </p>
 
   </div>
+
+  {/* Gradient Line */}
+  <div className="w-[3px] h-[137px] bg-gradient-to-b from-[#FD1722] via-[#FF884D] to-[#76191F]" />
 
 </div>
 
-{/* VISION */}
-<div className="mx-32 grid md:grid-cols-2 items-center gap-8 mt-[250px]">
-
-  {/* Text */}
-  <div className="flex items-start gap-6">
-
-    <div>
-      <h2 className="text-2xl font-bold text-[#FD1722] mb-2">
-        {vision.title}
-      </h2>
-
-      <p className="text-gray-600 max-w-md leading-relaxed">
-        {vision.content}
-      </p>
-    </div>
-    <div className="w-[3px] h-[137px] bg-gradient-to-b from-[#FD1722] via-[#FF884D] to-[#76191F]" />
-
-
-  </div>
-
-  {/* Image */}
-  <div className="flex justify-start">
-    <img
-      src={vision.image_url}
-      alt="vision"
-      className="w-[400px] h-[400px] object-cover rounded-[16px]"
-    />
-  </div>
-
-
+{/* IMAGE SECTION */}
+<div className="flex justify-center md:justify-start">
+  <img
+    src={vision.image_url}
+    alt="vision"
+    className="w-[400px] h-[400px] object-cover rounded-[16px]"
+  />
+</div>
 
 </div>
-        
 
         {/* INSTRUCTORS */}
         <div className="mt-24">
 
-          <h2 className="text-[28px] font-bold text-[#D32F2F] mb-8">
+          <h2 className="font-['Roboto_Condensed'] font-bold text-[64px] text-[#D32F2F] mb-8">
             Instructors
           </h2>
 
-          <div className="grid grid-cols-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 justify-items-center">
 
             {instructors.map((inst, i) => (
               <div key={i} className="w-[312px]">
