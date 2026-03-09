@@ -41,11 +41,11 @@ export default function HomePage() {
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
         <table className="w-full">
           {/* Header */}
-          <thead className="bg-gray-50 border-b border-gray-300">
+          <thead className="bg-gray-50 border-b border-gray-300 px-10">
             <tr className="text-left text-sm font-semibold text-gray-600">
-              <th className="px-8 py-4 w-40">Image</th>
-              <th className="px-8 py-4 w-60">Title</th>
-              <th className="px-8 py-4">Description</th>
+              <th className="px-8 py-4 w-40 text-center">Image</th>
+              <th className="px-8 py-4 w-60 text-center">Title</th>
+              <th className="px-8 py-4 text-center">Description</th>
               <th className="px-8 py-4 text-center w-32">Action</th>
             </tr>
           </thead>
@@ -55,7 +55,7 @@ export default function HomePage() {
             {data.map((item) => (
               <tr key={item.id} className="hover:bg-gray-100 transition">
                 {/* Image */}
-                <td className="px-8 py-4">
+                <td className="px-8 py-4 text-center">
                   <div className="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center">
                     <img
                       src={item.image_url || "/placeholder.png"}
@@ -66,12 +66,12 @@ export default function HomePage() {
                 </td>
 
                 {/* Title */}
-                <td className="px-8 py-6 font-medium text-gray-800">
+                <td className="px-8 py-6 font-medium text-gray-800 text-center">
                   {item.title}
                 </td>
 
                 {/* Description */}
-                <td className="px-8 py-6 text-gray-600 max-w-xl">
+                <td className="px-8 py-6 text-gray-600 max-w-xl text-left">
                   {item.content || "No description available"}
                 </td>
 
@@ -82,7 +82,7 @@ export default function HomePage() {
                       setSelectedItem(item);
                       setIsModalOpen(true);
                     }}
-                    className="p-2 rounded-lg border border-gray-400 hover:bg-gray-200 hover:cursor-pointer transition"
+                    className="p-2 rounded-lg border border-gray-300 hover:bg-gray-200 hover:cursor-pointer transition"
                   >
                     <PencilSquareIcon className="w-5 h-5 text-gray-600" />
                   </button>
