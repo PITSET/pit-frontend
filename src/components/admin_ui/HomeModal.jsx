@@ -274,38 +274,40 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm overflow-y-auto">
       {/* Modal */}
-      <div className="bg-[#FEF2F3] w-[90%] max-w-[720px] max-h-[90vh] rounded-2xl shadow-xl animate-[fadeIn_0.2s_ease-out] overflow-y-auto my-4">
-        {/* Header */}
-        <div className="flex items-center justify-between bg-white rounded-t-2xl px-6 py-4 border-b border-gray-200">
-          <div className="flex items-center gap-3">
-            <div className="bg-red-200 p-3 rounded-xl">
-              <HomeIcon className="w-6 h-6 text-red-500" />
+      <div className="bg-[#FEF2F3] w-[90%] max-w-[720px] max-h-[90vh] rounded-2xl shadow-xl animate-[fadeIn_0.2s_ease-out] overflow-hidden flex flex-col my-4">
+        {/* Header - Fixed */}
+        <div className="flex-shrink-0 bg-white rounded-t-2xl px-6 py-4 border-b border-gray-200">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="bg-red-200 p-3 rounded-xl">
+                <HomeIcon className="w-6 h-6 text-red-500" />
+              </div>
+
+              <div>
+                <h2 className="text-2xl font-bold">
+                  Update Home ({item.section_type})
+                </h2>
+
+                <p className="text-sm text-gray-500">
+                  Edit your home information
+                </p>
+              </div>
             </div>
 
-            <div>
-              <h2 className="text-2xl font-bold">
-                Update Home ({item.section_type})
-              </h2>
-
-              <p className="text-sm text-gray-500">
-                Edit your home information
-              </p>
-            </div>
+            <button
+              onClick={() => {
+                resetForm();
+                onClose();
+              }}
+              className="rounded-lg p-2 text-gray-400 hover:text-red-500 hover:bg-red-200 transition-colors"
+            >
+              <XMarkIcon className="w-5 h-5" />
+            </button>
           </div>
-
-          <button
-            onClick={() => {
-              resetForm();
-              onClose();
-            }}
-            className="rounded-lg p-2 text-gray-400 hover:text-red-500 hover:bg-red-200 transition-colors"
-          >
-            <XMarkIcon className="w-5 h-5" />
-          </button>
         </div>
 
-        {/* Body */}
-        <div className="p-6 space-y-5">
+        {/* Body - Scrollable */}
+        <div className="flex-1 overflow-y-auto p-6 space-y-5">
           {/* Title */}
           <div className="space-y-2">
             <label className="text-sm font-medium text-gray-700">Title</label>
@@ -432,26 +434,28 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item }) {
             </div>
           </div>
 
-          {/* Footer */}
-          <div className="flex justify-end gap-3 pt-2">
-            <button
-              onClick={() => {
-                resetForm();
-                onClose();
-              }}
-              className="px-6 py-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-white transition"
-            >
-              Cancel
-            </button>
+          {/* Footer - Fixed at bottom */}
+          <div className="flex-shrink-0 bg-[#FEF2F3] rounded-b-2xl px-6 py-4 border-t border-gray-200">
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => {
+                  resetForm();
+                  onClose();
+                }}
+                className="px-6 py-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-white transition"
+              >
+                Cancel
+              </button>
 
-            <button
-              disabled={loading}
-              onClick={handleSave}
-              className="px-5 py-2 rounded-lg text-white font-medium bg-primary-gradient hover:bg-primary-gradient-hover
-              active:scale-95 focus:outline-none focus:ring-2 focus:ring-[#F65919] focus:ring-offset-2 transition disabled:opacity-60"
-            >
-              {loading ? "Saving..." : "Save"}
-            </button>
+              <button
+                disabled={loading}
+                onClick={handleSave}
+                className="px-5 py-2 rounded-lg text-white font-medium bg-primary-gradient hover:bg-primary-gradient-hover
+                active:scale-95 focus:outline-none focus:ring-2 focus:ring-[#F65919] focus:ring-offset-2 transition disabled:opacity-60"
+              >
+                {loading ? "Saving..." : "Save"}
+              </button>
+            </div>
           </div>
         </div>
       </div>
