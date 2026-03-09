@@ -63,7 +63,9 @@ export default function AboutPage() {
                 </td>
 
                 <td className="px-8 py-6 text-gray-600 text-left max-w-xl">
-                  {item.content || "No description available"}
+                  <p className="line-clamp-3">
+                    {item.content || "No description available"}
+                  </p>
                 </td>
 
                 <td className="px-8 py-6 text-center">
