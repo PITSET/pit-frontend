@@ -272,23 +272,23 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item }) {
   if (!isOpen || !item) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/40 backdrop-blur-sm overflow-y-auto">
       {/* Modal */}
-      <div className="bg-[#FEF2F3] w-[90%] max-w-[720px] max-h-[90vh] rounded-2xl shadow-xl animate-[fadeIn_0.2s_ease-out] overflow-hidden flex flex-col my-4">
+      <div className="bg-[#FEF2F3] w-full max-w-[720px] max-h-[90vh] rounded-2xl shadow-xl animate-[fadeIn_0.2s_ease-out] overflow-hidden flex flex-col my-4">
         {/* Header - Fixed */}
-        <div className="flex-shrink-0 bg-white rounded-t-2xl px-6 py-4 border-b border-gray-200">
+        <div className="flex-shrink-0 bg-white rounded-t-2xl px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="bg-red-200 p-3 rounded-xl">
-                <HomeIcon className="w-6 h-6 text-red-500" />
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="bg-red-200 p-2 sm:p-3 rounded-xl">
+                <HomeIcon className="w-5 h-5 sm:w-6 sm:h-6 text-red-500" />
               </div>
 
               <div>
-                <h2 className="text-2xl font-bold">
+                <h2 className="text-lg sm:text-2xl font-bold">
                   Update Home ({item.section_type})
                 </h2>
 
-                <p className="text-sm text-gray-500">
+                <p className="text-xs sm:text-sm text-gray-500 hidden sm:block">
                   Edit your home information
                 </p>
               </div>
@@ -307,7 +307,7 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item }) {
         </div>
 
         {/* Body - Scrollable */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-5">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 sm:space-y-5">
           {/* Title */}
           <div className="space-y-2">
             <label className="text-sm font-medium text-gray-700">Title</label>
@@ -317,13 +317,13 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item }) {
               value={title}
               placeholder="Enter title..."
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm shadow-sm
+              className="w-full rounded-lg border border-gray-300 bg-white px-3 sm:px-4 py-2 sm:py-2.5 text-sm shadow-sm
               focus:outline-none focus:ring-2 focus:ring-orange-400 transition"
             />
           </div>
 
           {/* Content */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 items-stretch">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5 items-stretch">
             {/* Left: Image Upload + Video URL */}
             <div className="flex flex-col gap-3">
               {/* Image Upload */}
@@ -338,18 +338,22 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item }) {
                       : item.image_url || "/placeholder.png"
                   }
                   alt="Preview"
-                  className="w-full h-[220px] object-cover bg-gray-100 transition-transform duration-300 group-hover:scale-105"
+                  className="w-full h-[160px] sm:h-[180px] md:h-[220px] object-cover bg-gray-100 transition-transform duration-300 group-hover:scale-105"
                 />
 
                 {/* Overlay */}
                 <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <div className="bg-primary-gradient rounded-full p-3 mb-2 shadow">
-                    <ArrowUpTrayIcon className="w-6 h-6 text-white" />
+                  <div className="bg-primary-gradient rounded-full p-2 sm:p-3 mb-1 sm:mb-2 shadow">
+                    <ArrowUpTrayIcon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                   </div>
 
-                  <p className="text-sm font-medium text-white">Upload Photo</p>
+                  <p className="text-xs sm:text-sm font-medium text-white">
+                    Upload Photo
+                  </p>
 
-                  <p className="text-xs text-white/80">JPG, PNG up to 10MB</p>
+                  <p className="text-xs text-white/80 hidden sm:block">
+                    JPG, PNG up to 10MB
+                  </p>
                 </div>
 
                 <input
@@ -369,20 +373,20 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item }) {
                   <input
                     type="text"
                     value={videoUrl}
-                    placeholder="Paste YouTube URL (youtube.com/watch?v=, youtu.be/, or embed code)"
+                    placeholder="YouTube URL..."
                     onChange={handleVideoUrlChange}
-                    className={`flex-1 px-4 py-2.5 text-sm shadow-sm outline-none transition
+                    className={`flex-1 px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm shadow-sm outline-none transition min-w-0
                       ${urlValidation.isValid === false ? "border-red-400 focus:ring-red-400" : ""}`}
                   />
                   <button
                     type="button"
                     onClick={handleTestVideoUrl}
                     disabled={!videoUrl}
-                    className="flex items-center justify-center px-4 bg-primary-gradient text-white hover:bg-primary-gradient-hover
+                    className="flex items-center justify-center px-3 sm:px-4 bg-primary-gradient text-white hover:bg-primary-gradient-hover
                       transition disabled:opacity-50 disabled:cursor-not-allowed"
                     title="Open video link"
                   >
-                    <ArrowTopRightOnSquareIcon className="w-5 h-5" />
+                    <ArrowTopRightOnSquareIcon className="w-4 h-5 sm:w-5 sm:h-5" />
                   </button>
                 </div>
 
@@ -428,21 +432,21 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item }) {
                 value={content}
                 placeholder="Enter description..."
                 onChange={(e) => setContent(e.target.value)}
-                className="flex-1 w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm
+                className="flex-1 w-full min-h-[160px] sm:min-h-[200px] md:min-h-[250px] rounded-lg border border-gray-300 bg-white px-3 sm:px-4 py-2 sm:py-3 text-sm
                 focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none transition"
               />
             </div>
           </div>
 
           {/* Footer - Fixed at bottom */}
-          <div className="flex-shrink-0 bg-[#FEF2F3] rounded-b-2xl px-6 py-4 border-t border-gray-200">
-            <div className="flex justify-end gap-3">
+          <div className="flex-shrink-0 bg-[#FEF2F3] rounded-b-2xl px-4 sm:px-6 py-3 sm:py-4 border-t border-gray-200">
+            <div className="flex justify-end gap-2 sm:gap-3">
               <button
                 onClick={() => {
                   resetForm();
                   onClose();
                 }}
-                className="px-6 py-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-white transition"
+                className="px-4 sm:px-6 py-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-white transition"
               >
                 Cancel
               </button>
@@ -450,7 +454,7 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item }) {
               <button
                 disabled={loading}
                 onClick={handleSave}
-                className="px-5 py-2 rounded-lg text-white font-medium bg-primary-gradient hover:bg-primary-gradient-hover
+                className="px-4 sm:px-5 py-2 rounded-lg text-white font-medium bg-primary-gradient hover:bg-primary-gradient-hover
                 active:scale-95 focus:outline-none focus:ring-2 focus:ring-[#F65919] focus:ring-offset-2 transition disabled:opacity-60"
               >
                 {loading ? "Saving..." : "Save"}
