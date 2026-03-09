@@ -272,9 +272,9 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item }) {
   if (!isOpen || !item) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm overflow-y-auto">
       {/* Modal */}
-      <div className="bg-[#FEF2F3] w-[90%] max-w-[720px] rounded-2xl shadow-xl animate-[fadeIn_0.2s_ease-out]">
+      <div className="bg-[#FEF2F3] w-[90%] max-w-[720px] max-h-[90vh] rounded-2xl shadow-xl animate-[fadeIn_0.2s_ease-out] overflow-y-auto my-4">
         {/* Header */}
         <div className="flex items-center justify-between bg-white rounded-t-2xl px-6 py-4 border-b border-gray-200">
           <div className="flex items-center gap-3">
