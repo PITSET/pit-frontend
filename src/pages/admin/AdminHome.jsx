@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import api from "../../lib/api";
+import { getHomeSections } from "../../lib/services/homeService";
 import { PencilSquareIcon } from "@heroicons/react/24/outline";
 
 import HomeModal from "../../components/admin_ui/HomeModal";
@@ -14,8 +14,8 @@ export default function HomePage() {
 
   const fetchHome = async () => {
     try {
-      const response = await api.get("/home");
-      setData(response.data.data);
+      const response = await getHomeSections();
+      setData(response.data);
     } catch (err) {
       setError("Failed to fetch home data");
     } finally {
