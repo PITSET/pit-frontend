@@ -11,7 +11,7 @@ export default function AdminLayout() {
   return (
     <div className="flex h-screen bg-gray-50">
       <Toaster
-        position="top-right"
+        position="top-center"
         toastOptions={{
           duration: 3000,
           style: { fontSize: "14px" },
