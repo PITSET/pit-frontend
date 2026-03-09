@@ -17,12 +17,14 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item }) {
   const [content, setContent] = useState("");
   const [image, setImage] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [videoUrl, setVideoUrl] = useState("");
 
   // Load existing data
   useEffect(() => {
     if (item) {
       setTitle(item.title || "");
       setContent(item.content || "");
+      setVideoUrl(item.video_url || "");
     }
   }, [item]);
 
@@ -127,6 +129,7 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item }) {
         title,
         content,
         image_url: imageUrl,
+        video_url: videoUrl,
       });
 
       toast.success("Section updated successfully!", { id: toastId });
@@ -150,6 +153,7 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item }) {
     setTitle(item.title || "");
     setContent(item.content || "");
     setImage(null);
+    setVideoUrl(item.video_url || "");
   };
 
   if (!isOpen || !item) return null;
@@ -204,40 +208,61 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item }) {
           </div>
 
           {/* Content */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 items-start">
-            {/* Image Upload */}
-            <label className="relative group block rounded-lg overflow-hidden border border-gray-300 bg-white shadow-sm cursor-pointer">
-              <img
-                src={
-                  image
-                    ? URL.createObjectURL(image)
-                    : item.image_url || "/placeholder.png"
-                }
-                alt="Preview"
-                className="w-full h-[220px] object-cover bg-gray-100 transition-transform duration-300 group-hover:scale-105"
-              />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 items-stretch">
+            {/* Left: Image Upload + Video URL */}
+            <div className="flex flex-col gap-3">
+              {/* Image Upload */}
+              <div className="space-y-1.5">
+                <span className="text-sm font-medium text-gray-700">Image</span>
+              </div>
+              <label className="relative group block rounded-lg overflow-hidden border border-gray-300 bg-white shadow-sm cursor-pointer">
+                <img
+                  src={
+                    image
+                      ? URL.createObjectURL(image)
+                      : item.image_url || "/placeholder.png"
+                  }
+                  alt="Preview"
+                  className="w-full h-[220px] object-cover bg-gray-100 transition-transform duration-300 group-hover:scale-105"
+                />
 
-              {/* Overlay */}
-              <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                <div className="bg-primary-gradient rounded-full p-3 mb-2 shadow">
-                  <ArrowUpTrayIcon className="w-6 h-6 text-white" />
+                {/* Overlay */}
+                <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <div className="bg-primary-gradient rounded-full p-3 mb-2 shadow">
+                    <ArrowUpTrayIcon className="w-6 h-6 text-white" />
+                  </div>
+
+                  <p className="text-sm font-medium text-white">Upload Photo</p>
+
+                  <p className="text-xs text-white/80">JPG, PNG up to 10MB</p>
                 </div>
 
-                <p className="text-sm font-medium text-white">Upload Photo</p>
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleImageChange}
+                />
+              </label>
 
-                <p className="text-xs text-white/80">JPG, PNG up to 10MB</p>
+              {/* Video URL */}
+              <div className="space-y-1.5">
+                <label className="text-sm font-medium text-gray-700">
+                  Video URL
+                </label>
+                <input
+                  type="url"
+                  value={videoUrl}
+                  placeholder="https://www.youtube.com/embed/..."
+                  onChange={(e) => setVideoUrl(e.target.value)}
+                  className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm shadow-sm
+                  focus:outline-none focus:ring-2 focus:ring-orange-400 transition"
+                />
               </div>
+            </div>
 
-              <input
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={handleImageChange}
-              />
-            </label>
-
-            {/* Description */}
-            <div className="space-y-2 flex flex-col">
+            {/* Right: Description */}
+            <div className="flex flex-col space-y-2">
               <label className="text-sm font-medium text-gray-700">
                 Description
               </label>
@@ -245,9 +270,8 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item }) {
               <textarea
                 value={content}
                 placeholder="Enter description..."
-                rows={8}
                 onChange={(e) => setContent(e.target.value)}
-                className="flex-1 rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm
+                className="flex-1 w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm
                 focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none transition"
               />
             </div>
