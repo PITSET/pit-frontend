@@ -49,7 +49,7 @@ export default function AboutPage() {
   if (error) return <p className="p-8 text-red-500">{error}</p>;
 
   return (
-    <div className="p-4 md:p-6 max-w-7xl mx-auto">
+    <div className="p-4 md:p-6 max-w-7xl mx-auto mb-6">
       <h1 className="text-2xl md:text-3xl font-semibold mb-6 md:mb-8">
         About Page
       </h1>
