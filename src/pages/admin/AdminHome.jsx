@@ -2,10 +2,17 @@ import { useEffect, useState } from "react";
 import api from "../../lib/api";
 import { PencilSquareIcon } from "@heroicons/react/24/outline";
 
+// import modal
+import Modal from "../../components/admin_ui/HomeModal";
+
 export default function HomePage() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  //Modal states
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedItem, setSelectedItem] = useState(null);
 
   useEffect(() => {
     const fetchHome = async () => {
@@ -70,7 +77,13 @@ export default function HomePage() {
 
                 {/* Action */}
                 <td className="px-8 py-6 text-center">
-                  <button className="p-2 rounded-lg border border-gray-400 hover:bg-gray-200 hover:cursor-pointer transition">
+                  <button
+                    onClick={() => {
+                      setSelectedItem(item);
+                      setIsModalOpen(true);
+                    }}
+                    className="p-2 rounded-lg border border-gray-400 hover:bg-gray-200 hover:cursor-pointer transition"
+                  >
                     <PencilSquareIcon className="w-5 h-5 text-gray-600" />
                   </button>
                 </td>
@@ -79,6 +92,51 @@ export default function HomePage() {
           </tbody>
         </table>
       </div>
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title={`Edit ${selectedItem?.title || ""}`}
+      >
+        {selectedItem && (
+          <form className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium mb-1">Title</label>
+              <input
+                type="text"
+                defaultValue={selectedItem.title}
+                className="w-full border rounded-lg px-3 py-2"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-1">
+                Description
+              </label>
+              <textarea
+                defaultValue={selectedItem.content}
+                className="w-full border rounded-lg px-3 py-2"
+              />
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setIsModalOpen(false)}
+                className="px-4 py-2 border rounded-lg"
+              >
+                Cancel
+              </button>
+
+              <button
+                type="submit"
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg"
+              >
+                Save
+              </button>
+            </div>
+          </form>
+        )}
+      </Modal>
     </div>
   );
 }
