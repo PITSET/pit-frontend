@@ -11,11 +11,18 @@ import AdminHome from "../pages/admin/AdminHome";
 import ProtectedRoute from "../components/admin_ui/ProtectdRoute";
 import Login from "../pages/admin/Login";
 import AdminContact from "../pages/admin/AdminContact";
+import About from "../pages/public/About";
 
 const router = createBrowserRouter([
   {
     element: <PublicLayout />,
-    children: [{ path: "/", element: <Home /> }],
+    children: 
+    [
+      { path: "/", element: <Home /> },
+    { path: "/about", element: <About /> },
+    { path: "/contact", element: <About /> },
+
+  ],
   },
 
   {
