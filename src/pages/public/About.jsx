@@ -101,7 +101,7 @@ export default function About() {
   }
 
   return (
-    <div className="bg-[#E9E9EB] py-16 px-6 font-['Roboto']">
+    <div className="bg-[#E9E9EB] py-0 px-0 font-['Roboto']">
       <div className="max-w-[1248px] mx-auto">
 
         {/* WHO WE ARE */}
@@ -144,7 +144,7 @@ export default function About() {
         </div>
 
         {/* HISTORY */}
-        <div className="grid md:grid-cols-2 gap-12 items-center mt-[200px]">
+        <div className="grid md:grid-cols-2 gap-6 items-center mt-[200px]">
 
           <img
             src={history.image_url}
@@ -164,63 +164,70 @@ export default function About() {
 
         </div>
 
-        {/* MISSION */}
-        <div className="grid md:grid-cols-2 gap-16 items-start mt-[250px]">
+{/* MISSION */}
+<div className="mx-32 grid md:grid-cols-2 items-center gap-8 mt-[250px]">
 
-          <img
-            src={mission.image_url}
-            alt="mission"
-            className="w-[400px] h-[400px] object-cover rounded-[16px]"
-          />
+  {/* Image */}
+  <div className="flex justify-end">
+    <img
+      src={mission.image_url}
+      alt="mission"
+      className="w-[400px] h-[400px] object-cover rounded-[16px]"
+    />
+  </div>
 
-          <div className="flex gap-8 mt-20">
+  {/* Text */}
+  <div className="flex items-start gap-6">
 
-            <div className="w-[3px] h-[137px] bg-gradient-to-b from-[#FD1722] via-[#FF884D] to-[#76191F]" />
+    <div className="w-[3px] h-[137px] bg-gradient-to-b from-[#FD1722] via-[#FF884D] to-[#76191F]" />
 
-            <div>
+    <div>
+      <h2 className="text-2xl font-bold text-[#FD1722] mb-2">
+        {mission.title}
+      </h2>
 
-              <h2 className="text-2xl font-bold text-[#FD1722]">
-                {mission.title}
-              </h2>
+      <p className="text-gray-600 max-w-md leading-relaxed">
+        {mission.content}
+      </p>
+    </div>
 
-              <p className="text-gray-600 max-w-md">
-                {mission.content}
-              </p>
+  </div>
 
-            </div>
+</div>
 
-          </div>
+{/* VISION */}
+<div className="mx-32 grid md:grid-cols-2 items-center gap-8 mt-[250px]">
 
-        </div>
+  {/* Text */}
+  <div className="flex items-start gap-6">
 
-        {/* VISION */}
-        <div className="grid md:grid-cols-2 gap-16 items-start mt-[140px]">
+    <div>
+      <h2 className="text-2xl font-bold text-[#FD1722] mb-2">
+        {vision.title}
+      </h2>
 
-          <div className="flex gap-8 justify-end mt-24">
+      <p className="text-gray-600 max-w-md leading-relaxed">
+        {vision.content}
+      </p>
+    </div>
+    <div className="w-[3px] h-[137px] bg-gradient-to-b from-[#FD1722] via-[#FF884D] to-[#76191F]" />
 
-            <div>
 
-              <h2 className="text-2xl font-bold text-[#FD1722]">
-                {vision.title}
-              </h2>
+  </div>
 
-              <p className="text-gray-600 max-w-md">
-                {vision.content}
-              </p>
+  {/* Image */}
+  <div className="flex justify-start">
+    <img
+      src={vision.image_url}
+      alt="vision"
+      className="w-[400px] h-[400px] object-cover rounded-[16px]"
+    />
+  </div>
 
-            </div>
 
-            <div className="w-[3px] h-[137px] bg-gradient-to-b from-[#FD1722] via-[#FF884D] to-[#76191F]" />
 
-          </div>
-
-          <img
-            src={vision.image_url}
-            alt="vision"
-            className="w-[400px] h-[400px] object-cover rounded-[16px]"
-          />
-
-        </div>
+</div>
+        
 
         {/* INSTRUCTORS */}
         <div className="mt-24">
@@ -229,7 +236,7 @@ export default function About() {
             Instructors
           </h2>
 
-          <div className="flex flex-wrap">
+          <div className="grid grid-cols-4">
 
             {instructors.map((inst, i) => (
               <div key={i} className="w-[312px]">
