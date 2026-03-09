@@ -6,9 +6,6 @@ import {
   XMarkIcon,
   InformationCircleIcon,
   ArrowUpTrayIcon,
-  ArrowTopRightOnSquareIcon,
-  CheckCircleIcon,
-  ExclamationCircleIcon,
 } from "@heroicons/react/24/outline";
 
 // api
@@ -20,118 +17,6 @@ export default function AboutModal({ isOpen, onClose, onRefresh, item }) {
   const [content, setContent] = useState("");
   const [image, setImage] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [videoUrl, setVideoUrl] = useState("");
-  const [urlValidation, setUrlValidation] = useState({
-    isValid: null,
-    message: "",
-  });
-
-  // Extract YouTube video ID from various URL formats
-  const extractYouTubeVideoId = (url) => {
-    if (!url) return null;
-
-    // Handle full iframe code
-    if (url.includes("<iframe") && url.includes("src=")) {
-      const srcMatch = url.match(/src=["']([^"']+)["']/);
-      if (srcMatch && srcMatch[1]) {
-        url = srcMatch[1];
-      }
-    }
-
-    // YouTube patterns
-    const patterns = [
-      /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&?\/]+)/, // youtube.com/watch?v=, youtu.be/, youtube.com/embed/
-      /youtube\.com\/shorts\/([^&?\/]+)/, // youtube.com/shorts/
-      /youtube\.com\/live\/([^&?\/]+)/, // youtube.com/live/
-    ];
-
-    for (const pattern of patterns) {
-      const match = url.match(pattern);
-      if (match && match[1]) {
-        return match[1];
-      }
-    }
-
-    return null;
-  };
-
-  // Get embed URL from video ID
-  const getEmbedUrl = (videoId) => {
-    if (!videoId) return null;
-    return `https://www.youtube.com/embed/${videoId}`;
-  };
-
-  // Validate URL format and check if it's a valid YouTube URL
-  const validateUrl = (url) => {
-    if (!url) {
-      setUrlValidation({ isValid: null, message: "" });
-      return false;
-    }
-
-    const videoId = extractYouTubeVideoId(url);
-
-    if (videoId) {
-      setUrlValidation({ isValid: true, message: "Valid YouTube video" });
-      return true;
-    }
-
-    // Check if it's a direct embed URL without video ID
-    if (url.includes("youtube.com/embed/") && !url.includes("/embed/")) {
-      setUrlValidation({
-        isValid: false,
-        message: "Invalid embed URL format",
-      });
-      return false;
-    }
-
-    setUrlValidation({
-      isValid: false,
-      message: "Please enter a valid YouTube URL",
-    });
-    return false;
-  };
-
-  // Handle video URL change with validation
-  const handleVideoUrlChange = (e) => {
-    const value = e.target.value;
-
-    // Extract src URL if user pasted iframe code
-    let extractedUrl = value;
-    if (value.includes("<iframe") && value.includes("src=")) {
-      const srcMatch = value.match(/src=["']([^"']+)["']/);
-      if (srcMatch && srcMatch[1]) {
-        extractedUrl = srcMatch[1];
-      }
-    }
-
-    setVideoUrl(extractedUrl);
-    validateUrl(extractedUrl);
-  };
-
-  // Open video URL in new tab
-  const handleTestVideoUrl = () => {
-    if (!videoUrl) {
-      toast.error("Please enter a video URL first");
-      return;
-    }
-
-    if (!validateUrl(videoUrl)) {
-      toast.error("Please enter a valid URL");
-      return;
-    }
-
-    // Extract URL if user pasted iframe code
-    let urlToOpen = videoUrl;
-    if (videoUrl.includes("<iframe") && videoUrl.includes("src=")) {
-      const srcMatch = videoUrl.match(/src=["']([^"']+)["']/);
-      if (srcMatch && srcMatch[1]) {
-        urlToOpen = srcMatch[1];
-      }
-    }
-
-    window.open(urlToOpen, "_blank", "noopener,noreferrer");
-    toast.success("Opening video link in new tab");
-  };
 
   // Handle image select
   const handleImageChange = (e) => {
@@ -234,7 +119,6 @@ export default function AboutModal({ isOpen, onClose, onRefresh, item }) {
         title,
         content,
         image_url: imageUrl,
-        video_url: videoUrl,
       });
 
       toast.success("Section updated successfully!", { id: toastId });
@@ -258,8 +142,6 @@ export default function AboutModal({ isOpen, onClose, onRefresh, item }) {
     setTitle(item.title || "");
     setContent(item.content || "");
     setImage(null);
-    setVideoUrl(item.video_url || "");
-    validateUrl(item.video_url || "");
   };
 
   // Load initial data when modal opens
@@ -279,8 +161,8 @@ export default function AboutModal({ isOpen, onClose, onRefresh, item }) {
         <div className="flex-shrink-0 bg-white rounded-t-2xl px-6 py-4 border-b border-gray-200">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="bg-blue-200 p-3 rounded-xl">
-                <InformationCircleIcon className="w-6 h-6 text-blue-500" />
+              <div className="bg-red-200 p-3 rounded-xl">
+                <InformationCircleIcon className="w-6 h-6 text-red-500" />
               </div>
 
               <div>
@@ -324,7 +206,7 @@ export default function AboutModal({ isOpen, onClose, onRefresh, item }) {
 
           {/* Content */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5 items-stretch">
-            {/* Left: Image Upload + Video URL */}
+            {/* Left: Image Upload */}
             <div className="flex flex-col gap-3">
               {/* Image Upload */}
               <div className="space-y-1.5">
@@ -359,63 +241,6 @@ export default function AboutModal({ isOpen, onClose, onRefresh, item }) {
                   onChange={handleImageChange}
                 />
               </label>
-
-              {/* YouTube Video */}
-              <div className="space-y-1.5">
-                <label className="text-sm font-medium text-gray-700">
-                  YouTube Video
-                </label>
-                <div className="flex rounded-lg border border-gray-300 overflow-hidden bg-white focus-within:ring-2 focus-within:ring-orange-400">
-                  <input
-                    type="text"
-                    value={videoUrl}
-                    placeholder="Paste YouTube URL (youtube.com/watch?v=, youtu.be/, or embed code)"
-                    onChange={handleVideoUrlChange}
-                    className={`flex-1 px-4 py-2.5 text-sm shadow-sm outline-none transition
-                      ${urlValidation.isValid === false ? "border-red-400 focus:ring-red-400" : ""}`}
-                  />
-                  <button
-                    type="button"
-                    onClick={handleTestVideoUrl}
-                    disabled={!videoUrl}
-                    className="flex items-center justify-center px-4 bg-primary-gradient text-white hover:bg-primary-gradient-hover
-                      transition disabled:opacity-50 disabled:cursor-not-allowed"
-                    title="Open video link"
-                  >
-                    <ArrowTopRightOnSquareIcon className="w-5 h-5" />
-                  </button>
-                </div>
-
-                {/* URL Validation Feedback */}
-                {urlValidation.isValid !== null && (
-                  <div
-                    className={`flex items-center gap-1.5 text-xs ${
-                      urlValidation.isValid ? "text-green-600" : "text-red-500"
-                    }`}
-                  >
-                    {urlValidation.isValid ? (
-                      <CheckCircleIcon className="w-4 h-4" />
-                    ) : (
-                      <ExclamationCircleIcon className="w-4 h-4" />
-                    )}
-                    <span>{urlValidation.message}</span>
-                  </div>
-                )}
-
-                {/* Video Preview */}
-                {videoUrl && urlValidation.isValid && (
-                  <div className="mt-2 rounded-lg overflow-hidden border border-gray-200 bg-gray-50">
-                    <iframe
-                      src={getEmbedUrl(extractYouTubeVideoId(videoUrl))}
-                      title="Video Preview"
-                      className="w-full aspect-video"
-                      frameBorder="0"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                      allowFullScreen
-                    />
-                  </div>
-                )}
-              </div>
             </div>
 
             {/* Right: Description */}
