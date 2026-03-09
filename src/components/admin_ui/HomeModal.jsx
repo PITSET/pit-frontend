@@ -26,35 +26,86 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item }) {
     message: "",
   });
 
-  // Validate URL format
+  // Extract YouTube video ID from various URL formats
+  const extractYouTubeVideoId = (url) => {
+    if (!url) return null;
+
+    // Handle full iframe code
+    if (url.includes("<iframe") && url.includes("src=")) {
+      const srcMatch = url.match(/src=["']([^"']+)["']/);
+      if (srcMatch && srcMatch[1]) {
+        url = srcMatch[1];
+      }
+    }
+
+    // YouTube patterns
+    const patterns = [
+      /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&?\/]+)/, // youtube.com/watch?v=, youtu.be/, youtube.com/embed/
+      /youtube\.com\/shorts\/([^&?\/]+)/, // youtube.com/shorts/
+      /youtube\.com\/live\/([^&?\/]+)/, // youtube.com/live/
+    ];
+
+    for (const pattern of patterns) {
+      const match = url.match(pattern);
+      if (match && match[1]) {
+        return match[1];
+      }
+    }
+
+    return null;
+  };
+
+  // Get embed URL from video ID
+  const getEmbedUrl = (videoId) => {
+    if (!videoId) return null;
+    return `https://www.youtube.com/embed/${videoId}`;
+  };
+
+  // Validate URL format and check if it's a valid YouTube URL
   const validateUrl = (url) => {
     if (!url) {
       setUrlValidation({ isValid: null, message: "" });
       return false;
     }
 
-    try {
-      const urlObj = new URL(url);
-      if (!["http:", "https:"].includes(urlObj.protocol)) {
-        setUrlValidation({
-          isValid: false,
-          message: "Invalid protocol. Use http or https",
-        });
-        return false;
-      }
-      setUrlValidation({ isValid: true, message: "Valid URL format" });
+    const videoId = extractYouTubeVideoId(url);
+
+    if (videoId) {
+      setUrlValidation({ isValid: true, message: "Valid YouTube video" });
       return true;
-    } catch (e) {
-      setUrlValidation({ isValid: false, message: "Invalid URL format" });
+    }
+
+    // Check if it's a direct embed URL without video ID
+    if (url.includes("youtube.com/embed/") && !url.includes("/embed/")) {
+      setUrlValidation({
+        isValid: false,
+        message: "Invalid embed URL format",
+      });
       return false;
     }
+
+    setUrlValidation({
+      isValid: false,
+      message: "Please enter a valid YouTube URL",
+    });
+    return false;
   };
 
   // Handle video URL change with validation
   const handleVideoUrlChange = (e) => {
     const value = e.target.value;
-    setVideoUrl(value);
-    validateUrl(value);
+
+    // Extract src URL if user pasted iframe code
+    let extractedUrl = value;
+    if (value.includes("<iframe") && value.includes("src=")) {
+      const srcMatch = value.match(/src=["']([^"']+)["']/);
+      if (srcMatch && srcMatch[1]) {
+        extractedUrl = srcMatch[1];
+      }
+    }
+
+    setVideoUrl(extractedUrl);
+    validateUrl(extractedUrl);
   };
 
   // Open video URL in new tab
@@ -69,7 +120,16 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item }) {
       return;
     }
 
-    window.open(videoUrl, "_blank", "noopener,noreferrer");
+    // Extract URL if user pasted iframe code
+    let urlToOpen = videoUrl;
+    if (videoUrl.includes("<iframe") && videoUrl.includes("src=")) {
+      const srcMatch = videoUrl.match(/src=["']([^"']+)["']/);
+      if (srcMatch && srcMatch[1]) {
+        urlToOpen = srcMatch[1];
+      }
+    }
+
+    window.open(urlToOpen, "_blank", "noopener,noreferrer");
     toast.success("Opening video link in new tab");
   };
 
@@ -298,16 +358,16 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item }) {
                 />
               </label>
 
-              {/* Video URL */}
+              {/* YouTube Video */}
               <div className="space-y-1.5">
                 <label className="text-sm font-medium text-gray-700">
-                  Video URL
+                  YouTube Video
                 </label>
                 <div className="flex rounded-lg border border-gray-300 overflow-hidden bg-white focus-within:ring-2 focus-within:ring-orange-400">
                   <input
-                    type="url"
+                    type="text"
                     value={videoUrl}
-                    placeholder="https://www.youtube.com/embed/..."
+                    placeholder="Paste YouTube URL (youtube.com/watch?v=, youtu.be/, or embed code)"
                     onChange={handleVideoUrlChange}
                     className={`flex-1 px-4 py-2.5 text-sm shadow-sm outline-none transition
                       ${urlValidation.isValid === false ? "border-red-400 focus:ring-red-400" : ""}`}
@@ -337,6 +397,20 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item }) {
                       <ExclamationCircleIcon className="w-4 h-4" />
                     )}
                     <span>{urlValidation.message}</span>
+                  </div>
+                )}
+
+                {/* Video Preview */}
+                {videoUrl && urlValidation.isValid && (
+                  <div className="mt-2 rounded-lg overflow-hidden border border-gray-200 bg-gray-50">
+                    <iframe
+                      src={getEmbedUrl(extractYouTubeVideoId(videoUrl))}
+                      title="Video Preview"
+                      className="w-full aspect-video"
+                      frameBorder="0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                      allowFullScreen
+                    />
                   </div>
                 )}
               </div>
