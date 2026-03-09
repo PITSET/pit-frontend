@@ -31,7 +31,7 @@ export default function AdminLayout() {
           <span className="font-semibold text-slate-800">Admin</span>
         </div>
 
-        <div className="p-4 md:p-6">
+        <div className="min-h-screen bg-[#F5F6FA]">
           <Outlet />
         </div>
       </main>
