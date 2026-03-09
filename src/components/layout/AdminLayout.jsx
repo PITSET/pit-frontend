@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Outlet } from "react-router-dom";
 import { Bars3Icon } from "@heroicons/react/24/outline";
+import { Toaster } from "react-hot-toast";
 
 import Sidebar from "./Sidebar";
 
@@ -9,6 +10,14 @@ export default function AdminLayout() {
 
   return (
     <div className="flex h-screen bg-gray-50">
+      <Toaster
+        position="top-center"
+        toastOptions={{
+          duration: 3000,
+          style: { fontSize: "14px" },
+          success: { iconTheme: { primary: "#f97316", secondary: "#fff" } },
+        }}
+      />
       {sidebarOpen && (
         <div
           className="fixed inset-0 z-30 bg-black/40 md:hidden"
@@ -31,7 +40,7 @@ export default function AdminLayout() {
           <span className="font-semibold text-slate-800">Admin</span>
         </div>
 
-        <div className="p-4 md:p-6">
+        <div className="min-h-screen bg-[#F5F6FA]">
           <Outlet />
         </div>
       </main>

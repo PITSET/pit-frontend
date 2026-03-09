@@ -1,8 +1,22 @@
-@theme {
-  --font-family-roboto: 'Roboto', sans-serif;
-  --font-family-robotoCondensed: 'Roboto Condensed', sans-serif;
-}
-
 @import "tailwindcss";
 
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&family=Roboto+Condensed:wght@400;700&family=Onest:wght@400&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&family=Roboto+Condensed:wght@400;700&family=Onest:wght@400&display=swap");
+
+@theme {
+  --font-family-roboto: "Roboto", sans-serif;
+  --font-family-robotoCondensed: "Roboto Condensed", sans-serif;
+
+  /* Primary brand gradient stops */
+  --color-primary-start: #f98349;
+  --color-primary-mid: #f65919;
+  --color-primary-end: #ff2f39;
+}
+
+/* ── Reusable primary gradient utilities ── */
+@utility bg-primary-gradient {
+  background: linear-gradient(90deg, #f98349 0%, #f65919 33.41%, #ff2f39 100%);
+}
+
+@utility bg-primary-gradient-hover {
+  background: linear-gradient(90deg, #e87035 0%, #d94c12 33.41%, #e82030 100%);
+}
