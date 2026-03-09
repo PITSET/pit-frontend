@@ -38,43 +38,43 @@ export default function HomeModal({ isOpen, onClose, item }) {
     try {
       setLoading(true);
 
-      let imageUrl = item.image_url; // keep existing image if user didn't upload new one
+      console.log("Saving section id:", item.id);
+      console.log("Title:", title);
+      console.log("Content:", content);
+      console.log("Image:", image);
 
-      /**
-       * STEP 1
-       * Upload new image if user selected one
-       */
+      let imageUrl = item.image_url;
+
       if (image) {
         const fileName = `${Date.now()}-${image.name}`;
+        console.log("Uploading image:", fileName);
 
         const { data, error } = await supabase.storage
-          .from("home-images")
+          .from("home_images")
           .upload(fileName, image);
 
         if (error) {
+          console.error("Upload error:", error);
           throw error;
         }
 
-        /**
-         * STEP 2
-         * Get public URL of uploaded image
-         */
         const { data: publicUrlData } = supabase.storage
-          .from("home-images")
+          .from("home_images")
           .getPublicUrl(fileName);
 
         imageUrl = publicUrlData.publicUrl;
+        console.log("Image URL:", imageUrl);
       }
 
-      /**
-       * STEP 3
-       * Send updated data to backend
-       */
-      await updateHomeSection(item.id, {
+      console.log("Sending update request...");
+
+      const res = await updateHomeSection(item.id, {
         title,
         content,
         image_url: imageUrl,
       });
+
+      console.log("Update response:", res);
 
       onClose();
     } catch (error) {
