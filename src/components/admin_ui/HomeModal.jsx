@@ -303,26 +303,24 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item }) {
                 <label className="text-sm font-medium text-gray-700">
                   Video URL
                 </label>
-                <div className="flex gap-2">
+                <div className="flex rounded-lg border border-gray-300 overflow-hidden bg-white focus-within:ring-2 focus-within:ring-orange-400">
                   <input
                     type="url"
                     value={videoUrl}
                     placeholder="https://www.youtube.com/embed/..."
                     onChange={handleVideoUrlChange}
-                    className={`flex-1 rounded-lg border bg-white px-4 py-2.5 text-sm shadow-sm
-                      focus:outline-none focus:ring-2 focus:ring-orange-400 transition
-                      ${urlValidation.isValid === false ? "border-red-400 focus:ring-red-400" : "border-gray-300"}`}
+                    className={`flex-1 px-4 py-2.5 text-sm shadow-sm outline-none transition
+                      ${urlValidation.isValid === false ? "border-red-400 focus:ring-red-400" : ""}`}
                   />
                   <button
                     type="button"
                     onClick={handleTestVideoUrl}
                     disabled={!videoUrl}
-                    className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-gray-300 bg-white text-sm font-medium text-gray-700
-                      hover:bg-gray-50 hover:border-gray-400 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                    title="Test video link"
+                    className="flex items-center justify-center px-4 bg-primary-gradient text-white hover:bg-primary-gradient-hover
+                      transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    title="Open video link"
                   >
-                    <ArrowTopRightOnSquareIcon className="w-4 h-4" />
-                    Test
+                    <ArrowTopRightOnSquareIcon className="w-5 h-5" />
                   </button>
                 </div>
 
