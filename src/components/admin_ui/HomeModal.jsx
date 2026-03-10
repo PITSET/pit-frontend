@@ -12,10 +12,11 @@ import {
 } from "@heroicons/react/24/outline";
 
 // api
-import { updateHomeSection } from "../../lib/services/homeService";
+import { createHomeSection, updateHomeSection } from "../../lib/services/homeService";
 import { supabase } from "../../lib/supabaseClient";
 
 export default function HomeModal({ isOpen, onClose, onRefresh, item }) {
+  const isCreate = !item;
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [image, setImage] = useState(null);
@@ -191,19 +192,19 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item }) {
 
   // Save changes
   const handleSave = async () => {
-    const toastId = toast.loading("Saving changes...");
+    const toastId = toast.loading(isCreate ? "Creating section..." : "Saving changes...");
 
     try {
       setLoading(true);
 
-      let imageUrl = item.image_url;
+      let imageUrl = item?.image_url || "";
 
       if (image) {
-        const safeSection = item.section_type
+        const safeSection = (item?.section_type || "new-section")
           .replace(/\s+/g, "-")
           .toLowerCase();
 
-        const fileName = `home-${safeSection}.webp`;
+        const fileName = `home-${safeSection}-${Date.now()}.webp`;
 
         toast.loading("Compressing & uploading image...", { id: toastId });
 
@@ -229,15 +230,22 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item }) {
         imageUrl = `${data.publicUrl}?t=${Date.now()}`;
       }
 
-      // update database
-      await updateHomeSection(item.id, {
+      const sectionData = {
         title,
         content,
         image_url: imageUrl,
         video_url: videoUrl,
-      });
+      };
 
-      toast.success("Section updated successfully!", { id: toastId });
+      if (isCreate) {
+        // Create new section
+        await createHomeSection(sectionData);
+        toast.success("Section created successfully!", { id: toastId });
+      } else {
+        // Update existing section
+        await updateHomeSection(item.id, sectionData);
+        toast.success("Section updated successfully!", { id: toastId });
+      }
 
       // auto-refresh parent data
       if (onRefresh) {
@@ -246,8 +254,8 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item }) {
 
       onClose();
     } catch (error) {
-      console.error("Failed to update:", error);
-      toast.error("Failed to update section", { id: toastId });
+      console.error("Failed to save:", error);
+      toast.error(isCreate ? "Failed to create section" : "Failed to update section", { id: toastId });
     } finally {
       setLoading(false);
     }
@@ -255,21 +263,30 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item }) {
 
   // Reset form
   const resetForm = () => {
-    setTitle(item.title || "");
-    setContent(item.content || "");
+    setTitle(item?.title || "");
+    setContent(item?.content || "");
     setImage(null);
-    setVideoUrl(item.video_url || "");
-    validateUrl(item.video_url || "");
+    setVideoUrl(item?.video_url || "");
+    validateUrl(item?.video_url || "");
   };
 
   // Load initial data when modal opens
   useEffect(() => {
-    if (isOpen && item) {
-      resetForm();
+    if (isOpen) {
+      if (item) {
+        resetForm();
+      } else {
+        // Reset form for create mode
+        setTitle("");
+        setContent("");
+        setImage(null);
+        setVideoUrl("");
+        setUrlValidation({ isValid: null, message: "" });
+      }
     }
   }, [isOpen, item]);
 
-  if (!isOpen || !item) return null;
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/40 backdrop-blur-sm overflow-y-auto">
@@ -285,11 +302,11 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item }) {
 
               <div>
                 <h2 className="text-lg sm:text-2xl font-bold">
-                  Update Home ({item.section_type})
+                  {isCreate ? "Create Home Section" : `Update Home (${item.section_type})`}
                 </h2>
 
                 <p className="text-xs sm:text-sm text-gray-500 hidden sm:block">
-                  Edit your home information
+                  {isCreate ? "Add a new home section" : "Edit your home information"}
                 </p>
               </div>
             </div>
@@ -335,7 +352,7 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item }) {
                   src={
                     image
                       ? URL.createObjectURL(image)
-                      : item.image_url || "/placeholder.png"
+                      : item?.image_url || "/placeholder.png"
                   }
                   alt="Preview"
                   className="w-full h-[160px] sm:h-[180px] md:h-[220px] object-cover bg-gray-100 transition-transform duration-300 group-hover:scale-105"

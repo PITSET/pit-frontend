@@ -1,10 +1,13 @@
 import { useEffect, useState } from "react";
-import { getHomeSections } from "../../lib/services/homeService";
+import { getHomeSections, deleteHomeSection } from "../../lib/services/homeService";
 import {
   PencilSquareIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
+  PlusIcon,
+  TrashIcon,
 } from "@heroicons/react/24/outline";
+import toast from "react-hot-toast";
 
 import HomeModal from "../../components/admin_ui/HomeModal";
 
@@ -25,6 +28,7 @@ export default function HomePage() {
       const response = await getHomeSections();
       setData(response.data);
     } catch (err) {
+      console.error("Failed to fetch home data:", err);
       setError("Failed to fetch home data");
     } finally {
       setLoading(false);
@@ -45,14 +49,43 @@ export default function HomePage() {
     setCurrentPage(page);
   };
 
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this section?")) return;
+
+    const toastId = toast.loading("Deleting section...");
+    try {
+      await deleteHomeSection(id);
+      toast.success("Section deleted successfully!", { id: toastId });
+      fetchHome();
+    } catch (error) {
+      console.error("Failed to delete:", error);
+      toast.error("Failed to delete section", { id: toastId });
+    }
+  };
+
+  const handleCreate = () => {
+    setSelectedItem(null);
+    setIsModalOpen(true);
+  };
+
   if (loading) return <p className="p-8">Loading...</p>;
   if (error) return <p className="p-8 text-red-500">{error}</p>;
 
   return (
     <div className="p-4 md:p-6 max-w-7xl mx-auto mb-6">
-      <h1 className="text-2xl md:text-3xl font-semibold mb-6 md:mb-8">
-        Home Page
-      </h1>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 md:mb-8">
+        <h1 className="text-2xl md:text-3xl font-semibold">
+          Home Page
+        </h1>
+
+        <button
+          onClick={handleCreate}
+          className="flex items-center justify-center gap-2 px-4 py-2 bg-primary-gradient text-white rounded-lg hover:bg-primary-gradient-hover transition shadow-sm"
+        >
+          <PlusIcon className="w-5 h-5" />
+          <span>Create</span>
+        </button>
+      </div>
 
       {/* Desktop Table View */}
       <div className="hidden md:block bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
@@ -90,15 +123,24 @@ export default function HomePage() {
                 </td>
 
                 <td className="px-4 lg:px-8 py-4 lg:py-6 text-center">
-                  <button
-                    onClick={() => {
-                      setSelectedItem(item);
-                      setIsModalOpen(true);
-                    }}
-                    className="p-2 rounded-lg border border-gray-300 hover:bg-gray-200 transition"
-                  >
-                    <PencilSquareIcon className="w-5 h-5 text-gray-600" />
-                  </button>
+                  <div className="flex items-center justify-center gap-2">
+                    <button
+                      onClick={() => {
+                        setSelectedItem(item);
+                        setIsModalOpen(true);
+                      }}
+                      className="p-2 rounded-lg border border-gray-300 hover:bg-gray-200 transition"
+                    >
+                      <PencilSquareIcon className="w-5 h-5 text-gray-600" />
+                    </button>
+
+                    <button
+                      onClick={() => handleDelete(item.id)}
+                      className="p-2 rounded-lg border border-gray-300 hover:bg-red-100 hover:border-red-300 transition"
+                    >
+                      <TrashIcon className="w-5 h-5 text-red-500" />
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
@@ -176,8 +218,8 @@ export default function HomePage() {
                 </p>
               </div>
 
-              {/* Action Button */}
-              <div className="flex-shrink-0">
+              {/* Action Buttons */}
+              <div className="flex-shrink-0 flex items-center gap-2">
                 <button
                   onClick={() => {
                     setSelectedItem(item);
@@ -186,6 +228,13 @@ export default function HomePage() {
                   className="p-2 rounded-lg border border-gray-300 hover:bg-gray-200 transition"
                 >
                   <PencilSquareIcon className="w-5 h-5 text-gray-600" />
+                </button>
+
+                <button
+                  onClick={() => handleDelete(item.id)}
+                  className="p-2 rounded-lg border border-gray-300 hover:bg-red-100 hover:border-red-300 transition"
+                >
+                  <TrashIcon className="w-5 h-5 text-red-500" />
                 </button>
               </div>
             </div>
