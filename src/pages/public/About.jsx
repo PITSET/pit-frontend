@@ -131,7 +131,7 @@ export default function About() {
   }
 
   return (
-    <div className="bg-[#E9E9EB] py-0 px-4 md:px-0 font-['Roboto']">
+    <div className="bg-[#E9E9EB] py-0 px-4 md:px-0 font-roboto">
       <div className="max-w-[1248px] mx-auto">
 
         {/* WHO WE ARE */}
@@ -187,7 +187,7 @@ export default function About() {
   {/* TEXT */}
   <div className="max-w-[480px]">
 
-    <h2 className="font-['Roboto_Condensed'] font-bold text-[56px] text-[#D32F2F] mb-4">
+    <h2 className="font-roboto-condensed font-bold text-[56px] text-[#D32F2F] mb-4">
       {history.title}
     </h2>
 
@@ -215,11 +215,11 @@ export default function About() {
 
             <div>
 
-              <h2 className="font-['Roboto_Condensed'] font-bold text-[40px] text-[#FD1722] mb-3">
+              <h2 className="font-roboto-condensed font-bold text-[40px] text-[#FD1722] mb-3">
                 {mission.title}
               </h2>
 
-              <p className="font-['Roboto'] text-[16px] text-gray-600 max-w-md leading-relaxed">
+              <p className="font-roboto text-[16px] text-gray-600 max-w-md leading-relaxed">
                 {mission.content}
               </p>
 
@@ -238,11 +238,11 @@ export default function About() {
   {/* Text */}
   <div className="flex flex-col">
 
-    <h2 className="font-['Roboto_Condensed'] font-bold text-[28px] md:text-[40px] text-[#FD1722] mb-3 md:ml-20">
+    <h2 className="font-roboto-condensed font-bold text-[28px] md:text-[40px] text-[#FD1722] mb-3 md:ml-20">
       {vision.title}
     </h2>
 
-    <p className="font-['Roboto'] text-[16px] text-gray-600 max-w-md leading-relaxed md:ml-20">
+    <p className="font-roboto text-[16px] text-gray-600 max-w-md leading-relaxed md:ml-20">
       {vision.content}
     </p>
 
@@ -267,7 +267,7 @@ export default function About() {
         {/* INSTRUCTORS */}
         <div className="mt-24">
 
-          <h2 className="font-['Roboto_Condensed'] font-bold text-[64px] text-[#D32F2F] mb-8">
+          <h2 className="font-roboto-condensed font-bold text-[64px] text-[#D32F2F] mb-8">
             Instructors
           </h2>
 
