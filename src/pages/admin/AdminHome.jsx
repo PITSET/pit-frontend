@@ -126,8 +126,8 @@ export default function HomePage() {
                 <td className="px-4 lg:px-8 py-4 lg:py-6 text-center">
                   <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                     item.is_active 
-                      ? 'bg-green-100 text-green-800' 
-                      : 'bg-gray-100 text-gray-800'
+                      ? 'bg-green-200 text-green-800' 
+                      : 'bg-gray-200 text-gray-800'
                   }`}>
                     {item.is_active ? 'Active' : 'Inactive'}
                   </span>
@@ -227,8 +227,8 @@ export default function HomePage() {
                   </h3>
                   <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ml-2 flex-shrink-0 ${
                     item.is_active 
-                      ? 'bg-green-100 text-green-800' 
-                      : 'bg-gray-100 text-gray-600'
+                      ? 'bg-green-200 text-green-800' 
+                      : 'bg-gray-200 text-gray-600'
                   }`}>
                     {item.is_active ? 'Active' : 'Inactive'}
                   </span>
