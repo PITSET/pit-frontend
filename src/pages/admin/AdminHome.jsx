@@ -277,7 +277,11 @@ export default function HomePage() {
         onClose={() => setIsModalOpen(false)}
         onRefresh={fetchHome}
         item={selectedItem}
-        existingSectionTypes={data.map((item) => item.section_type)}
+        existingSectionTypes={[...new Set(data.map((item) => {
+          // Get base section type (remove numbers at the end like "hero 2" -> "hero")
+          const baseType = item.section_type.replace(/\s+\d+$/, '').trim();
+          return baseType;
+        }))]}
       />
     </div>
   );
