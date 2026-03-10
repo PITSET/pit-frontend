@@ -1,12 +1,32 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Outlet } from "react-router-dom";
 import { Bars3Icon } from "@heroicons/react/24/outline";
 import { Toaster } from "react-hot-toast";
 
 import Sidebar from "./Sidebar";
+import { logout } from "../../utils/auth";
 
 export default function AdminLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // Periodic session check - auto logout when session expires
+  useEffect(() => {
+    const checkSessionExpiry = () => {
+      const expiry = localStorage.getItem("sessionExpiry");
+      
+      if (expiry && Date.now() > parseInt(expiry)) {
+        logout(true);
+      }
+    };
+
+    // Check immediately on mount
+    checkSessionExpiry();
+
+    // Check every 30 seconds
+    const interval = setInterval(checkSessionExpiry, 30000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <div className="flex h-screen bg-gray-50">
