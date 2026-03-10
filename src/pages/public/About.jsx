@@ -1,6 +1,33 @@
 import React, { useState, useEffect } from "react";
 import api from "../../lib/api";
 
+const defaultInstructors = [
+  {
+    id: 1,
+    full_name: "John Smith",
+    position_title: "Senior Instructor",
+    profile_image_url: "https://images.unsplash.com/photo-1560250097-0b93528c311a",
+  },
+  {
+    id: 2,
+    full_name: "Sarah Johnson",
+    position_title: "Lead Developer",
+    profile_image_url: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2",
+  },
+  {
+    id: 3,
+    full_name: "Michael Chen",
+    position_title: "Tech Lead",
+    profile_image_url: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e",
+  },
+  {
+    id: 4,
+    full_name: "Emily Davis",
+    position_title: "Senior Engineer",
+    profile_image_url: "https://images.unsplash.com/photo-1580489944761-15a19d654956",
+  },
+];
+
 const defaultSections = {
   hero: {
     title: "Building Future Innovators",
@@ -85,6 +112,7 @@ export default function About() {
   const getSection = (type) =>
     sections.find((s) => s.section_type === type) || defaultSections[type];
 
+  const displayInstructors = instructors.length > 0 ? instructors : defaultInstructors;
   const whoWeAre = getSection("hero");
   const history = getSection("history");
   const mission = getSection("mission");
@@ -245,7 +273,7 @@ export default function About() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 justify-items-center">
 
-            {instructors.map((inst, i) => (
+            {displayInstructors.map((inst, i) => (
               <div key={i} className="w-[312px]">
 
                 <img
