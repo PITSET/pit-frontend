@@ -27,6 +27,8 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item, existingSe
   const [sectionType, setSectionType] = useState("");
   const [customSectionType, setCustomSectionType] = useState("");
   const [showSectionTypeDropdown, setShowSectionTypeDropdown] = useState(false);
+  const [orderPosition, setOrderPosition] = useState(0);
+  const [isActive, setIsActive] = useState(true);
 
   // Close dropdown when clicking outside
   const sectionTypeDropdownRef = useRef(null);
@@ -266,30 +268,47 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item, existingSe
         image_url: imageUrl,
         video_url: videoUrl,
         section_type: isCreate ? getSectionTypeValue() : sectionType,
+        order_position: orderPosition,
+        is_active: isActive,
       };
 
       if (isCreate) {
+        // Validate required fields
+        const sectionTypeValue = getSectionTypeValue();
+        if (!sectionTypeValue || !sectionTypeValue.trim()) {
+          toast.error("Section type is required", { id: toastId });
+          setLoading(false);
+          return;
+        }
+
+        if (!title || !title.trim()) {
+          toast.error("Title is required", { id: toastId });
+          setLoading(false);
+          return;
+        }
+
         // Auto-increment section_type if it already exists
-        let finalSectionType = getSectionTypeValue().trim();
+        let finalSectionType = sectionTypeValue.trim();
         const existingTypes = existingSectionTypes.map((t) => t.toLowerCase());
         let counter = 1;
 
         while (existingTypes.includes(finalSectionType.toLowerCase())) {
           counter++;
-          finalSectionType = `${getSectionTypeValue().trim()} ${counter}`;
+          finalSectionType = `${sectionTypeValue.trim()} ${counter}`;
         }
 
         sectionData.section_type = finalSectionType;
 
-        // Notify if section type was auto-generated
-        if (finalSectionType !== getSectionTypeValue().trim()) {
-          toast.success(`Section created as "${finalSectionType}" (original name already exists)`, { id: toastId });
-        }
+        console.log("Creating section with data:", sectionData);
 
         // Create new section
         await createHomeSection(sectionData);
-        if (finalSectionType === getSectionTypeValue().trim()) {
-          toast.success("Section created successfully!", { id: toastId });
+
+        // Notify based on whether section type was auto-generated
+        if (finalSectionType !== getSectionTypeValue().trim()) {
+          toast.success(`Section created as "${finalSectionType}" (original name already exists)`);
+        } else {
+          toast.success("Section created successfully!");
         }
       } else {
         // Update existing section
@@ -320,6 +339,8 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item, existingSe
     setSectionType(item?.section_type || "");
     setCustomSectionType(item?.section_type || "");
     setShowSectionTypeDropdown(false);
+    setOrderPosition(item?.order_position || 0);
+    setIsActive(item?.is_active ?? true);
     validateUrl(item?.video_url || "");
   };
 
@@ -461,6 +482,44 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item, existingSe
             <p className="text-xs text-gray-500">
               Select from existing types or type a new section type.
             </p>
+          </div>
+
+          {/* Order Position & Active Status */}
+          <div className="grid grid-cols-2 gap-4">
+            {/* Order Position */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">Order Position</label>
+              <input
+                type="number"
+                value={orderPosition}
+                onChange={(e) => setOrderPosition(parseInt(e.target.value) || 0)}
+                className="w-full rounded-lg border border-gray-300 bg-white px-3 sm:px-4 py-2 sm:py-2.5 text-sm shadow-sm
+                focus:outline-none focus:ring-2 focus:ring-orange-400 transition"
+              />
+            </div>
+
+            {/* Active Status */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">Status</label>
+              <div className="flex items-center gap-3 h-full py-2">
+                <button
+                  type="button"
+                  onClick={() => setIsActive(!isActive)}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                    isActive ? "bg-green-500" : "bg-gray-300"
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      isActive ? "translate-x-6" : "translate-x-1"
+                    }`}
+                  />
+                </button>
+                <span className={`text-sm ${isActive ? "text-green-600" : "text-gray-500"}`}>
+                  {isActive ? "Active" : "Inactive"}
+                </span>
+              </div>
+            </div>
           </div>
 
           {/* Content */}
