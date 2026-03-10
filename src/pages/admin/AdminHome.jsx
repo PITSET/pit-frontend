@@ -145,20 +145,22 @@ export default function HomePage() {
                 </td>
 
                 <td className="px-4 lg:px-8 py-4 lg:py-6 text-center">
-                  <div className="flex items-center justify-center gap-2">
+                  <div className="flex items-center justify-center gap-0 rounded-lg border border-gray-300 overflow-hidden">
                     <button
                       onClick={() => {
                         setSelectedItem(item);
                         setIsModalOpen(true);
                       }}
-                      className="p-2 rounded-lg border border-gray-300 hover:bg-gray-200 transition"
+                      className="p-2 hover:bg-gray-200 transition"
                     >
                       <PencilSquareIcon className="w-5 h-5 text-gray-600" />
                     </button>
 
+                    <div className="h-6 w-px bg-gray-300"></div>
+
                     <button
                       onClick={() => handleDelete(item.id)}
-                      className="p-2 rounded-lg border border-gray-300 hover:bg-red-100 hover:border-red-300 transition"
+                      className="p-2 hover:bg-red-100 transition"
                     >
                       <TrashIcon className="w-5 h-5 text-red-500" />
                     </button>
@@ -250,20 +252,22 @@ export default function HomePage() {
               </div>
 
               {/* Action Buttons */}
-              <div className="flex-shrink-0 flex items-center gap-2">
+              <div className="flex-shrink-0 flex items-center gap-0 rounded-lg border border-gray-300 overflow-hidden">
                 <button
                   onClick={() => {
                     setSelectedItem(item);
                     setIsModalOpen(true);
                   }}
-                  className="p-2 rounded-lg border border-gray-300 hover:bg-gray-200 transition"
+                  className="p-2 hover:bg-gray-200 transition"
                 >
                   <PencilSquareIcon className="w-5 h-5 text-gray-600" />
                 </button>
 
+                <div className="w-px h-6 bg-gray-300"></div>
+
                 <button
                   onClick={() => handleDelete(item.id)}
-                  className="p-2 rounded-lg border border-gray-300 hover:bg-red-100 hover:border-red-300 transition"
+                  className="p-2 hover:bg-red-100 transition"
                 >
                   <TrashIcon className="w-5 h-5 text-red-500" />
                 </button>
