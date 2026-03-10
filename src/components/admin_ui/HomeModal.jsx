@@ -383,6 +383,11 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item, existingSe
               value={title}
               placeholder="Enter title..."
               onChange={(e) => setTitle(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.target.blur();
+                }
+              }}
               className="w-full rounded-lg border border-gray-300 bg-white px-3 sm:px-4 py-2 sm:py-2.5 text-sm shadow-sm
               focus:outline-none focus:ring-2 focus:ring-orange-400 transition"
             />
@@ -561,6 +566,11 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item, existingSe
                 value={content}
                 placeholder="Enter description..."
                 onChange={(e) => setContent(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.target.blur();
+                  }
+                }}
                 className="flex-1 w-full min-h-[160px] sm:min-h-[200px] md:min-h-[250px] rounded-lg border border-gray-300 bg-white px-3 sm:px-4 py-2 sm:py-3 text-sm
                 focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none transition"
               />
