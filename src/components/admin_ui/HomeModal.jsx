@@ -442,7 +442,7 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item, existingSe
             )}
 
             <p className="text-xs text-gray-500">
-              Default: "hero". Select from existing or type a new section type.
+              Select from existing types or type a new section type.
             </p>
           </div>
 
