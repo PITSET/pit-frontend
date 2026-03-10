@@ -95,6 +95,7 @@ export default function HomePage() {
               <th className="px-4 lg:px-8 py-4 text-center">Image</th>
               <th className="px-4 lg:px-8 py-4 text-center">Title</th>
               <th className="px-4 lg:px-8 py-4 text-center">Description</th>
+              <th className="px-4 lg:px-8 py-4 text-center">Position</th>
               <th className="px-4 lg:px-8 py-4 text-center">Status</th>
               <th className="px-4 lg:px-8 py-4 text-center">Action</th>
             </tr>
@@ -121,6 +122,16 @@ export default function HomePage() {
                   <p className="line-clamp-2 lg:line-clamp-2">
                     {item.content || "No description available"}
                   </p>
+                </td>
+
+                <td className="px-4 lg:px-8 py-4 lg:py-6 text-center">
+                  <span className={`inline-flex items-center justify-center min-w-[2rem] px-2 py-1 rounded-md text-sm font-semibold ${
+                    item.is_active 
+                      ? 'bg-orange-50 text-orange-700 border border-orange-200' 
+                      : 'bg-gray-50 text-gray-600 border border-gray-200'
+                  }`}>
+                    #{item.order_position}
+                  </span>
                 </td>
 
                 <td className="px-4 lg:px-8 py-4 lg:py-6 text-center">
