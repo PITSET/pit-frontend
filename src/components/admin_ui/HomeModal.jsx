@@ -402,6 +402,11 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item, existingSe
                   setCustomSectionType(e.target.value);
                   setSectionType(e.target.value);
                 }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.target.blur();
+                  }
+                }}
                 className="flex-1 px-3 sm:px-4 py-2 sm:py-2.5 text-sm shadow-sm outline-none transition min-w-0"
               />
               {existingSectionTypes.length > 0 && (
