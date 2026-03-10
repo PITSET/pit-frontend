@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import toast from "react-hot-toast";
 
 // heroicons
@@ -27,6 +27,24 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item, existingSe
   const [sectionType, setSectionType] = useState("");
   const [customSectionType, setCustomSectionType] = useState("");
   const [showSectionTypeDropdown, setShowSectionTypeDropdown] = useState(false);
+
+  // Close dropdown when clicking outside
+  const sectionTypeDropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        sectionTypeDropdownRef.current &&
+        !sectionTypeDropdownRef.current.contains(event.target)
+      ) {
+        setShowSectionTypeDropdown(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   const [urlValidation, setUrlValidation] = useState({
     isValid: null,
     message: "",
@@ -371,7 +389,7 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item, existingSe
           </div>
 
           {/* Section Type */}
-          <div className="space-y-2">
+          <div className="space-y-2" ref={sectionTypeDropdownRef}>
             <label className="text-sm font-medium text-gray-700">Section Type</label>
 
             {/* Input field with dropdown button */}
