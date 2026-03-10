@@ -287,17 +287,8 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item, existingSe
           return;
         }
 
-        // Auto-increment section_type if it already exists
-        let finalSectionType = sectionTypeValue.trim();
-        const existingTypes = existingSectionTypes.map((t) => t.toLowerCase());
-        let counter = 1;
-
-        while (existingTypes.includes(finalSectionType.toLowerCase())) {
-          counter++;
-          finalSectionType = `${sectionTypeValue.trim()} ${counter}`;
-        }
-
-        sectionData.section_type = finalSectionType;
+        // Use the section type as-is (user must ensure it's unique)
+        sectionData.section_type = sectionTypeValue.trim();
 
         // Auto-increment order_position if it already exists
         let finalOrderPosition = orderPosition;
@@ -314,20 +305,7 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item, existingSe
         // Create new section
         await createHomeSection(sectionData);
 
-        // Build notification message
-        const notifications = [];
-        if (finalSectionType !== getSectionTypeValue().trim()) {
-          notifications.push(`section type as "${finalSectionType}"`);
-        }
-        if (finalOrderPosition !== orderPosition) {
-          notifications.push(`position ${finalOrderPosition}`);
-        }
-
-        if (notifications.length > 0) {
-          toast.success(`Section created with ${notifications.join(" and ")}`);
-        } else {
-          toast.success("Section created successfully!");
-        }
+        toast.success("Section created successfully!");
       } else {
         // Update existing section
         await updateHomeSection(item.id, sectionData);
