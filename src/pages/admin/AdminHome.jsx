@@ -117,7 +117,7 @@ export default function HomePage() {
                 </td>
 
                 <td className="px-4 lg:px-8 py-4 lg:py-6 text-gray-600 text-left max-w-xs lg:max-w-xl">
-                  <p className="line-clamp-2 lg:line-clamp-3">
+                  <p className="line-clamp-2 lg:line-clamp-2">
                     {item.content || "No description available"}
                   </p>
                 </td>
