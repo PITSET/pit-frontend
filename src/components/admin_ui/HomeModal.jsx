@@ -527,9 +527,9 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item, existingSe
             </div>
 
             {/* Active Status */}
-            <div className="space-y-2">
+            <div className="flex flex-col space-y-2">
               <label className="text-sm font-medium text-gray-700">Status</label>
-              <div className="flex items-center gap-3 h-full py-2">
+              <div className="flex items-center gap-3 py-2">
                 <button
                   type="button"
                   onClick={() => setIsActive(!isActive)}
@@ -652,7 +652,7 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item, existingSe
 
             {/* Right: Description */}
             <div className="flex flex-col space-y-2">
-              <label className="text-sm font-medium text-gray-700">
+              <label className="text-sm font-medium text-gray-700 mb-3">
                 Description
               </label>
 
