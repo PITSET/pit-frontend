@@ -1,41 +1,35 @@
 import React, { useState, useEffect } from "react";
 import api from "../../lib/api";
 
-const instructors = [
+const defaultInstructors = [
   {
-    name: "Dr. Ko Ko Zaw",
-    field: "Instructor, Mechanical Engineering",
-    image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e",
+    id: 1,
+    full_name: "John Smith",
+    position_title: "Senior Instructor",
+    profile_image_url: "https://images.unsplash.com/photo-1560250097-0b93528c311a",
   },
   {
-    name: "Ms. Hnin Pwint",
-    field: "Instructor, Mechanical Engineering",
-    image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330",
+    id: 2,
+    full_name: "Sarah Johnson",
+    position_title: "Lead Developer",
+    profile_image_url: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2",
   },
   {
-    name: "Mr. Di Soe",
-    field: "Instructor, Software Engineering",
-    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d",
+    id: 3,
+    full_name: "Michael Chen",
+    position_title: "Tech Lead",
+    profile_image_url: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e",
   },
   {
-    name: "Mr. Thiri Aung",
-    field: "Instructor, Software Engineering",
-    image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80",
-  },
-  {
-    name: "Mr. Min Htet",
-    field: "Instructor, Mechatronics Engineering",
-    image: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d",
-  },
-  {
-    name: "Mr. Aung Kyaw Lin",
-    field: "Instructor, Mechatronics Engineering",
-    image: "https://images.unsplash.com/photo-1531427186611-ecfd6d936c79",
+    id: 4,
+    full_name: "Emily Davis",
+    position_title: "Senior Engineer",
+    profile_image_url: "https://images.unsplash.com/photo-1580489944761-15a19d654956",
   },
 ];
 
 const defaultSections = {
-  who_we_are: {
+  hero: {
     title: "Building Future Innovators",
     content:
       "Our institute empowers students with knowledge and skills needed in the modern technology world.",
@@ -63,27 +57,63 @@ const defaultSections = {
 
 export default function About() {
   const [sections, setSections] = useState([]);
+  const [instructors, setInstructors] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchAbout = async () => {
+    const fetchData = async () => {
       try {
-        const res = await api.get("/about");
-        setSections(res.data.data || []);
+        const [aboutRes, programsRes] = await Promise.all([
+          api.get("/about"),
+          api.get("/programs"),
+        ]);
+
+        const allowedTypes = ["hero", "history", "mission", "vision"];
+
+        const aboutSections = (aboutRes.data?.data || [])
+          .filter((s) => allowedTypes.includes(s.section_type))
+          .sort((a, b) => (a.order_position || 0) - (b.order_position || 0));
+
+        setSections(aboutSections);
+
+        const programs = programsRes.data?.data || [];
+
+        const instructorPromises = programs.map((program) =>
+          api
+            .get(`/programs/${program.id}/instructors`)
+            .then((res) => res.data?.data || [])
+            .catch(() => []),
+        );
+
+        const instructorsByProgram = await Promise.all(instructorPromises);
+
+        const allInstructors = [];
+        const seen = new Set();
+
+        instructorsByProgram.flat().forEach((inst) => {
+          const key = inst.id || `${inst.full_name}-${inst.email}`;
+          if (!seen.has(key)) {
+            seen.add(key);
+            allInstructors.push(inst);
+          }
+        });
+
+        setInstructors(allInstructors);
       } catch (err) {
-        console.log("About fetch error:", err);
+        console.log("About page fetch error:", err);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchAbout();
+    fetchData();
   }, []);
 
   const getSection = (type) =>
     sections.find((s) => s.section_type === type) || defaultSections[type];
 
-  const whoWeAre = getSection("who_we_are");
+  const displayInstructors = instructors.length > 0 ? instructors : defaultInstructors;
+  const whoWeAre = getSection("hero");
   const history = getSection("history");
   const mission = getSection("mission");
   const vision = getSection("vision");
@@ -101,7 +131,7 @@ export default function About() {
   }
 
   return (
-    <div className="bg-[#E9E9EB] py-0 px-4 md:px-0 font-['Roboto']">
+    <div className="bg-[#E9E9EB] py-0 px-4 md:px-0 font-roboto">
       <div className="max-w-[1248px] mx-auto">
 
         {/* WHO WE ARE */}
@@ -157,17 +187,12 @@ export default function About() {
   {/* TEXT */}
   <div className="max-w-[480px]">
 
-    <h2 className="font-['Roboto_Condensed'] font-bold text-[56px] text-[#D32F2F] mb-4">
+    <h2 className="font-roboto-condensed font-bold text-[56px] text-[#D32F2F] mb-4">
       {history.title}
     </h2>
 
     <p className="text-gray-600 text-[16px] leading-relaxed">
-      Prometheus Institute of Technology was founded with a clear vision—to
-      create a modern learning environment where technology education is
-      practical, relevant, and future-focused. From the beginning, the
-      institute worked to bridge the gap between traditional academic
-      learning and the rapidly evolving digital world while empowering
-      students with real-world technical skills and innovation.
+      {history.content}
     </p>
 
   </div>
@@ -190,11 +215,11 @@ export default function About() {
 
             <div>
 
-              <h2 className="font-['Roboto_Condensed'] font-bold text-[40px] text-[#FD1722] mb-3">
+              <h2 className="font-roboto-condensed font-bold text-[40px] text-[#FD1722] mb-3">
                 {mission.title}
               </h2>
 
-              <p className="font-['Roboto'] text-[16px] text-gray-600 max-w-md leading-relaxed">
+              <p className="font-roboto text-[16px] text-gray-600 max-w-md leading-relaxed">
                 {mission.content}
               </p>
 
@@ -213,11 +238,11 @@ export default function About() {
   {/* Text */}
   <div className="flex flex-col">
 
-    <h2 className="font-['Roboto_Condensed'] font-bold text-[28px] md:text-[40px] text-[#FD1722] mb-3 md:ml-20">
+    <h2 className="font-roboto-condensed font-bold text-[28px] md:text-[40px] text-[#FD1722] mb-3 md:ml-20">
       {vision.title}
     </h2>
 
-    <p className="font-['Roboto'] text-[16px] text-gray-600 max-w-md leading-relaxed md:ml-20">
+    <p className="font-roboto text-[16px] text-gray-600 max-w-md leading-relaxed md:ml-20">
       {vision.content}
     </p>
 
@@ -242,29 +267,29 @@ export default function About() {
         {/* INSTRUCTORS */}
         <div className="mt-24">
 
-          <h2 className="font-['Roboto_Condensed'] font-bold text-[64px] text-[#D32F2F] mb-8">
+          <h2 className="font-roboto-condensed font-bold text-[64px] text-[#D32F2F] mb-8">
             Instructors
           </h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 justify-items-center">
 
-            {instructors.map((inst, i) => (
+            {displayInstructors.map((inst, i) => (
               <div key={i} className="w-[312px]">
 
                 <img
-                  src={inst.image}
-                  alt={inst.name}
+                  src={inst.profile_image_url}
+                  alt={inst.full_name}
                   className="w-[312px] h-[390px] object-cover"
                 />
 
                 <div className="h-[108px] bg-[#F2F2F2] px-3 pt-4">
 
                   <p className="text-[12px] text-gray-500">
-                    {inst.field}
+                    {inst.position_title}
                   </p>
 
                   <p className="text-[14px] font-medium text-[#D32F2F] mt-1">
-                    {inst.name}
+                    {inst.full_name}
                   </p>
 
                 </div>
