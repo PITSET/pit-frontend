@@ -1,4 +1,5 @@
 import axios from "axios";
+import { toast } from "react-hot-toast";
 
 const api = axios.create({
   baseURL: "http://localhost:3000/api",
@@ -30,8 +31,18 @@ api.interceptors.response.use(
       !error.config.url.includes("/auth/login")
     ) {
       console.warn("Unauthorized. Logging out...");
+      
+      // Show session expired toast
+      toast.error("Your session has expired. Please login again.");
+      
+      // Remove token and redirect
       localStorage.removeItem("token");
-      window.location.href = "/admin/login";
+      localStorage.removeItem("sessionExpiry");
+      
+      // Delay redirect to allow toast to show
+      setTimeout(() => {
+        window.location.href = "/admin/login";
+      }, 2000);
     }
 
     return Promise.reject(error);
