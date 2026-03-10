@@ -474,25 +474,41 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item, existingSe
             {/* Dropdown for existing section types */}
             {showSectionTypeDropdown && existingSectionTypes.length > 0 && (
               <div className="mt-1 rounded-lg border border-gray-300 bg-white shadow-sm max-h-40 overflow-y-auto">
-                {existingSectionTypes.map((type, index) => (
-                  <button
-                    key={index}
-                    type="button"
-                    onClick={() => {
-                      setSectionType(type);
-                      setCustomSectionType(type);
-                      setShowSectionTypeDropdown(false);
-                    }}
-                    className={`w-full px-3 sm:px-4 py-2 text-left text-sm hover:bg-gray-100 transition flex items-center justify-between ${
-                      customSectionType === type ? "bg-orange-50 text-orange-600" : ""
-                    }`}
-                  >
-                    <span>{type}</span>
-                    {customSectionType === type && (
-                      <CheckIcon className="w-4 h-4 text-orange-500" />
-                    )}
-                  </button>
-                ))}
+                {existingSectionTypes.map((type, index) => {
+                  const isCurrentSectionType = !isCreate && type.toLowerCase() === sectionType?.toLowerCase();
+                  return (
+                    <button
+                      key={index}
+                      type="button"
+                      onClick={() => {
+                        if (isCurrentSectionType) {
+                          setShowSectionTypeDropdown(false);
+                        }
+                      }}
+                      className={`w-full px-3 sm:px-4 py-2 text-left text-sm transition flex items-center justify-between ${
+                        isCurrentSectionType
+                          ? "bg-orange-50 text-orange-600 cursor-pointer"
+                          : "text-gray-500 bg-gray-50 cursor-not-allowed"
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <span>{type}</span>
+                        {isCurrentSectionType && (
+                          <span className="text-xs text-orange-500">(Current)</span>
+                        )}
+                        {!isCreate && !isCurrentSectionType && (
+                          <span className="text-xs text-gray-400">(Existing)</span>
+                        )}
+                        {isCreate && (
+                          <span className="text-xs text-gray-400">(Existing)</span>
+                        )}
+                      </div>
+                      {isCurrentSectionType && (
+                        <CheckIcon className="w-4 h-4 text-orange-500" />
+                      )}
+                    </button>
+                  );
+                })}
               </div>
             )}
 
