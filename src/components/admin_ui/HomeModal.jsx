@@ -488,19 +488,13 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item, existingSe
                       className={`w-full px-3 sm:px-4 py-2 text-left text-sm transition flex items-center justify-between ${
                         isCurrentSectionType
                           ? "bg-orange-50 text-orange-600 cursor-pointer"
-                          : "text-gray-500 bg-gray-50 cursor-not-allowed"
+                          : "text-gray-400 bg-gray-50 cursor-not-allowed"
                       }`}
                     >
                       <div className="flex items-center gap-2">
                         <span>{type}</span>
                         {isCurrentSectionType && (
-                          <span className="text-xs text-orange-500">(Current)</span>
-                        )}
-                        {!isCreate && !isCurrentSectionType && (
-                          <span className="text-xs text-gray-400">(Existing)</span>
-                        )}
-                        {isCreate && (
-                          <span className="text-xs text-gray-400">(Existing)</span>
+                          <span className="text-xs font-medium text-orange-500">Current</span>
                         )}
                       </div>
                       {isCurrentSectionType && (
