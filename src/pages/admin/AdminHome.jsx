@@ -277,11 +277,19 @@ export default function HomePage() {
         onClose={() => setIsModalOpen(false)}
         onRefresh={fetchHome}
         item={selectedItem}
-        existingSectionTypes={[...new Set(data.map((item) => {
-          // Get base section type (remove numbers at the end like "hero 2" -> "hero")
-          const baseType = item.section_type.replace(/\s+\d+$/, '').trim();
-          return baseType;
-        }))]}
+        existingSectionTypes={Object.values(
+          data.reduce((acc, item) => {
+            const baseType = item.section_type.replace(/\s+\d+$/, '').trim();
+            if (!acc[baseType]) {
+              acc[baseType] = { type: baseType, isActive: false };
+            }
+            // If any section of this type is active, mark as active
+            if (item.is_active) {
+              acc[baseType].isActive = true;
+            }
+            return acc;
+          }, {})
+        )}
         existingOrderPositions={data.map((item) => item.order_position)}
       />
     </div>

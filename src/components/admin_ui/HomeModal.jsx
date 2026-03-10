@@ -288,7 +288,10 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item, existingSe
         }
 
         // Check if section type already exists
-        const existingTypesLower = existingSectionTypes.map((t) => t.toLowerCase());
+        const existingTypesLower = existingSectionTypes.map((t) => {
+          const typeName = typeof t === 'string' ? t : t.type;
+          return typeName.toLowerCase();
+        });
         if (existingTypesLower.includes(sectionTypeValue.trim().toLowerCase())) {
           toast.error(`Section type "${sectionTypeValue}" already exists. Please use a different name.`, { id: toastId });
           setLoading(false);
@@ -321,7 +324,10 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item, existingSe
 
         // Only validate if the section type has changed
         if (newSectionType.trim().toLowerCase() !== originalSectionType.trim().toLowerCase()) {
-          const existingTypesLower = existingSectionTypes.map((t) => t.toLowerCase());
+          const existingTypesLower = existingSectionTypes.map((t) => {
+            const typeName = typeof t === 'string' ? t : t.type;
+            return typeName.toLowerCase();
+          });
           if (existingTypesLower.includes(newSectionType.trim().toLowerCase())) {
             toast.error(`Section type "${newSectionType}" already exists. Please use a different name.`, { id: toastId });
             setLoading(false);
@@ -474,7 +480,9 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item, existingSe
             {/* Dropdown for existing section types */}
             {showSectionTypeDropdown && existingSectionTypes.length > 0 && (
               <div className="mt-1 rounded-lg border border-gray-300 bg-white shadow-sm max-h-40 overflow-y-auto">
-                {existingSectionTypes.map((type, index) => {
+                {existingSectionTypes.map((item, index) => {
+                  const type = typeof item === 'string' ? item : item.type;
+                  const isActive = typeof item === 'object' ? item.isActive : true;
                   const isCurrentSectionType = !isCreate && type.toLowerCase() === sectionType?.toLowerCase();
                   return (
                     <button
@@ -488,6 +496,8 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item, existingSe
                       className={`w-full px-3 sm:px-4 py-2 text-left text-sm transition flex items-center justify-between ${
                         isCurrentSectionType
                           ? "bg-orange-50 text-orange-600 cursor-pointer"
+                          : isActive
+                          ? "text-gray-700 bg-white hover:bg-gray-100 cursor-not-allowed"
                           : "text-gray-400 bg-gray-50 cursor-not-allowed"
                       }`}
                     >
@@ -495,6 +505,11 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item, existingSe
                         <span>{type}</span>
                         {isCurrentSectionType && (
                           <span className="text-xs font-medium text-orange-500">(Current)</span>
+                        )}
+                        {!isCurrentSectionType && (
+                          <span className={`text-xs ${isActive ? 'text-green-600' : 'text-gray-400'}`}>
+                            ({isActive ? 'Active' : 'Inactive'})
+                          </span>
                         )}
                       </div>
                       {isCurrentSectionType && (
