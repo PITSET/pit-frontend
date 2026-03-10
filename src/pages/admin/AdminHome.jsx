@@ -277,6 +277,7 @@ export default function HomePage() {
         onClose={() => setIsModalOpen(false)}
         onRefresh={fetchHome}
         item={selectedItem}
+        existingSectionTypes={data.map((item) => item.section_type)}
       />
     </div>
   );

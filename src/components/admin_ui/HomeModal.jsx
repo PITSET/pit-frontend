@@ -15,17 +15,27 @@ import {
 import { createHomeSection, updateHomeSection } from "../../lib/services/homeService";
 import { supabase } from "../../lib/supabaseClient";
 
-export default function HomeModal({ isOpen, onClose, onRefresh, item }) {
+export default function HomeModal({ isOpen, onClose, onRefresh, item, existingSectionTypes = [] }) {
   const isCreate = !item;
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [image, setImage] = useState(null);
   const [loading, setLoading] = useState(false);
   const [videoUrl, setVideoUrl] = useState("");
+  const [sectionType, setSectionType] = useState("");
+  const [customSectionType, setCustomSectionType] = useState("");
   const [urlValidation, setUrlValidation] = useState({
     isValid: null,
     message: "",
   });
+
+  // Get the actual section type to use (either selected from dropdown or custom input)
+  const getSectionTypeValue = () => {
+    if (sectionType === "__custom__") {
+      return customSectionType;
+    }
+    return sectionType;
+  };
 
   // Extract YouTube video ID from various URL formats
   const extractYouTubeVideoId = (url) => {
@@ -235,9 +245,22 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item }) {
         content,
         image_url: imageUrl,
         video_url: videoUrl,
+        section_type: isCreate ? getSectionTypeValue() : sectionType,
       };
 
       if (isCreate) {
+        // Auto-increment section_type if it already exists
+        let finalSectionType = getSectionTypeValue().trim();
+        const existingTypes = existingSectionTypes.map((t) => t.toLowerCase());
+        let counter = 1;
+
+        while (existingTypes.includes(finalSectionType.toLowerCase())) {
+          counter++;
+          finalSectionType = `${getSectionTypeValue().trim()} ${counter}`;
+        }
+
+        sectionData.section_type = finalSectionType;
+
         // Create new section
         await createHomeSection(sectionData);
         toast.success("Section created successfully!", { id: toastId });
@@ -267,6 +290,8 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item }) {
     setContent(item?.content || "");
     setImage(null);
     setVideoUrl(item?.video_url || "");
+    setSectionType(item?.section_type || "");
+    setCustomSectionType("");
     validateUrl(item?.video_url || "");
   };
 
@@ -281,6 +306,8 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item }) {
         setContent("");
         setImage(null);
         setVideoUrl("");
+        setSectionType("");
+        setCustomSectionType("");
         setUrlValidation({ isValid: null, message: "" });
       }
     }
@@ -337,6 +364,43 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item }) {
               className="w-full rounded-lg border border-gray-300 bg-white px-3 sm:px-4 py-2 sm:py-2.5 text-sm shadow-sm
               focus:outline-none focus:ring-2 focus:ring-orange-400 transition"
             />
+          </div>
+
+          {/* Section Type */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-700">Section Type</label>
+
+            <div className="relative">
+              <select
+                value={sectionType}
+                onChange={(e) => setSectionType(e.target.value)}
+                className="w-full rounded-lg border border-gray-300 bg-white px-3 sm:px-4 py-2 sm:py-2.5 text-sm shadow-sm
+                focus:outline-none focus:ring-2 focus:ring-orange-400 transition appearance-none"
+              >
+                <option value="">Select existing or create new...</option>
+                {existingSectionTypes.map((type, index) => (
+                  <option key={index} value={type}>
+                    {type}
+                  </option>
+                ))}
+                <option value="__custom__">+ Custom section type</option>
+              </select>
+            </div>
+
+            {/* Show custom input when "+ Custom section type" is selected */}
+            {sectionType === "__custom__" && (
+              <input
+                type="text"
+                value={customSectionType}
+                placeholder="Enter custom section type..."
+                onChange={(e) => setCustomSectionType(e.target.value)}
+                className="w-full rounded-lg border border-gray-300 bg-white px-3 sm:px-4 py-2 sm:py-2.5 text-sm shadow-sm
+                focus:outline-none focus:ring-2 focus:ring-orange-400 transition mt-2"
+              />
+            )}
+            <p className="text-xs text-gray-500">
+              Select an existing type or choose "Custom" to create a new one.
+            </p>
           </div>
 
           {/* Content */}
