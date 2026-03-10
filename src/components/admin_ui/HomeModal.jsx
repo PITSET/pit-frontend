@@ -27,11 +27,13 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item, existingSe
   const [sectionType, setSectionType] = useState("");
   const [customSectionType, setCustomSectionType] = useState("");
   const [showSectionTypeDropdown, setShowSectionTypeDropdown] = useState(false);
+  const [showPositionDropdown, setShowPositionDropdown] = useState(false);
   const [orderPosition, setOrderPosition] = useState(1);
   const [isActive, setIsActive] = useState(true);
 
   // Close dropdown when clicking outside
   const sectionTypeDropdownRef = useRef(null);
+  const positionDropdownRef = useRef(null);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -40,6 +42,12 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item, existingSe
         !sectionTypeDropdownRef.current.contains(event.target)
       ) {
         setShowSectionTypeDropdown(false);
+      }
+      if (
+        positionDropdownRef.current &&
+        !positionDropdownRef.current.contains(event.target)
+      ) {
+        setShowPositionDropdown(false);
       }
     };
 
@@ -301,17 +309,8 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item, existingSe
         // Use the section type as-is
         sectionData.section_type = sectionTypeValue.trim();
 
-        // Auto-increment order_position if it already exists
-        let finalOrderPosition = orderPosition;
-        const existingPositions = existingOrderPositions;
-        let posCounter = 0;
-
-        while (existingPositions.includes(finalOrderPosition)) {
-          posCounter++;
-          finalOrderPosition = orderPosition + posCounter;
-        }
-
-        sectionData.order_position = finalOrderPosition;
+        // Use the selected position directly (dropdown handles available positions)
+        sectionData.order_position = orderPosition;
 
         // Create new section
         await createHomeSection(sectionData);
@@ -362,6 +361,7 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item, existingSe
     setSectionType(item?.section_type || "");
     setCustomSectionType(item?.section_type || "");
     setShowSectionTypeDropdown(false);
+    setShowPositionDropdown(false);
     setOrderPosition(item?.order_position || 1);
     setIsActive(item?.is_active ?? true);
     validateUrl(item?.video_url || "");
@@ -381,6 +381,7 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item, existingSe
         setSectionType("");
         setCustomSectionType("");
         setShowSectionTypeDropdown(false);
+        setShowPositionDropdown(false);
         setUrlValidation({ isValid: null, message: "" });
       }
     }
@@ -529,16 +530,69 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item, existingSe
           {/* Order Position & Active Status */}
           <div className="grid grid-cols-2 gap-4">
             {/* Order Position */}
-            <div className="space-y-2">
+            <div className="space-y-2" ref={positionDropdownRef}>
               <label className="text-sm font-medium text-gray-700">Order Position</label>
-              <input
-                type="number"
-                min="1"
-                value={orderPosition}
-                onChange={(e) => setOrderPosition(Math.max(1, parseInt(e.target.value) || 1))}
-                className="w-full rounded-lg border border-gray-300 bg-white px-3 sm:px-4 py-2 sm:py-2.5 text-sm shadow-sm
-                focus:outline-none focus:ring-2 focus:ring-orange-400 transition"
-              />
+              
+              {/* Custom dropdown for position */}
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setShowPositionDropdown(!showPositionDropdown)}
+                  className="w-full flex items-center justify-between rounded-lg border border-gray-300 bg-white px-3 sm:px-4 py-2 sm:py-2.5 text-sm shadow-sm
+                  focus:outline-none focus:ring-2 focus:ring-orange-400 transition"
+                >
+                  <span className={existingOrderPositions.includes(orderPosition) && (!item || item.order_position !== orderPosition) ? "text-gray-700" : ""}>
+                    {orderPosition}
+                    {item && item.order_position === orderPosition && (
+                      <span className="ml-2 text-xs text-orange-500">(Current)</span>
+                    )}
+                  </span>
+                  <ChevronDownIcon className="w-4 h-4 text-gray-500" />
+                </button>
+
+                {/* Position dropdown */}
+                {showPositionDropdown && (
+                  <div className="absolute z-10 mt-1 w-full rounded-lg border border-gray-300 bg-white shadow-sm max-h-48 overflow-y-auto">
+                    {Array.from({ length: Math.max(10, ...existingOrderPositions.filter(p => typeof p === 'number')) + 2 }, (_, i) => i + 1).map((pos) => {
+                      const isUsed = existingOrderPositions.includes(pos);
+                      const isCurrent = item && item.order_position === pos;
+                      const isDisabled = isUsed && !isCurrent;
+
+                      return (
+                        <button
+                          key={pos}
+                          type="button"
+                          disabled={isDisabled}
+                          onClick={() => {
+                            if (!isDisabled) {
+                              setOrderPosition(pos);
+                              setShowPositionDropdown(false);
+                            }
+                          }}
+                          className={`w-full px-3 py-2 text-left text-sm transition flex items-center justify-between ${
+                            isCurrent
+                              ? "bg-orange-50 text-orange-600 cursor-pointer"
+                              : isDisabled
+                              ? "text-gray-400 bg-gray-50 cursor-not-allowed"
+                              : "text-gray-700 hover:bg-gray-100 cursor-pointer"
+                          }`}
+                        >
+                          <span>{pos}</span>
+                          <div className="flex items-center gap-1">
+                            {isCurrent && (
+                              <span className="text-xs font-medium text-orange-500">(Current)</span>
+                            )}
+                            {isDisabled && (
+                              <span className="text-xs text-gray-400">(Used)</span>
+                            )}
+                            {isCurrent && <CheckIcon className="w-3 h-3 text-orange-500" />}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Active Status */}
