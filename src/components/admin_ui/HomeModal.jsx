@@ -52,9 +52,9 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item, existingSe
 
   // Get the actual section type to use
   const getSectionTypeValue = () => {
-    // For create mode: use customSectionType (user's input), default to "hero"
+    // For create mode: use customSectionType
     // For update mode: use sectionType (existing value)
-    return isCreate ? (customSectionType || "hero") : sectionType;
+    return isCreate ? customSectionType : sectionType;
   };
 
   // Extract YouTube video ID from various URL formats
@@ -310,8 +310,8 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item, existingSe
     setContent(item?.content || "");
     setImage(null);
     setVideoUrl(item?.video_url || "");
-    setSectionType(item?.section_type || "hero");
-    setCustomSectionType(item?.section_type || "hero");
+    setSectionType(item?.section_type || "");
+    setCustomSectionType(item?.section_type || "");
     setShowSectionTypeDropdown(false);
     validateUrl(item?.video_url || "");
   };
@@ -327,8 +327,8 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item, existingSe
         setContent("");
         setImage(null);
         setVideoUrl("");
-        setSectionType("hero");
-        setCustomSectionType("hero");
+        setSectionType("");
+        setCustomSectionType("");
         setShowSectionTypeDropdown(false);
         setUrlValidation({ isValid: null, message: "" });
       }
@@ -397,7 +397,7 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item, existingSe
               <input
                 type="text"
                 value={customSectionType}
-                placeholder="Enter section type"
+                placeholder="e.g., hero, about, program, contact"
                 onChange={(e) => {
                   setCustomSectionType(e.target.value);
                   setSectionType(e.target.value);
