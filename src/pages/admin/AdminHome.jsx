@@ -282,6 +282,7 @@ export default function HomePage() {
           const baseType = item.section_type.replace(/\s+\d+$/, '').trim();
           return baseType;
         }))]}
+        existingOrderPositions={data.map((item) => item.order_position)}
       />
     </div>
   );

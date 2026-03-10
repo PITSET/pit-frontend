@@ -17,7 +17,7 @@ import {
 import { createHomeSection, updateHomeSection } from "../../lib/services/homeService";
 import { supabase } from "../../lib/supabaseClient";
 
-export default function HomeModal({ isOpen, onClose, onRefresh, item, existingSectionTypes = [] }) {
+export default function HomeModal({ isOpen, onClose, onRefresh, item, existingSectionTypes = [], existingOrderPositions = [] }) {
   const isCreate = !item;
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
@@ -299,14 +299,32 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item, existingSe
 
         sectionData.section_type = finalSectionType;
 
-        console.log("Creating section with data:", sectionData);
+        // Auto-increment order_position if it already exists
+        let finalOrderPosition = orderPosition;
+        const existingPositions = existingOrderPositions;
+        let posCounter = 0;
+
+        while (existingPositions.includes(finalOrderPosition)) {
+          posCounter++;
+          finalOrderPosition = orderPosition + posCounter;
+        }
+
+        sectionData.order_position = finalOrderPosition;
 
         // Create new section
         await createHomeSection(sectionData);
 
-        // Notify based on whether section type was auto-generated
+        // Build notification message
+        const notifications = [];
         if (finalSectionType !== getSectionTypeValue().trim()) {
-          toast.success(`Section created as "${finalSectionType}" (original name already exists)`);
+          notifications.push(`section type as "${finalSectionType}"`);
+        }
+        if (finalOrderPosition !== orderPosition) {
+          notifications.push(`position ${finalOrderPosition}`);
+        }
+
+        if (notifications.length > 0) {
+          toast.success(`Section created with ${notifications.join(" and ")}`);
         } else {
           toast.success("Section created successfully!");
         }
