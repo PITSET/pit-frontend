@@ -73,14 +73,14 @@ export default function HomePage() {
 
   return (
     <div className="p-4 md:p-6 max-w-7xl mx-auto mb-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 md:mb-8">
-        <h1 className="text-2xl md:text-3xl font-semibold">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+        <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold text-gray-900">
           Home Page
         </h1>
 
         <button
           onClick={handleCreate}
-          className="inline-flex items-center justify-center gap-2 px-5 py-2.5 md:py-2 bg-primary-gradient text-white font-medium text-sm rounded-lg hover:bg-primary-gradient-hover focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2 transition-all duration-200 shadow-md hover:shadow-lg"
+          className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-3 sm:py-2.5 md:py-2 bg-primary-gradient text-white font-medium text-sm rounded-lg hover:bg-primary-gradient-hover focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2 transition-all duration-200 shadow-md hover:shadow-lg"
         >
           <PlusIcon className="w-5 h-5" />
           <span className="hidden sm:inline">Create Section</span>
@@ -145,25 +145,25 @@ export default function HomePage() {
                   </span>
                 </td>
 
-                <td className="px-4 lg:px-8 py-4 lg:py-6 text-center">
-                  <div className="flex items-center justify-center gap-0 rounded-lg border border-gray-300 overflow-hidden">
+                <td className="px-2 sm:px-4 lg:px-8 py-4 lg:py-6 text-center">
+                  <div className="inline-flex items-center justify-center gap-0 rounded-md sm:rounded-lg border border-gray-200 sm:border-gray-300 overflow-hidden">
                     <button
                       onClick={() => {
                         setSelectedItem(item);
                         setIsModalOpen(true);
                       }}
-                      className="p-2 hover:bg-gray-200 transition"
+                      className="p-1.5 sm:p-2 hover:bg-gray-100 sm:hover:bg-gray-200 transition"
                     >
-                      <PencilSquareIcon className="w-5 h-5 text-gray-600" />
+                      <PencilSquareIcon className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
                     </button>
 
-                    <div className="h-6 w-px bg-gray-300"></div>
+                    <div className="h-4 w-px sm:h-6 bg-gray-200 sm:bg-gray-300"></div>
 
                     <button
                       onClick={() => handleDelete(item.id)}
-                      className="p-2 hover:bg-red-100 transition"
+                      className="p-1.5 sm:p-2 hover:bg-red-50 sm:hover:bg-red-100 transition"
                     >
-                      <TrashIcon className="w-5 h-5 text-red-500" />
+                      <TrashIcon className="w-4 h-4 sm:w-5 sm:h-5 text-red-500" />
                     </button>
                   </div>
                 </td>
@@ -253,25 +253,27 @@ export default function HomePage() {
               </div>
 
               {/* Action Buttons */}
-              <div className="flex-shrink-0 flex items-center gap-0 rounded-lg border border-gray-300 overflow-hidden">
-                <button
-                  onClick={() => {
-                    setSelectedItem(item);
-                    setIsModalOpen(true);
-                  }}
-                  className="p-2 hover:bg-gray-200 transition"
-                >
-                  <PencilSquareIcon className="w-5 h-5 text-gray-600" />
-                </button>
+              <div className="flex-shrink-0">
+                <div className="flex flex-col sm:flex-row items-center gap-0 rounded-md sm:rounded-lg border border-gray-200 sm:border-gray-300 overflow-hidden">
+                  <button
+                    onClick={() => {
+                      setSelectedItem(item);
+                      setIsModalOpen(true);
+                    }}
+                    className="p-1.5 sm:p-2 hover:bg-gray-100 sm:hover:bg-gray-200 transition"
+                  >
+                    <PencilSquareIcon className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
+                  </button>
 
-                <div className="w-px h-6 bg-gray-300"></div>
+                  <div className="h-px w-4 sm:h-6 sm:w-px bg-gray-200 sm:bg-gray-300"></div>
 
-                <button
-                  onClick={() => handleDelete(item.id)}
-                  className="p-2 hover:bg-red-100 transition"
-                >
-                  <TrashIcon className="w-5 h-5 text-red-500" />
-                </button>
+                  <button
+                    onClick={() => handleDelete(item.id)}
+                    className="p-1.5 sm:p-2 hover:bg-red-50 sm:hover:bg-red-100 transition"
+                  >
+                    <TrashIcon className="w-4 h-4 sm:w-5 sm:h-5 text-red-500" />
+                  </button>
+                </div>
               </div>
             </div>
           </div>
