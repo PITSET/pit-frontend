@@ -80,10 +80,11 @@ export default function HomePage() {
 
         <button
           onClick={handleCreate}
-          className="flex items-center justify-center gap-2 px-4 py-2 bg-primary-gradient text-white rounded-lg hover:bg-primary-gradient-hover transition shadow-sm"
+          className="inline-flex items-center justify-center gap-2 px-5 py-2.5 md:py-2 bg-primary-gradient text-white font-medium text-sm rounded-lg hover:bg-primary-gradient-hover focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2 transition-all duration-200 shadow-md hover:shadow-lg"
         >
           <PlusIcon className="w-5 h-5" />
-          <span>Create</span>
+          <span className="hidden sm:inline">Create Section</span>
+          <span className="sm:hidden">Create</span>
         </button>
       </div>
 
