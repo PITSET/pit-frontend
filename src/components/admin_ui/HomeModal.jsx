@@ -287,7 +287,15 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item, existingSe
           return;
         }
 
-        // Use the section type as-is (user must ensure it's unique)
+        // Check if section type already exists
+        const existingTypesLower = existingSectionTypes.map((t) => t.toLowerCase());
+        if (existingTypesLower.includes(sectionTypeValue.trim().toLowerCase())) {
+          toast.error(`Section type "${sectionTypeValue}" already exists. Please use a different name.`, { id: toastId });
+          setLoading(false);
+          return;
+        }
+
+        // Use the section type as-is
         sectionData.section_type = sectionTypeValue.trim();
 
         // Auto-increment order_position if it already exists
@@ -307,7 +315,20 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item, existingSe
 
         toast.success("Section created successfully!");
       } else {
-        // Update existing section
+        // Update existing section - check if section type changed
+        const newSectionType = sectionType;
+        const originalSectionType = item.section_type;
+
+        // Only validate if the section type has changed
+        if (newSectionType.trim().toLowerCase() !== originalSectionType.trim().toLowerCase()) {
+          const existingTypesLower = existingSectionTypes.map((t) => t.toLowerCase());
+          if (existingTypesLower.includes(newSectionType.trim().toLowerCase())) {
+            toast.error(`Section type "${newSectionType}" already exists. Please use a different name.`, { id: toastId });
+            setLoading(false);
+            return;
+          }
+        }
+
         await updateHomeSection(item.id, sectionData);
         toast.success("Section updated successfully!", { id: toastId });
       }
@@ -453,40 +474,25 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item, existingSe
             {/* Dropdown for existing section types */}
             {showSectionTypeDropdown && existingSectionTypes.length > 0 && (
               <div className="mt-1 rounded-lg border border-gray-300 bg-white shadow-sm max-h-40 overflow-y-auto">
-                {existingSectionTypes.map((type, index) => {
-                  const isDisabled = true; // Disable existing section types to prevent duplicates
-                  return (
-                    <button
-                      key={index}
-                      type="button"
-                      disabled={isDisabled}
-                      onClick={() => {
-                        if (!isDisabled) {
-                          setSectionType(type);
-                          setCustomSectionType(type);
-                          setShowSectionTypeDropdown(false);
-                        }
-                      }}
-                      className={`w-full px-3 sm:px-4 py-2 text-left text-sm transition flex items-center justify-between ${
-                        isDisabled
-                          ? "text-gray-400 cursor-not-allowed bg-gray-50"
-                          : customSectionType === type
-                          ? "bg-orange-50 text-orange-600 hover:bg-gray-100"
-                          : "hover:bg-gray-100"
-                      }`}
-                    >
-                      <div className="flex items-center gap-2">
-                        <span>{type}</span>
-                        {isDisabled && (
-                          <span className="text-xs text-gray-400">(Existing)</span>
-                        )}
-                      </div>
-                      {customSectionType === type && !isDisabled && (
-                        <CheckIcon className="w-4 h-4 text-orange-500" />
-                      )}
-                    </button>
-                  );
-                })}
+                {existingSectionTypes.map((type, index) => (
+                  <button
+                    key={index}
+                    type="button"
+                    onClick={() => {
+                      setSectionType(type);
+                      setCustomSectionType(type);
+                      setShowSectionTypeDropdown(false);
+                    }}
+                    className={`w-full px-3 sm:px-4 py-2 text-left text-sm hover:bg-gray-100 transition flex items-center justify-between ${
+                      customSectionType === type ? "bg-orange-50 text-orange-600" : ""
+                    }`}
+                  >
+                    <span>{type}</span>
+                    {customSectionType === type && (
+                      <CheckIcon className="w-4 h-4 text-orange-500" />
+                    )}
+                  </button>
+                ))}
               </div>
             )}
 
