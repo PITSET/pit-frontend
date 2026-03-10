@@ -383,6 +383,15 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item, existingSe
         setShowSectionTypeDropdown(false);
         setShowPositionDropdown(false);
         setUrlValidation({ isValid: null, message: "" });
+        
+        // Auto-select smallest unused position for create mode
+        const maxPosition = Math.max(10, ...existingOrderPositions.filter(p => typeof p === 'number')) + 2;
+        const usedPositions = new Set(existingOrderPositions);
+        let smallestUnused = 1;
+        while (usedPositions.has(smallestUnused) && smallestUnused <= maxPosition) {
+          smallestUnused++;
+        }
+        setOrderPosition(smallestUnused);
       }
     }
   }, [isOpen, item]);
