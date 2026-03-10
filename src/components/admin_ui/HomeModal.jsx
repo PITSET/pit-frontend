@@ -9,6 +9,7 @@ import {
   ArrowTopRightOnSquareIcon,
   CheckCircleIcon,
   ExclamationCircleIcon,
+  ChevronDownIcon,
 } from "@heroicons/react/24/outline";
 
 // api
@@ -385,6 +386,7 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item, existingSe
                 ))}
                 <option value="__custom__">+ Custom section type</option>
               </select>
+              <ChevronDownIcon className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
             </div>
 
             {/* Show custom input when "+ Custom section type" is selected */}
