@@ -27,7 +27,7 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item, existingSe
   const [sectionType, setSectionType] = useState("");
   const [customSectionType, setCustomSectionType] = useState("");
   const [showSectionTypeDropdown, setShowSectionTypeDropdown] = useState(false);
-  const [orderPosition, setOrderPosition] = useState(0);
+  const [orderPosition, setOrderPosition] = useState(1);
   const [isActive, setIsActive] = useState(true);
 
   // Close dropdown when clicking outside
@@ -339,7 +339,7 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item, existingSe
     setSectionType(item?.section_type || "");
     setCustomSectionType(item?.section_type || "");
     setShowSectionTypeDropdown(false);
-    setOrderPosition(item?.order_position || 0);
+    setOrderPosition(item?.order_position || 1);
     setIsActive(item?.is_active ?? true);
     validateUrl(item?.video_url || "");
   };
@@ -491,8 +491,9 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item, existingSe
               <label className="text-sm font-medium text-gray-700">Order Position</label>
               <input
                 type="number"
+                min="1"
                 value={orderPosition}
-                onChange={(e) => setOrderPosition(parseInt(e.target.value) || 0)}
+                onChange={(e) => setOrderPosition(Math.max(1, parseInt(e.target.value) || 1))}
                 className="w-full rounded-lg border border-gray-300 bg-white px-3 sm:px-4 py-2 sm:py-2.5 text-sm shadow-sm
                 focus:outline-none focus:ring-2 focus:ring-orange-400 transition"
               />
