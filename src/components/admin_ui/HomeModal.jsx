@@ -494,7 +494,7 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item, existingSe
                       <div className="flex items-center gap-2">
                         <span>{type}</span>
                         {isCurrentSectionType && (
-                          <span className="text-xs font-medium text-orange-500">Current</span>
+                          <span className="text-xs font-medium text-orange-500">(Current)</span>
                         )}
                       </div>
                       {isCurrentSectionType && (
