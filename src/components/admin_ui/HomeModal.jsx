@@ -281,9 +281,16 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item, existingSe
 
         sectionData.section_type = finalSectionType;
 
+        // Notify if section type was auto-generated
+        if (finalSectionType !== getSectionTypeValue().trim()) {
+          toast.success(`Section created as "${finalSectionType}" (original name already exists)`, { id: toastId });
+        }
+
         // Create new section
         await createHomeSection(sectionData);
-        toast.success("Section created successfully!", { id: toastId });
+        if (finalSectionType === getSectionTypeValue().trim()) {
+          toast.success("Section created successfully!", { id: toastId });
+        }
       } else {
         // Update existing section
         await updateHomeSection(item.id, sectionData);
