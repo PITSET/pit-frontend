@@ -25,17 +25,17 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item, existingSe
   const [videoUrl, setVideoUrl] = useState("");
   const [sectionType, setSectionType] = useState("");
   const [customSectionType, setCustomSectionType] = useState("");
+  const [showSectionTypeDropdown, setShowSectionTypeDropdown] = useState(false);
   const [urlValidation, setUrlValidation] = useState({
     isValid: null,
     message: "",
   });
 
-  // Get the actual section type to use (either selected from dropdown or custom input)
+  // Get the actual section type to use
   const getSectionTypeValue = () => {
-    if (sectionType === "__custom__") {
-      return customSectionType;
-    }
-    return sectionType;
+    // For create mode: use customSectionType (user's input), default to "hero"
+    // For update mode: use sectionType (existing value)
+    return isCreate ? (customSectionType || "hero") : sectionType;
   };
 
   // Extract YouTube video ID from various URL formats
@@ -291,8 +291,9 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item, existingSe
     setContent(item?.content || "");
     setImage(null);
     setVideoUrl(item?.video_url || "");
-    setSectionType(item?.section_type || "");
-    setCustomSectionType("");
+    setSectionType(item?.section_type || "hero");
+    setCustomSectionType(item?.section_type || "hero");
+    setShowSectionTypeDropdown(false);
     validateUrl(item?.video_url || "");
   };
 
@@ -307,8 +308,9 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item, existingSe
         setContent("");
         setImage(null);
         setVideoUrl("");
-        setSectionType("");
-        setCustomSectionType("");
+        setSectionType("hero");
+        setCustomSectionType("hero");
+        setShowSectionTypeDropdown(false);
         setUrlValidation({ isValid: null, message: "" });
       }
     }
@@ -371,37 +373,52 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item, existingSe
           <div className="space-y-2">
             <label className="text-sm font-medium text-gray-700">Section Type</label>
 
-            <div className="relative">
-              <select
-                value={sectionType}
-                onChange={(e) => setSectionType(e.target.value)}
-                className="w-full rounded-lg border border-gray-300 bg-white px-3 sm:px-4 py-2 sm:py-2.5 text-sm shadow-sm
-                focus:outline-none focus:ring-2 focus:ring-orange-400 transition appearance-none"
-              >
-                <option value="">Select existing or create new...</option>
-                {existingSectionTypes.map((type, index) => (
-                  <option key={index} value={type}>
-                    {type}
-                  </option>
-                ))}
-                <option value="__custom__">+ Custom section type</option>
-              </select>
-              <ChevronDownIcon className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
-            </div>
-
-            {/* Show custom input when "+ Custom section type" is selected */}
-            {sectionType === "__custom__" && (
+            {/* Input field with dropdown button */}
+            <div className="flex rounded-lg border border-gray-300 overflow-hidden bg-white focus-within:ring-2 focus-within:ring-orange-400">
               <input
                 type="text"
                 value={customSectionType}
-                placeholder="Enter custom section type..."
-                onChange={(e) => setCustomSectionType(e.target.value)}
-                className="w-full rounded-lg border border-gray-300 bg-white px-3 sm:px-4 py-2 sm:py-2.5 text-sm shadow-sm
-                focus:outline-none focus:ring-2 focus:ring-orange-400 transition mt-2"
+                placeholder="Enter section type"
+                onChange={(e) => {
+                  setCustomSectionType(e.target.value);
+                  setSectionType(e.target.value);
+                }}
+                className="flex-1 px-3 sm:px-4 py-2 sm:py-2.5 text-sm shadow-sm outline-none transition min-w-0"
               />
+              {existingSectionTypes.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setShowSectionTypeDropdown(!showSectionTypeDropdown)}
+                  className="flex items-center justify-center px-3 sm:px-4 bg-gray-50 border-l border-gray-300 text-gray-600 hover:bg-gray-100 transition"
+                  title="Select existing"
+                >
+                  <ChevronDownIcon className="w-4 h-5 sm:w-5 sm:h-5" />
+                </button>
+              )}
+            </div>
+
+            {/* Dropdown for existing section types */}
+            {showSectionTypeDropdown && existingSectionTypes.length > 0 && (
+              <div className="mt-1 rounded-lg border border-gray-300 bg-white shadow-sm max-h-40 overflow-y-auto">
+                {existingSectionTypes.map((type, index) => (
+                  <button
+                    key={index}
+                    type="button"
+                    onClick={() => {
+                      setSectionType(type);
+                      setCustomSectionType(type);
+                      setShowSectionTypeDropdown(false);
+                    }}
+                    className="w-full px-3 sm:px-4 py-2 text-left text-sm hover:bg-gray-100 transition"
+                  >
+                    {type}
+                  </button>
+                ))}
+              </div>
             )}
+
             <p className="text-xs text-gray-500">
-              Select an existing type or choose "Custom" to create a new one.
+              Default: "hero". Select from existing or type a new section type.
             </p>
           </div>
 
