@@ -169,7 +169,7 @@ export default function AdminProjects() {
 
           <tbody className="divide-y divide-gray-200">
             {currentItems.map((item) => (
-              <tr key={item.id} className={`hover:bg-gray-100 transition ${!item.is_active ? 'bg-gray-50' : ''}`}>
+              <tr key={item.id} className={`hover:bg-gray-100 transition ${!item.is_featured ? 'bg-gray-50' : ''}`}>
                 <td className="px-4 lg:px-8 py-4 text-center">
                   <div className="w-16 h-16 lg:w-20 lg:h-20 bg-gray-100 rounded-lg overflow-hidden mx-auto">
                     <img
@@ -192,11 +192,11 @@ export default function AdminProjects() {
 
                 <td className="px-4 lg:px-8 py-4 lg:py-6 text-center">
                   <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                    item.is_active 
+                    item.is_featured 
                       ? 'bg-green-100 text-green-800' 
                       : 'bg-gray-200 text-gray-800'
                   }`}>
-                    {item.is_active ? 'Active' : 'Inactive'}
+                    {item.is_featured ? 'Active' : 'Inactive'}
                   </span>
                 </td>
 
@@ -274,7 +274,7 @@ export default function AdminProjects() {
         {currentItems.map((item) => (
           <div
             key={item.id}
-            className={`bg-white rounded-xl border shadow-sm p-4 ${!item.is_active ? 'border-gray-200 opacity-75' : 'border-gray-200'}`}
+            className={`bg-white rounded-xl border shadow-sm p-4 ${!item.is_featured ? 'border-gray-200 opacity-75' : 'border-gray-200'}`}
           >
             <div className="flex gap-4">
               {/* Image */}
@@ -291,16 +291,16 @@ export default function AdminProjects() {
               {/* Content */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between mb-1">
-                  <h3 className={`font-semibold truncate ${item.is_active ? 'text-gray-900' : 'text-gray-500'}`}>
+                  <h3 className={`font-semibold truncate ${item.is_featured ? 'text-gray-900' : 'text-gray-500'}`}>
                     {item.name}
                   </h3>
                   <div className="flex gap-1 ml-2">
                     <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                      item.is_active 
+                      item.is_featured 
                         ? 'bg-green-100 text-green-800' 
                         : 'bg-gray-200 text-gray-800'
                     }`}>
-                      {item.is_active ? 'Active' : 'Inactive'}
+                      {item.is_featured ? 'Active' : 'Inactive'}
                     </span>
                   </div>
                 </div>

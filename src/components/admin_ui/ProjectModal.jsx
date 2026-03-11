@@ -28,6 +28,7 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
   const [teamSize, setTeamSize] = useState("");
   const [videoUrl, setVideoUrl] = useState("");
   const [githubUrl, setGithubUrl] = useState("");
+  const [result, setResult] = useState("");
   const [loading, setLoading] = useState(false);
   const [isActive, setIsActive] = useState(true);
 
@@ -285,18 +286,27 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
         }
       }
 
+      // Convert objectives string to array if it's not already an array
+      let objectivesArray = objectives;
+      if (typeof objectives === "string" && objectives.trim() !== "") {
+        objectivesArray = objectives.split("\n").filter(item => item.trim() !== "");
+      } else if (objectives === "") {
+        objectivesArray = [];
+      }
+
       const projectData = {
         name,
         overview,
-        objectives,
+        objectives: objectivesArray,
         tasks,
         leader,
-        duration,
+        duration: duration ? parseInt(duration) : null,
         team_size: teamSize ? parseInt(teamSize) : null,
         video_url: videoUrl,
         github_url: githubUrl,
         images: imageUrls,
-        is_active: isActive,
+        result,
+        is_featured: isActive, // Use is_featured field from backend, but display as Active/Inactive
       };
 
       if (isCreate) {
@@ -358,16 +368,17 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
   const resetForm = () => {
     setName(item?.name || "");
     setOverview(item?.overview || "");
-    setObjectives(item?.objectives || "");
+    setObjectives(Array.isArray(item?.objectives) ? item.objectives.join("\n") : (item?.objectives || ""));
     setTasks(item?.tasks || "");
     setLeader(item?.leader || "");
-    setDuration(item?.duration || "");
+    setDuration(item?.duration?.toString() || "");
     setTeamSize(item?.team_size?.toString() || "");
     setVideoUrl(item?.video_url || "");
     setGithubUrl(item?.github_url || "");
+    setResult(item?.result || "");
     setExistingImages(item?.images || []);
     setNewImages([]);
-    setIsActive(item?.is_active ?? true);
+    setIsActive(item?.is_featured || false); // Use is_featured field from backend
     validateUrl(item?.video_url || "");
   };
 
@@ -387,9 +398,10 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
         setTeamSize("");
         setVideoUrl("");
         setGithubUrl("");
+        setResult("");
         setExistingImages([]);
         setNewImages([]);
-        setIsActive(true);
+        setIsActive(true); // Default to active (is_featured = true)
         setUrlValidation({ isValid: null, message: "" });
       }
     }
@@ -453,7 +465,7 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
             />
           </div>
 
-          {/* Status toggle */}
+          {/* Active/Inactive toggle */}
           <div className="space-y-2">
             <label className="text-sm font-medium text-gray-700">Status</label>
             <div className="flex items-center gap-3 py-2">
@@ -520,18 +532,19 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
 
           {/* Duration */}
           <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700">Duration</label>
+            <label className="text-sm font-medium text-gray-700">Duration (months)</label>
 
             <input
-              type="text"
+              type="number"
               value={duration}
-              placeholder="e.g., 3 months, 6 weeks..."
+              placeholder="Enter duration in months..."
               onChange={(e) => setDuration(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
                   e.target.blur();
                 }
               }}
+              min="1"
               className="w-full rounded-lg border border-gray-300 bg-white px-3 sm:px-4 py-2 sm:py-2.5 text-sm shadow-sm
               focus:outline-none focus:ring-2 focus:ring-orange-400 transition"
             />
@@ -621,12 +634,12 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
           {/* Objectives */}
           <div className="space-y-2">
             <label className="text-sm font-medium text-gray-700">
-              Objectives
+              Objectives (one per line)
             </label>
 
             <textarea
               value={objectives}
-              placeholder="Enter project objectives..."
+              placeholder="Enter project objectives (one per line)..."
               onChange={(e) => setObjectives(e.target.value)}
               className="w-full min-h-[80px] rounded-lg border border-gray-300 bg-white px-3 sm:px-4 py-2 sm:py-3 text-sm
               focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none transition"
@@ -643,6 +656,21 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
               value={tasks}
               placeholder="Enter project tasks..."
               onChange={(e) => setTasks(e.target.value)}
+              className="w-full min-h-[80px] rounded-lg border border-gray-300 bg-white px-3 sm:px-4 py-2 sm:py-3 text-sm
+              focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none transition"
+            />
+          </div>
+
+          {/* Result */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-700">
+              Result
+            </label>
+
+            <textarea
+              value={result}
+              placeholder="Enter project result..."
+              onChange={(e) => setResult(e.target.value)}
               className="w-full min-h-[80px] rounded-lg border border-gray-300 bg-white px-3 sm:px-4 py-2 sm:py-3 text-sm
               focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none transition"
             />
@@ -707,29 +735,29 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
               focus:outline-none focus:ring-2 focus:ring-orange-400 transition"
             />
           </div>
-        </div>
 
-        {/* Footer - Fixed at bottom */}
-        <div className="flex-shrink-0 bg-[#FEF2F3] rounded-b-2xl px-4 sm:px-6 py-3 sm:py-4 border-t border-gray-200">
-          <div className="flex justify-end gap-2 sm:gap-3">
-            <button
-              onClick={() => {
-                resetForm();
-                onClose();
-              }}
-              className="px-4 sm:px-6 py-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-white transition"
-            >
-              Cancel
-            </button>
+          {/* Footer - Not Fixed */}
+          <div className="bg-[#FEF2F3] rounded-b-2xl px-4 sm:px-6 py-3 sm:py-4 border-t border-gray-200 mt-4">
+            <div className="flex justify-end gap-2 sm:gap-3">
+              <button
+                onClick={() => {
+                  resetForm();
+                  onClose();
+                }}
+                className="px-4 sm:px-6 py-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-white transition"
+              >
+                Cancel
+              </button>
 
-            <button
-              disabled={loading}
-              onClick={handleSave}
-              className="px-4 sm:px-5 py-2 rounded-lg text-white font-medium bg-primary-gradient hover:bg-primary-gradient-hover
-              active:scale-95 focus:outline-none focus:ring-2 focus:ring-[#F65919] focus:ring-offset-2 transition disabled:opacity-60"
-            >
-              {loading ? (isCreate ? "Creating..." : "Saving...") : (isCreate ? "Create" : "Save")}
-            </button>
+              <button
+                disabled={loading}
+                onClick={handleSave}
+                className="px-4 sm:px-5 py-2 rounded-lg text-white font-medium bg-primary-gradient hover:bg-primary-gradient-hover
+                active:scale-95 focus:outline-none focus:ring-2 focus:ring-[#F65919] focus:ring-offset-2 transition disabled:opacity-60"
+              >
+                {loading ? (isCreate ? "Creating..." : "Saving...") : (isCreate ? "Create" : "Save")}
+              </button>
+            </div>
           </div>
         </div>
       </div>
