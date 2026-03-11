@@ -3,18 +3,25 @@ import { Outlet } from "react-router-dom";
 import { Bars3Icon } from "@heroicons/react/24/outline";
 
 import Sidebar from "./Sidebar";
-import { logout } from "../../utils/auth";
+import { logout, restoreSession } from "../../utils/auth";
 
 export default function AdminLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Periodic session check - auto logout when session expires
   useEffect(() => {
-    const checkSessionExpiry = () => {
+    const checkSessionExpiry = async () => {
       const expiry = localStorage.getItem("sessionExpiry");
       
       if (expiry && Date.now() > parseInt(expiry)) {
-        logout(true);
+        // Try to restore session using refresh token
+        const session = await restoreSession();
+        
+        if (!session) {
+          // If restore failed, logout
+          logout(true);
+        }
+        // If restore succeeded, session has been updated
       }
     };
 

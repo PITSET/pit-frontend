@@ -24,7 +24,7 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    // skip auto logout for login endpoint
+    // Handle 401 Unauthorized
     if (
       error.response &&
       error.response.status === 401 &&
@@ -38,11 +38,31 @@ api.interceptors.response.use(
       // Remove token and redirect
       localStorage.removeItem("token");
       localStorage.removeItem("sessionExpiry");
+      localStorage.removeItem("refreshToken");
       
       // Delay redirect to allow toast to show
       setTimeout(() => {
         window.location.href = "/admin/login";
       }, 2000);
+    }
+
+    // Handle 403 Forbidden (admin access denied)
+    if (error.response && error.response.status === 403) {
+      const errorMessage = error.response.data?.error || "Access denied";
+      
+      // Show error toast
+      toast.error(errorMessage);
+      
+      // If account is deactivated, redirect to login
+      if (errorMessage.includes("deactivated")) {
+        localStorage.removeItem("token");
+        localStorage.removeItem("sessionExpiry");
+        localStorage.removeItem("refreshToken");
+        
+        setTimeout(() => {
+          window.location.href = "/admin/login";
+        }, 2000);
+      }
     }
 
     return Promise.reject(error);

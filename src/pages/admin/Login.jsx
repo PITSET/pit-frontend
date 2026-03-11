@@ -70,11 +70,8 @@ export default function Login() {
     setLoading(true);
 
     try {
-      // Call login API
-      const res = await login(email, password);
-
-      // Save token to localStorage
-      localStorage.setItem("token", res.token);
+      // Call login API using Supabase auth
+      await login(email, password);
 
       // Show success message (toast notification)
       toast.success("Login successful! Redirecting...");
@@ -88,8 +85,22 @@ export default function Login() {
          ERROR HANDLING - Show toast notification
          =============================== */
 
+      // Supabase auth error message
+      if (err.message) {
+        // Handle common Supabase auth errors
+        if (err.message.includes("Invalid login credentials")) {
+          toast.error("Invalid email or password");
+        } else if (err.message.includes("Email not confirmed")) {
+          toast.error("Please confirm your email address");
+        } else if (err.message.includes("Too many requests")) {
+          toast.error("Too many login attempts. Please try again later.");
+        } else {
+          toast.error(err.message);
+        }
+      }
+
       // Backend error message
-      if (err.response?.data?.message) {
+      else if (err.response?.data?.message) {
         toast.error(err.response.data.message);
       }
 
