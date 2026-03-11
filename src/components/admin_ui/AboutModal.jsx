@@ -11,7 +11,7 @@ import {
 } from "@heroicons/react/24/outline";
 
 // api
-import { createAboutSection, updateAboutSection, reorderAboutSection } from "../../lib/services/aboutService";
+import { createAboutSection, updateAboutSection } from "../../lib/services/aboutService";
 import { supabase } from "../../lib/supabaseClient";
 
 export default function AboutModal({ isOpen, onClose, onRefresh, item, existingSectionTypes = [], existingOrderPositions = [] }) {
@@ -217,7 +217,7 @@ export default function AboutModal({ isOpen, onClose, onRefresh, item, existingS
           }
         }
 
-        // Check if only position changed - use reorderAboutSection for cleaner API
+        // Check if only position changed - use updateAboutSection with just order_position
         const onlyPositionChanged = 
           title === item.title &&
           content === item.content &&
@@ -227,8 +227,8 @@ export default function AboutModal({ isOpen, onClose, onRefresh, item, existingS
           orderPosition !== item.order_position;
 
         if (onlyPositionChanged) {
-          // Use reorder endpoint for position-only changes
-          await reorderAboutSection(item.id, orderPosition);
+          // Use update endpoint with only order_position for position-only changes
+          await updateAboutSection(item.id, { order_position: orderPosition });
           toast.success("Section position updated successfully!", { id: toastId });
         } else {
           // Use general update endpoint for other changes
