@@ -11,6 +11,7 @@ import {
 import HomeModal from "../../components/admin_ui/HomeModal";
 import DeleteModal from "../../components/admin_ui/DeleteModal";
 import EmptyState from "../../components/admin_ui/EmptyState";
+import Loading from "../../components/ui/Loading";
 
 export default function HomePage() {
   const [data, setData] = useState([]);
@@ -62,8 +63,34 @@ export default function HomePage() {
     setIsModalOpen(true);
   };
 
-  if (loading) return <p className="p-8">Loading...</p>;
-  if (error) return <p className="p-8 text-red-500">{error}</p>;
+  if (loading) return (
+    <Loading 
+      table={{
+        columns: [
+          { label: 'Image', show: true },
+          { label: 'Title', show: true },
+          { label: 'Description', show: true },
+          { label: 'Position', show: true },
+          { label: 'Status', show: true },
+          { label: 'Action', show: true }
+        ],
+        showPosition: true,
+        showImage: true,
+        rows: 4
+      }}
+    />
+  );
+  if (error) return (
+    <div className="p-8 text-center">
+      <p className="text-red-500 mb-4">{error}</p>
+      <button 
+        onClick={fetchHome}
+        className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition"
+      >
+        Try Again
+      </button>
+    </div>
+  );
 
   // Empty state
   if (data.length === 0) {
