@@ -198,7 +198,7 @@ export default function AboutModal({ isOpen, onClose, onRefresh, item, existingS
         // Create new section
         await createAboutSection(sectionData);
 
-        toast.success("Section created successfully!");
+        toast.success("Section created successfully!", { id: toastId });
       } else {
         // Update existing section - check if section type changed
         const newSectionType = sectionType;
@@ -245,7 +245,32 @@ export default function AboutModal({ isOpen, onClose, onRefresh, item, existingS
       onClose();
     } catch (error) {
       console.error("Failed to save:", error);
-      toast.error(isCreate ? "Failed to create section" : "Failed to update section", { id: toastId });
+      
+      // Provide more specific error messages based on the error type
+      let errorMessage = isCreate ? "Failed to create section" : "Failed to update section";
+      
+      if (error.response) {
+        // Server responded with error status
+        const status = error.response.status;
+        const data = error.response.data;
+        
+        if (status === 400) {
+          errorMessage = data?.message || "Invalid request. Please check your input.";
+        } else if (status === 401) {
+          errorMessage = "Unauthorized. Please login again.";
+        } else if (status === 404) {
+          errorMessage = "Section not found. It may have been deleted.";
+        } else if (status === 500) {
+          errorMessage = "Server error. Please try again later.";
+        } else {
+          errorMessage = data?.message || errorMessage;
+        }
+      } else if (error.request) {
+        // Network error
+        errorMessage = "Network error. Please check your connection.";
+      }
+      
+      toast.error(errorMessage, { id: toastId });
     } finally {
       setLoading(false);
     }
