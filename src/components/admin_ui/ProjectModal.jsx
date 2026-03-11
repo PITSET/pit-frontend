@@ -242,16 +242,17 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
       const projectData = {
         name: name?.trim() || null,
         overview: overview?.trim() || null,
-        objectives: filteredObjectives.length > 0 ? filteredObjectives : null,
-        tasks: filteredTasks.length > 0 ? filteredTasks : null,
+        objectives: filteredObjectives.length > 0 ? filteredObjectives : [],
+        tasks: filteredTasks.length > 0 ? filteredTasks : [],
         leader: leader?.trim() || null,
         duration: duration?.trim() || null,
         team_size: teamSize && teamSize.trim() ? parseInt(teamSize) : null,
         github_url: githubUrl?.trim() || null,
-        images: imageUrls.length > 0 ? imageUrls : null,
+        images: imageUrls.length > 0 ? imageUrls : [],
         result: result?.trim() || null,
         is_featured: isActive,
-        program_ids: programIds.length > 0 ? programIds : null,
+        program_ids: programIds,
+        student_ids: [1], // Backend requires at least one student_id
       };
 
       if (isCreate) {
