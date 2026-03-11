@@ -240,19 +240,18 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
       const filteredTasks = tasks.filter(task => task.trim() !== "");
 
       const projectData = {
-        name,
-        overview,
-        objectives: filteredObjectives,
-        tasks: filteredTasks,
-        leader,
-        duration,
-        team_size: teamSize ? parseInt(teamSize) : null,
-        github_url: githubUrl,
-        images: imageUrls,
-        result,
-        is_featured: isActive, // Use is_featured field from backend, but display as Active/Inactive
-        program_ids: programIds,
-        student_ids: [], // Currently not implemented
+        name: name?.trim() || null,
+        overview: overview?.trim() || null,
+        objectives: filteredObjectives.length > 0 ? filteredObjectives : null,
+        tasks: filteredTasks.length > 0 ? filteredTasks : null,
+        leader: leader?.trim() || null,
+        duration: duration?.trim() || null,
+        team_size: teamSize && teamSize.trim() ? parseInt(teamSize) : null,
+        github_url: githubUrl?.trim() || null,
+        images: imageUrls.length > 0 ? imageUrls : null,
+        result: result?.trim() || null,
+        is_featured: isActive,
+        program_ids: programIds.length > 0 ? programIds : null,
       };
 
       if (isCreate) {
