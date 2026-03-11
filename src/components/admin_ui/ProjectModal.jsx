@@ -32,14 +32,13 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
   const [programIds, setProgramIds] = useState([]);
   const [programs, setPrograms] = useState([]);
   const [programsLoading, setProgramsLoading] = useState(false);
+  const [showProgramDropdown, setShowProgramDropdown] = useState(false);
 
   // Multiple images state
   const [existingImages, setExistingImages] = useState([]);
   const [newImages, setNewImages] = useState([]);
   const fileInputRef = useRef(null);
-
-  // Close dropdown when clicking outside
-  const dropdownRef = useRef(null);
+  const programDropdownRef = useRef(null);
 
   // Fetch programs when modal opens
   useEffect(() => {
@@ -61,13 +60,11 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
     fetchPrograms();
   }, [isOpen]);
 
+  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target)
-      ) {
-        // Handle dropdown close if needed
+      if (programDropdownRef.current && !programDropdownRef.current.contains(event.target)) {
+        setShowProgramDropdown(false);
       }
     };
 
@@ -356,6 +353,15 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
     }
   }, [isOpen, item]);
 
+  // Toggle program selection
+  const toggleProgram = (programId) => {
+    if (programIds.includes(programId)) {
+      setProgramIds(programIds.filter(id => id !== programId));
+    } else {
+      setProgramIds([...programIds, programId]);
+    }
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -510,7 +516,7 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
               </div>
 
               {/* Programs */}
-              <div className="space-y-2">
+              <div className="space-y-2" ref={programDropdownRef}>
                 <label className="text-sm font-medium text-gray-700">Programs</label>
                 
                 {programsLoading ? (
@@ -519,24 +525,59 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
                     <span>Loading programs...</span>
                   </div>
                 ) : (
-                  <select
-                    multiple
-                    value={programIds}
-                    onChange={(e) => {
-                      const options = Array.from(e.target.selectedOptions);
-                      const values = options.map(option => parseInt(option.value));
-                      setProgramIds(values);
-                    }}
-                    className="w-full rounded-lg border border-gray-300 bg-white px-3 sm:px-4 py-2 sm:py-2.5 text-sm shadow-sm
-                    focus:outline-none focus:ring-2 focus:ring-orange-400 transition"
-                    size={Math.min(5, programs.length + 1)}
-                  >
-                    {programs.map(program => (
-                      <option key={program.id} value={program.id}>
-                        {program.program_name}
-                      </option>
-                    ))}
-                  </select>
+                  <>
+                    {/* Custom dropdown button */}
+                    <button
+                      type="button"
+                      onClick={() => setShowProgramDropdown(!showProgramDropdown)}
+                      className="w-full flex items-center justify-between rounded-lg border border-gray-300 bg-white px-3 sm:px-4 py-2 sm:py-2.5 text-sm shadow-sm
+                      focus:outline-none focus:ring-2 focus:ring-orange-400 transition"
+                    >
+                      <span className={programIds.length > 0 ? "text-gray-900" : "text-gray-500"}>
+                        {programIds.length > 0 
+                          ? `${programIds.length} program(s) selected`
+                          : "Select program(s)..."}
+                      </span>
+                      <svg 
+                        className={`w-4 h-4 text-gray-500 transition-transform ${showProgramDropdown ? "rotate-180" : ""}`} 
+                        fill="none" 
+                        stroke="currentColor" 
+                        viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+
+                    {/* Dropdown options */}
+                    {showProgramDropdown && (
+                      <div className="mt-1 rounded-lg border border-gray-300 bg-white shadow-sm max-h-40 overflow-y-auto">
+                        {programs.map(program => (
+                          <button
+                            key={program.id}
+                            type="button"
+                            onClick={() => toggleProgram(program.id)}
+                            className={`w-full px-3 sm:px-4 py-2 text-left text-sm transition flex items-center justify-between ${
+                              programIds.includes(program.id)
+                                ? "bg-orange-50 text-orange-600"
+                                : "text-gray-700 bg-white hover:bg-gray-100"
+                            }`}
+                          >
+                            <span>{program.program_name}</span>
+                            {programIds.includes(program.id) && (
+                              <svg 
+                                className="w-4 h-4 text-orange-500" 
+                                fill="none" 
+                                stroke="currentColor" 
+                                viewBox="0 0 24 24"
+                              >
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                              </svg>
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
 
