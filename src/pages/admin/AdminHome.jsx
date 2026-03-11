@@ -68,18 +68,30 @@ export default function HomePage() {
   // Empty state
   if (data.length === 0) {
     return (
-      <div className="p-4 md:p-6 max-w-7xl mx-auto min-h-[60vh] flex flex-col items-center justify-center">
-        <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold text-gray-900 mb-6">
-          Home Page
-        </h1>
+      <>
+        <div className="p-4 md:p-6 max-w-7xl mx-auto min-h-[60vh] flex flex-col items-center justify-center">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold text-gray-900 mb-6">
+            Home Page
+          </h1>
 
-        <EmptyState
-          title="No Home Sections Yet"
-          description="Get started by creating your first home section. You can add hero, about, program, contact, or any other section type."
-          buttonText="Create First Section"
-          onButtonClick={handleCreate}
+          <EmptyState
+            title="No Home Sections Yet"
+            description="Get started by creating your first home section. You can add hero, about, program, contact, or any other section type."
+            buttonText="Create First Section"
+            onButtonClick={handleCreate}
+          />
+        </div>
+
+        {/* Modal - rendered even when empty */}
+        <HomeModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onRefresh={fetchHome}
+          item={selectedItem}
+          existingSectionTypes={[]}
+          existingOrderPositions={[]}
         />
-      </div>
+      </>
     );
   }
 

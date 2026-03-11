@@ -68,18 +68,30 @@ export default function AboutPage() {
   // Empty state
   if (data.length === 0) {
     return (
-      <div className="p-4 md:p-6 max-w-7xl mx-auto min-h-[60vh] flex flex-col items-center justify-center">
-        <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold text-gray-900 mb-6">
-          About Page
-        </h1>
+      <>
+        <div className="p-4 md:p-6 max-w-7xl mx-auto min-h-[60vh] flex flex-col items-center justify-center">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold text-gray-900 mb-6">
+            About Page
+          </h1>
 
-        <EmptyState
-          title="No About Sections Yet"
-          description="Get started by creating your first about section. You can add history, mission, vision, or any other section type."
-          buttonText="Create First Section"
-          onButtonClick={handleCreate}
+          <EmptyState
+            title="No About Sections Yet"
+            description="Get started by creating your first about section. You can add history, mission, vision, or any other section type."
+            buttonText="Create First Section"
+            onButtonClick={handleCreate}
+          />
+        </div>
+
+        {/* Modal - rendered even when empty */}
+        <AboutModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onRefresh={fetchAbout}
+          item={selectedItem}
+          existingSectionTypes={[]}
+          existingOrderPositions={[]}
         />
-      </div>
+      </>
     );
   }
 

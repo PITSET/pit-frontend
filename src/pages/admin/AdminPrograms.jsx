@@ -111,18 +111,28 @@ export default function AdminPrograms() {
   // Empty state
   if (data.length === 0) {
     return (
-      <div className="p-4 md:p-6 max-w-7xl mx-auto min-h-[60vh] flex flex-col items-center justify-center">
-        <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold text-gray-900 mb-6">
-          Programs
-        </h1>
+      <>
+        <div className="p-4 md:p-6 max-w-7xl mx-auto min-h-[60vh] flex flex-col items-center justify-center">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold text-gray-900 mb-6">
+            Programs
+          </h1>
 
-        <EmptyState
-          title="No Programs Yet"
-          description="Get started by creating your first program. You can add program details, descriptions, and images."
-          buttonText="Create First Program"
-          onButtonClick={handleCreate}
+          <EmptyState
+            title="No Programs Yet"
+            description="Get started by creating your first program. You can add program details, descriptions, and images."
+            buttonText="Create First Program"
+            onButtonClick={handleCreate}
+          />
+        </div>
+
+        {/* Modal - rendered even when empty */}
+        <ProgramModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onRefresh={fetchPrograms}
+          item={selectedItem}
         />
-      </div>
+      </>
     );
   }
 
