@@ -13,6 +13,7 @@ import {
 
 // api
 import { createProject, updateProject } from "../../lib/services/projectService";
+import { getAllPrograms } from "../../lib/services/programService";
 import { supabase } from "../../lib/supabaseClient";
 
 export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
@@ -28,7 +29,9 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
   const [result, setResult] = useState("");
   const [loading, setLoading] = useState(false);
   const [isActive, setIsActive] = useState(true);
-  const [program, setProgram] = useState("");
+  const [programIds, setProgramIds] = useState([]);
+  const [programs, setPrograms] = useState([]);
+  const [programsLoading, setProgramsLoading] = useState(false);
 
   // Multiple images state
   const [existingImages, setExistingImages] = useState([]);
@@ -37,6 +40,26 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
 
   // Close dropdown when clicking outside
   const dropdownRef = useRef(null);
+
+  // Fetch programs when modal opens
+  useEffect(() => {
+    const fetchPrograms = async () => {
+      if (isOpen) {
+        setProgramsLoading(true);
+        try {
+          const response = await getAllPrograms();
+          setPrograms(response.data);
+        } catch (error) {
+          console.error("Failed to fetch programs:", error);
+          toast.error("Failed to fetch programs");
+        } finally {
+          setProgramsLoading(false);
+        }
+      }
+    };
+
+    fetchPrograms();
+  }, [isOpen]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -231,12 +254,14 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
         images: imageUrls,
         result,
         is_featured: isActive, // Use is_featured field from backend, but display as Active/Inactive
+        program_ids: programIds,
+        student_ids: [], // Currently not implemented
       };
 
       if (isCreate) {
         // Validate required fields
-        if (!name || !name.trim()) {
-          toast.error("Project name is required", { id: toastId });
+        if (!name || !name.trim() || programIds.length === 0) {
+          toast.error("Project name and at least one program are required", { id: toastId });
           setLoading(false);
           return;
         }
@@ -302,7 +327,9 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
     setExistingImages(item?.images || []);
     setNewImages([]);
     setIsActive(item?.is_featured || false); // Use is_featured field from backend
-    setProgram("");
+    
+    // Reset program_ids (currently not stored in item, so default to empty)
+    setProgramIds([]);
   };
 
   // Load initial data when modal opens
@@ -324,7 +351,7 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
         setExistingImages([]);
         setNewImages([]);
         setIsActive(true); // Default to active (is_featured = true)
-        setProgram("");
+        setProgramIds([]);
       }
     }
   }, [isOpen, item]);
@@ -482,22 +509,35 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
                 />
               </div>
 
-              {/* Program */}
+              {/* Programs */}
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Program</label>
-
-                <select
-                  value={program}
-                  onChange={(e) => setProgram(e.target.value)}
-                  className="w-full rounded-lg border border-gray-300 bg-white px-3 sm:px-4 py-2 sm:py-2.5 text-sm shadow-sm
-                  focus:outline-none focus:ring-2 focus:ring-orange-400 transition"
-                >
-                  <option value="">Select program...</option>
-                  <option value="mechanical">Mechanical Engineering</option>
-                  <option value="electrical">Electrical Engineering</option>
-                  <option value="computer">Computer Engineering</option>
-                  <option value="civil">Civil Engineering</option>
-                </select>
+                <label className="text-sm font-medium text-gray-700">Programs</label>
+                
+                {programsLoading ? (
+                  <div className="flex items-center gap-2 text-gray-500">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-orange-500"></div>
+                    <span>Loading programs...</span>
+                  </div>
+                ) : (
+                  <select
+                    multiple
+                    value={programIds}
+                    onChange={(e) => {
+                      const options = Array.from(e.target.selectedOptions);
+                      const values = options.map(option => parseInt(option.value));
+                      setProgramIds(values);
+                    }}
+                    className="w-full rounded-lg border border-gray-300 bg-white px-3 sm:px-4 py-2 sm:py-2.5 text-sm shadow-sm
+                    focus:outline-none focus:ring-2 focus:ring-orange-400 transition"
+                    size={Math.min(5, programs.length + 1)}
+                  >
+                    {programs.map(program => (
+                      <option key={program.id} value={program.id}>
+                        {program.program_name}
+                      </option>
+                    ))}
+                  </select>
+                )}
               </div>
 
               {/* Duration */}
