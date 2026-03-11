@@ -69,20 +69,9 @@ export default function HomePage() {
   if (data.length === 0) {
     return (
       <div className="p-4 md:p-6 max-w-7xl mx-auto mb-6">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
-          <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold text-gray-900">
-            Home Page
-          </h1>
-
-          <button
-            onClick={handleCreate}
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-3 sm:py-2.5 md:py-2 bg-primary-gradient text-white font-medium text-sm rounded-lg hover:bg-primary-gradient-hover focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2 transition-all duration-200 shadow-md hover:shadow-lg"
-          >
-            <PlusIcon className="w-5 h-5" />
-            <span className="hidden sm:inline">Create Section</span>
-            <span className="sm:hidden">Create</span>
-          </button>
-        </div>
+        <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold text-gray-900 mb-6">
+          Home Page
+        </h1>
 
         <EmptyState
           title="No Home Sections Yet"
