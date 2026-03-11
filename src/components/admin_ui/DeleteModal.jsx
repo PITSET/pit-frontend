@@ -43,6 +43,8 @@ export default function DeleteModal({
         bucket = "home_images";
       } else if (lowerType.includes("program")) {
         bucket = "program_images";
+      } else if (lowerType.includes("project")) {
+        bucket = "project_images";
       }
 
       if (!bucket) return;
@@ -68,6 +70,17 @@ export default function DeleteModal({
     }
   };
 
+  // Delete multiple images from Supabase storage
+  const deleteImagesFromStorage = async (imageUrls, type) => {
+    if (!Array.isArray(imageUrls) || imageUrls.length === 0) return;
+
+    const deletePromises = imageUrls.map(imageUrl => 
+      deleteImageFromStorage(imageUrl, type)
+    );
+
+    await Promise.all(deletePromises);
+  };
+
   // Handle delete
   const handleDelete = async () => {
     const toastId = toast.loading("Deleting...");
@@ -79,8 +92,14 @@ export default function DeleteModal({
         throw new Error("Item ID is required");
       }
 
-      // Delete image from Supabase storage if exists
-      await deleteImageFromStorage(item.image_url, sectionType);
+      // Delete images from Supabase storage if exists
+      if (sectionType.toLowerCase().includes("project") && Array.isArray(item.images)) {
+        // For projects with multiple images
+        await deleteImagesFromStorage(item.images, sectionType);
+      } else {
+        // For other sections with single image
+        await deleteImageFromStorage(item.image_url, sectionType);
+      }
 
       await deleteFunction(item.id);
 
