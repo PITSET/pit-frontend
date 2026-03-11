@@ -81,15 +81,32 @@ export default function HomePage() {
       }}
     />
   );
+
+  // Handle rate limiting (429) specifically
+  const isRateLimited = error.includes('429');
   if (error) return (
-    <div className="p-8 text-center">
-      <p className="text-red-500 mb-4">{error}</p>
-      <button 
-        onClick={fetchHome}
-        className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition"
-      >
-        Try Again
-      </button>
+    <div className="p-4 md:p-6 max-w-7xl mx-auto min-h-[60vh] flex flex-col items-center justify-center">
+      <div className="text-center max-w-md">
+        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-orange-100 flex items-center justify-center">
+          <svg className="w-8 h-8 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+          {isRateLimited ? 'Too Many Requests' : 'Unable to Load'}
+        </h3>
+        <p className="text-gray-600 mb-4">
+          {isRateLimited 
+            ? 'Please wait a moment and try again. We\'re experiencing high traffic.'
+            : error}
+        </p>
+        <button 
+          onClick={fetchHome}
+          className="px-4 py-2 bg-orange-500 text-white font-medium rounded-lg hover:bg-orange-600 transition focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2"
+        >
+          Try Again
+        </button>
+      </div>
     </div>
   );
 
