@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import api from "../../lib/api";
+import resolveAssetUrl from "../../lib/resolveAssetUrl";
 
 const normalizeSectionType = (value) => String(value || "").trim().toLowerCase();
 
@@ -111,7 +112,7 @@ export default function Home() {
           .filter((item) => normalizeSectionType(item?.section_type) === "project")
           .sort((a, b) => (Number(a?.order_position) || 0) - (Number(b?.order_position) || 0))
           .map((item) => ({
-            image: item?.image || item?.image_url || item?.cover || item?.cover_url || "",
+            image: resolveAssetUrl(item?.image || item?.image_url || item?.cover || item?.cover_url || ""),
             date: formatProjectDate(
               item?.date || item?.published_at || item?.updated_at || item?.created_at,
             ),
@@ -174,7 +175,7 @@ export default function Home() {
 className="absolute inset-0 bg-cover bg-center"
 style={{
 backgroundImage:
-`url('${heroSection?.image_url || "https://static.vecteezy.com/system/resources/thumbnails/057/068/323/small/single-fresh-red-strawberry-on-table-green-background-food-fruit-sweet-macro-juicy-plant-image-photo.jpg"}')`,
+`url('${resolveAssetUrl(heroSection?.image_url) || "https://static.vecteezy.com/system/resources/thumbnails/057/068/323/small/single-fresh-red-strawberry-on-table-green-background-food-fruit-sweet-macro-juicy-plant-image-photo.jpg"}')`,
 }}
 />
 
@@ -217,7 +218,7 @@ Explore Our Programs →
 className="absolute inset-0 bg-cover bg-center"
 style={{
 backgroundImage:
-`url('${aboutSection?.image_url || "https://gratisography.com/wp-content/uploads/2024/11/gratisography-augmented-reality-800x525.jpg"}')`,
+`url('${resolveAssetUrl(aboutSection?.image_url) || "https://gratisography.com/wp-content/uploads/2024/11/gratisography-augmented-reality-800x525.jpg"}')`,
 }}
 />
 
@@ -253,7 +254,7 @@ DISCOVER OUR MISSION →
 
 <div>
 <img
-src={founder1Section?.image_url || "https://ikki-group.com/wp-content/uploads/2023/12/Image-Processing-face-scan-1024x1024.png"}
+src={resolveAssetUrl(founder1Section?.image_url) || "https://ikki-group.com/wp-content/uploads/2023/12/Image-Processing-face-scan-1024x1024.png"}
 alt={founder1Section?.title || "Founder"}
 className="w-[580px] h-[720px] object-cover"
 />
@@ -305,7 +306,7 @@ FOUNDER & PRINCIPAL
 
 <div className="flex justify-end">
 <img
-src={founder2Section?.image_url || "https://c.topshort.org/sana_ai/flux_ai_image/scene/3.webp"}
+src={resolveAssetUrl(founder2Section?.image_url) || "https://c.topshort.org/sana_ai/flux_ai_image/scene/3.webp"}
 alt={founder2Section?.title || "LeyKler"}
 className="w-[580px] h-[720px] object-cover"
 />
@@ -324,7 +325,7 @@ className="w-[580px] h-[720px] object-cover"
 	    className="absolute inset-0 bg-cover bg-center"
 	    style={{
 	      backgroundImage:
-	        `url('${programSection?.image_url || "https://png.pngtree.com/thumb_back/fh260/background/20250227/pngtree-a-meadow-of-pink-and-purple-flowers-image_17005010.jpg"}')`,
+	        `url('${resolveAssetUrl(programSection?.image_url) || "https://png.pngtree.com/thumb_back/fh260/background/20250227/pngtree-a-meadow-of-pink-and-purple-flowers-image_17005010.jpg"}')`,
 	    }}
 	  />
 
