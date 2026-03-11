@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import toast from "react-hot-toast";
 
 // heroicons
@@ -6,17 +6,57 @@ import {
   XMarkIcon,
   InformationCircleIcon,
   ArrowUpTrayIcon,
+  ChevronDownIcon,
+  CheckIcon,
 } from "@heroicons/react/24/outline";
 
 // api
-import { updateAboutSection } from "../../lib/services/aboutService";
+import { createAboutSection, updateAboutSection, reorderAboutSection } from "../../lib/services/aboutService";
 import { supabase } from "../../lib/supabaseClient";
 
-export default function AboutModal({ isOpen, onClose, onRefresh, item }) {
+export default function AboutModal({ isOpen, onClose, onRefresh, item, existingSectionTypes = [], existingOrderPositions = [] }) {
+  const isCreate = !item;
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [image, setImage] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [sectionType, setSectionType] = useState("");
+  const [customSectionType, setCustomSectionType] = useState("");
+  const [showSectionTypeDropdown, setShowSectionTypeDropdown] = useState(false);
+  const [showPositionDropdown, setShowPositionDropdown] = useState(false);
+  const [orderPosition, setOrderPosition] = useState(1);
+  const [isActive, setIsActive] = useState(true);
+
+  // Close dropdown when clicking outside
+  const sectionTypeDropdownRef = useRef(null);
+  const positionDropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        sectionTypeDropdownRef.current &&
+        !sectionTypeDropdownRef.current.contains(event.target)
+      ) {
+        setShowSectionTypeDropdown(false);
+      }
+      if (
+        positionDropdownRef.current &&
+        !positionDropdownRef.current.contains(event.target)
+      ) {
+        setShowPositionDropdown(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Get the actual section type to use
+  const getSectionTypeValue = () => {
+    // For create mode: use customSectionType
+    // For update mode: use sectionType (existing value)
+    return isCreate ? customSectionType : sectionType;
+  };
 
   // Handle image select
   const handleImageChange = (e) => {
@@ -76,19 +116,19 @@ export default function AboutModal({ isOpen, onClose, onRefresh, item }) {
 
   // Save changes
   const handleSave = async () => {
-    const toastId = toast.loading("Saving changes...");
+    const toastId = toast.loading(isCreate ? "Creating section..." : "Saving changes...");
 
     try {
       setLoading(true);
 
-      let imageUrl = item.image_url;
+      let imageUrl = item?.image_url || "";
 
       if (image) {
-        const safeSection = item.section_type
+        const safeSection = (item?.section_type || "new-section")
           .replace(/\s+/g, "-")
           .toLowerCase();
 
-        const fileName = `about-${safeSection}.webp`;
+        const fileName = `about-${safeSection}-${Date.now()}.webp`;
 
         toast.loading("Compressing & uploading image...", { id: toastId });
 
@@ -114,14 +154,88 @@ export default function AboutModal({ isOpen, onClose, onRefresh, item }) {
         imageUrl = `${data.publicUrl}?t=${Date.now()}`;
       }
 
-      // update database
-      await updateAboutSection(item.id, {
+      const sectionData = {
         title,
         content,
         image_url: imageUrl,
-      });
+        section_type: isCreate ? getSectionTypeValue() : sectionType,
+        order_position: orderPosition,
+        is_active: isActive,
+      };
 
-      toast.success("Section updated successfully!", { id: toastId });
+      if (isCreate) {
+        // Validate required fields
+        const sectionTypeValue = getSectionTypeValue();
+        if (!sectionTypeValue || !sectionTypeValue.trim()) {
+          toast.error("Section type is required", { id: toastId });
+          setLoading(false);
+          return;
+        }
+
+        if (!title || !title.trim()) {
+          toast.error("Title is required", { id: toastId });
+          setLoading(false);
+          return;
+        }
+
+        // Check if section type already exists
+        const existingTypesLower = existingSectionTypes.map((t) => {
+          const typeName = typeof t === 'string' ? t : t.type;
+          return typeName.toLowerCase();
+        });
+        if (existingTypesLower.includes(sectionTypeValue.trim().toLowerCase())) {
+          toast.error(`Section type "${sectionTypeValue}" already exists. Please use a different name.`, { id: toastId });
+          setLoading(false);
+          return;
+        }
+
+        // Use the section type as-is
+        sectionData.section_type = sectionTypeValue.trim();
+
+        // Use the selected position directly
+        sectionData.order_position = orderPosition;
+
+        // Create new section
+        await createAboutSection(sectionData);
+
+        toast.success("Section created successfully!");
+      } else {
+        // Update existing section - check if section type changed
+        const newSectionType = sectionType;
+        const originalSectionType = item.section_type;
+
+        // Only validate if the section type has changed
+        if (newSectionType.trim().toLowerCase() !== originalSectionType.trim().toLowerCase()) {
+          const existingTypesLower = existingSectionTypes.map((t) => {
+            const typeName = typeof t === 'string' ? t : t.type;
+            return typeName.toLowerCase();
+          });
+          if (existingTypesLower.includes(newSectionType.trim().toLowerCase())) {
+            toast.error(`Section type "${newSectionType}" already exists. Please use a different name.`, { id: toastId });
+            setLoading(false);
+            return;
+          }
+        }
+
+        // Check if only position changed - use reorderAboutSection for cleaner API
+        const onlyPositionChanged = 
+          title === item.title &&
+          content === item.content &&
+          image === null &&
+          sectionType === item.section_type &&
+          isActive === item.is_active &&
+          orderPosition !== item.order_position;
+
+        if (onlyPositionChanged) {
+          // Use reorder endpoint for position-only changes
+          await reorderAboutSection(item.id, orderPosition);
+          toast.success("Section position updated successfully!", { id: toastId });
+        } else {
+          // Use general update endpoint for other changes
+          await updateAboutSection(item.id, sectionData);
+          toast.success("Section updated successfully!", { id: toastId });
+        }
+      }
 
       // auto-refresh parent data
       if (onRefresh) {
@@ -130,8 +244,8 @@ export default function AboutModal({ isOpen, onClose, onRefresh, item }) {
 
       onClose();
     } catch (error) {
-      console.error("Failed to update:", error);
-      toast.error("Failed to update section", { id: toastId });
+      console.error("Failed to save:", error);
+      toast.error(isCreate ? "Failed to create section" : "Failed to update section", { id: toastId });
     } finally {
       setLoading(false);
     }
@@ -139,19 +253,47 @@ export default function AboutModal({ isOpen, onClose, onRefresh, item }) {
 
   // Reset form
   const resetForm = () => {
-    setTitle(item.title || "");
-    setContent(item.content || "");
+    setTitle(item?.title || "");
+    setContent(item?.content || "");
     setImage(null);
+    setSectionType(item?.section_type || "");
+    setCustomSectionType(item?.section_type || "");
+    setShowSectionTypeDropdown(false);
+    setShowPositionDropdown(false);
+    setOrderPosition(item?.order_position || 1);
+    setIsActive(item?.is_active ?? true);
   };
 
   // Load initial data when modal opens
   useEffect(() => {
-    if (isOpen && item) {
-      resetForm();
+    if (isOpen) {
+      if (item) {
+        resetForm();
+      } else {
+        // Reset form for create mode
+        setTitle("");
+        setContent("");
+        setImage(null);
+        setSectionType("");
+        setCustomSectionType("");
+        setShowSectionTypeDropdown(false);
+        setShowPositionDropdown(false);
+        
+        // Auto-select smallest unused position for create mode
+        const maxPosition = Math.max(10, ...existingOrderPositions.filter(p => typeof p === 'number')) + 2;
+        const usedPositions = new Set(existingOrderPositions);
+        let smallestUnused = 1;
+        while (usedPositions.has(smallestUnused) && smallestUnused <= maxPosition) {
+          smallestUnused++;
+        }
+        setOrderPosition(smallestUnused);
+        
+        setIsActive(true);
+      }
     }
   }, [isOpen, item]);
 
-  if (!isOpen || !item) return null;
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/40 backdrop-blur-sm overflow-y-auto">
@@ -167,11 +309,11 @@ export default function AboutModal({ isOpen, onClose, onRefresh, item }) {
 
               <div>
                 <h2 className="text-lg sm:text-2xl font-bold">
-                  Update About ({item.section_type})
+                  {isCreate ? "Create About Section" : `Update About (${item.section_type})`}
                 </h2>
 
                 <p className="text-xs sm:text-sm text-gray-500 hidden sm:block">
-                  Edit your about information
+                  {isCreate ? "Add a new about section" : "Edit your about information"}
                 </p>
               </div>
             </div>
@@ -199,9 +341,184 @@ export default function AboutModal({ isOpen, onClose, onRefresh, item }) {
               value={title}
               placeholder="Enter title..."
               onChange={(e) => setTitle(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.target.blur();
+                }
+              }}
               className="w-full rounded-lg border border-gray-300 bg-white px-3 sm:px-4 py-2 sm:py-2.5 text-sm shadow-sm
               focus:outline-none focus:ring-2 focus:ring-orange-400 transition"
             />
+          </div>
+
+          {/* Section Type */}
+          <div className="space-y-2" ref={sectionTypeDropdownRef}>
+            <label className="text-sm font-medium text-gray-700">Section Type</label>
+
+            {/* Input field with dropdown button */}
+            <div className="flex rounded-lg border border-gray-300 overflow-hidden bg-white focus-within:ring-2 focus-within:ring-orange-400">
+              <input
+                type="text"
+                value={customSectionType}
+                placeholder="e.g., history, mission, vision"
+                onChange={(e) => {
+                  setCustomSectionType(e.target.value);
+                  setSectionType(e.target.value);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.target.blur();
+                  }
+                }}
+                className="flex-1 px-3 sm:px-4 py-2 sm:py-2.5 text-sm shadow-sm outline-none transition min-w-0"
+              />
+              {existingSectionTypes.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setShowSectionTypeDropdown(!showSectionTypeDropdown)}
+                  className="flex items-center justify-center px-3 sm:px-4 bg-gray-50 border-l border-gray-300 text-gray-600 hover:bg-gray-100 transition"
+                  title="Select existing"
+                >
+                  <ChevronDownIcon className="w-4 h-5 sm:w-5 sm:h-5" />
+                </button>
+              )}
+            </div>
+
+            {/* Dropdown for existing section types (read-only - for reference only) */}
+            {showSectionTypeDropdown && existingSectionTypes.length > 0 && (
+              <div className="mt-1 rounded-lg border border-gray-300 bg-white shadow-sm max-h-40 overflow-y-auto">
+                {existingSectionTypes.map((item, index) => {
+                  const type = typeof item === 'string' ? item : item.type;
+                  const isActive = typeof item === 'object' ? item.isActive : true;
+                  const isCurrentSectionType = !isCreate && type.toLowerCase() === sectionType?.toLowerCase();
+                  return (
+                    <button
+                      key={index}
+                      type="button"
+                      onClick={() => {
+                        if (isCurrentSectionType) {
+                          setShowSectionTypeDropdown(false);
+                        }
+                      }}
+                      className={`w-full px-3 sm:px-4 py-2 text-left text-sm transition flex items-center justify-between ${
+                        isCurrentSectionType
+                          ? "bg-orange-50 text-orange-600 cursor-pointer"
+                          : isActive
+                          ? "text-gray-700 bg-white hover:bg-gray-100 cursor-not-allowed"
+                          : "text-gray-400 bg-gray-50 cursor-not-allowed"
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <span>{type}</span>
+                        {isCurrentSectionType && (
+                          <span className="text-xs font-medium text-orange-500">(Current)</span>
+                        )}
+                        {!isCurrentSectionType && (
+                          <span className={`text-xs ${isActive ? 'text-green-600' : 'text-gray-400'}`}>
+                            ({isActive ? 'Active' : 'Inactive'})
+                          </span>
+                        )}
+                      </div>
+                      {isCurrentSectionType && (
+                        <CheckIcon className="w-4 h-4 text-orange-500" />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Order Position & Active Status */}
+          <div className="grid grid-cols-2 gap-4">
+            {/* Order Position */}
+            <div className="space-y-2" ref={positionDropdownRef}>
+              <label className="text-sm font-medium text-gray-700">Order Position</label>
+              
+              {/* Custom dropdown for position */}
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setShowPositionDropdown(!showPositionDropdown)}
+                  className="w-full flex items-center justify-between rounded-lg border border-gray-300 bg-white px-3 sm:px-4 py-2 sm:py-2.5 text-sm shadow-sm
+                  focus:outline-none focus:ring-2 focus:ring-orange-400 transition"
+                >
+                  <span className={existingOrderPositions.includes(orderPosition) && (!item || item.order_position !== orderPosition) ? "text-gray-700" : ""}>
+                    {orderPosition}
+                    {item && item.order_position === orderPosition && (
+                      <span className="ml-2 text-xs text-orange-500">(Current)</span>
+                    )}
+                  </span>
+                  <ChevronDownIcon className="w-4 h-4 text-gray-500" />
+                </button>
+
+                {/* Position dropdown */}
+                {showPositionDropdown && (
+                  <div className="absolute z-10 mt-1 w-full rounded-lg border border-gray-300 bg-white shadow-sm max-h-48 overflow-y-auto">
+                    {Array.from({ length: Math.max(10, ...existingOrderPositions.filter(p => typeof p === 'number')) + 2 }, (_, i) => i + 1).map((pos) => {
+                      const isUsed = existingOrderPositions.includes(pos);
+                      const isCurrent = item && item.order_position === pos;
+                      const isDisabled = isUsed && !isCurrent;
+
+                      return (
+                        <button
+                          key={pos}
+                          type="button"
+                          disabled={isDisabled}
+                          onClick={() => {
+                            if (!isDisabled) {
+                              setOrderPosition(pos);
+                              setShowPositionDropdown(false);
+                            }
+                          }}
+                          className={`w-full px-3 py-2 text-left text-sm transition flex items-center justify-between ${
+                            isCurrent
+                              ? "bg-orange-50 text-orange-600 cursor-pointer"
+                              : isDisabled
+                              ? "text-gray-400 bg-gray-50 cursor-not-allowed"
+                              : "text-gray-700 hover:bg-gray-100 cursor-pointer"
+                          }`}
+                        >
+                          <span>{pos}</span>
+                          <div className="flex items-center gap-1">
+                            {isCurrent && (
+                              <span className="text-xs font-medium text-orange-500">(Current)</span>
+                            )}
+                            {isDisabled && (
+                              <span className="text-xs text-gray-400">(Used)</span>
+                            )}
+                            {isCurrent && <CheckIcon className="w-3 h-3 text-orange-500" />}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Active Status */}
+            <div className="flex flex-col space-y-2">
+              <label className="text-sm font-medium text-gray-700">Status</label>
+              <div className="flex items-center gap-3 py-2">
+                <button
+                  type="button"
+                  onClick={() => setIsActive(!isActive)}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                    isActive ? "bg-green-500" : "bg-gray-300"
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      isActive ? "translate-x-6" : "translate-x-1"
+                    }`}
+                  />
+                </button>
+                <span className={`text-sm font-medium ${isActive ? "text-green-600" : "text-gray-500"}`}>
+                  {isActive ? "Active" : "Inactive"}
+                </span>
+              </div>
+            </div>
           </div>
 
           {/* Content */}
@@ -217,7 +534,7 @@ export default function AboutModal({ isOpen, onClose, onRefresh, item }) {
                   src={
                     image
                       ? URL.createObjectURL(image)
-                      : item.image_url || "/placeholder.png"
+                      : item?.image_url || "/placeholder.png"
                   }
                   alt="Preview"
                   className="w-full h-[160px] sm:h-[180px] md:h-[220px] object-cover bg-gray-100 transition-transform duration-300 group-hover:scale-105"
@@ -282,7 +599,7 @@ export default function AboutModal({ isOpen, onClose, onRefresh, item }) {
                 className="px-4 sm:px-5 py-2 rounded-lg text-white font-medium bg-primary-gradient hover:bg-primary-gradient-hover
                 active:scale-95 focus:outline-none focus:ring-2 focus:ring-[#F65919] focus:ring-offset-2 transition disabled:opacity-60"
               >
-                {loading ? "Saving..." : "Save"}
+                {loading ? (isCreate ? "Creating..." : "Saving...") : (isCreate ? "Create" : "Save")}
               </button>
             </div>
           </div>
