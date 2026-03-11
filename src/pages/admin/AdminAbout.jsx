@@ -10,6 +10,7 @@ import {
 
 import AboutModal from "../../components/admin_ui/AboutModal";
 import DeleteModal from "../../components/admin_ui/DeleteModal";
+import EmptyState from "../../components/admin_ui/EmptyState";
 
 export default function AboutPage() {
   const [data, setData] = useState([]);
@@ -63,6 +64,35 @@ export default function AboutPage() {
 
   if (loading) return <p className="p-8">Loading...</p>;
   if (error) return <p className="p-8 text-red-500">{error}</p>;
+
+  // Empty state
+  if (data.length === 0) {
+    return (
+      <div className="p-4 md:p-6 max-w-7xl mx-auto mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold text-gray-900">
+            About Page
+          </h1>
+
+          <button
+            onClick={handleCreate}
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3 py-2.5 sm:py-2.5 md:py-2 bg-primary-gradient text-white font-medium text-sm rounded-lg hover:bg-primary-gradient-hover focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2 transition-all duration-200 shadow-sm hover:shadow-md"
+          >
+            <PlusIcon className="w-4 h-4 sm:w-5 sm:h-5" />
+            <span className="hidden sm:inline">Create Section</span>
+            <span className="sm:hidden">Create</span>
+          </button>
+        </div>
+
+        <EmptyState
+          title="No About Sections Yet"
+          description="Get started by creating your first about section. You can add history, mission, vision, or any other section type."
+          buttonText="Create First Section"
+          onButtonClick={handleCreate}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="p-4 md:p-6 max-w-7xl mx-auto mb-6">
