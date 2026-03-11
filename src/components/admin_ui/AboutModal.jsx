@@ -559,7 +559,7 @@ export default function AboutModal({ isOpen, onClose, onRefresh, item, existingS
                   src={
                     image
                       ? URL.createObjectURL(image)
-                      : item?.image_url || "/placeholder.png"
+                      : item?.image_url || "/placeholder.svg"
                   }
                   alt="Preview"
                   className="w-full h-[160px] sm:h-[180px] md:h-[220px] object-cover bg-gray-100 transition-transform duration-300 group-hover:scale-105"
