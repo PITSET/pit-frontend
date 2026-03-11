@@ -123,6 +123,19 @@ export default function AboutModal({ isOpen, onClose, onRefresh, item, existingS
 
       let imageUrl = item?.image_url || "";
 
+      // Delete old image if a new image is being uploaded
+      if (image && item?.image_url) {
+        try {
+          const urlParts = item.image_url.split("/");
+          const fileName = urlParts[urlParts.length - 1].split("?")[0];
+          if (fileName) {
+            await supabase.storage.from("about_images").remove([fileName]);
+          }
+        } catch (err) {
+          console.warn("Failed to delete old image:", err);
+        }
+      }
+
       if (image) {
         const safeSection = (item?.section_type || "new-section")
           .replace(/\s+/g, "-")

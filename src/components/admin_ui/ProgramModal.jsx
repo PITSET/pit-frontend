@@ -86,6 +86,19 @@ export default function ProgramModal({ isOpen, onClose, onRefresh, item }) {
 
       let imageUrl = item?.image_url || "";
 
+      // Delete old image if a new image is being uploaded
+      if (image && item?.image_url) {
+        try {
+          const urlParts = item.image_url.split("/");
+          const fileName = urlParts[urlParts.length - 1].split("?")[0];
+          if (fileName) {
+            await supabase.storage.from("program_images").remove([fileName]);
+          }
+        } catch (err) {
+          console.warn("Failed to delete old image:", err);
+        }
+      }
+
       if (image) {
         const safeProgram = (item?.program_name || "new-program")
           .replace(/\s+/g, "-")

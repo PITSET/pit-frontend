@@ -7,6 +7,9 @@ import {
   ExclamationTriangleIcon,
 } from "@heroicons/react/24/outline";
 
+// supabase
+import { supabase } from "../../lib/supabaseClient";
+
 export default function DeleteModal({ 
   isOpen, 
   onClose, 
@@ -25,6 +28,46 @@ export default function DeleteModal({
     return item.section_type || item.program_name || "this item";
   };
 
+  // Delete image from Supabase storage
+  const deleteImageFromStorage = async (imageUrl, type) => {
+    if (!imageUrl) return;
+
+    try {
+      // Determine bucket based on section type
+      let bucket = "";
+      const lowerType = type?.toLowerCase() || "";
+      
+      if (lowerType.includes("about")) {
+        bucket = "about_images";
+      } else if (lowerType.includes("home")) {
+        bucket = "home_images";
+      } else if (lowerType.includes("program")) {
+        bucket = "program_images";
+      }
+
+      if (!bucket) return;
+
+      // Extract file name from URL
+      const urlParts = imageUrl.split("/");
+      const fileName = urlParts[urlParts.length - 1];
+      
+      // Remove query params if any
+      const cleanFileName = fileName.split("?")[0];
+
+      if (cleanFileName) {
+        const { error } = await supabase.storage
+          .from(bucket)
+          .remove([cleanFileName]);
+
+        if (error) {
+          console.warn("Failed to delete image from storage:", error);
+        }
+      }
+    } catch (err) {
+      console.warn("Error deleting image from storage:", err);
+    }
+  };
+
   // Handle delete
   const handleDelete = async () => {
     const toastId = toast.loading("Deleting...");
@@ -35,6 +78,9 @@ export default function DeleteModal({
       if (!item?.id) {
         throw new Error("Item ID is required");
       }
+
+      // Delete image from Supabase storage if exists
+      await deleteImageFromStorage(item.image_url, sectionType);
 
       await deleteFunction(item.id);
 
