@@ -1,10 +1,13 @@
 import { useEffect, useState } from "react";
-import { getHomeSections } from "../../lib/services/homeService";
+import { getHomeSections, deleteHomeSection } from "../../lib/services/homeService";
 import {
   PencilSquareIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
+  PlusIcon,
+  TrashIcon,
 } from "@heroicons/react/24/outline";
+import toast from "react-hot-toast";
 
 import HomeModal from "../../components/admin_ui/HomeModal";
 
@@ -25,6 +28,7 @@ export default function HomePage() {
       const response = await getHomeSections();
       setData(response.data);
     } catch (err) {
+      console.error("Failed to fetch home data:", err);
       setError("Failed to fetch home data");
     } finally {
       setLoading(false);
@@ -45,14 +49,44 @@ export default function HomePage() {
     setCurrentPage(page);
   };
 
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this section?")) return;
+
+    const toastId = toast.loading("Deleting section...");
+    try {
+      await deleteHomeSection(id);
+      toast.success("Section deleted successfully!", { id: toastId });
+      fetchHome();
+    } catch (error) {
+      console.error("Failed to delete:", error);
+      toast.error("Failed to delete section", { id: toastId });
+    }
+  };
+
+  const handleCreate = () => {
+    setSelectedItem(null);
+    setIsModalOpen(true);
+  };
+
   if (loading) return <p className="p-8">Loading...</p>;
   if (error) return <p className="p-8 text-red-500">{error}</p>;
 
   return (
     <div className="p-4 md:p-6 max-w-7xl mx-auto mb-6">
-      <h1 className="text-2xl md:text-3xl font-semibold mb-6 md:mb-8">
-        Home Page
-      </h1>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+        <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold text-gray-900">
+          Home Page
+        </h1>
+
+        <button
+          onClick={handleCreate}
+          className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-3 sm:py-2.5 md:py-2 bg-primary-gradient text-white font-medium text-sm rounded-lg hover:bg-primary-gradient-hover focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2 transition-all duration-200 shadow-md hover:shadow-lg"
+        >
+          <PlusIcon className="w-5 h-5" />
+          <span className="hidden sm:inline">Create Section</span>
+          <span className="sm:hidden">Create</span>
+        </button>
+      </div>
 
       {/* Desktop Table View */}
       <div className="hidden md:block bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
@@ -62,13 +96,15 @@ export default function HomePage() {
               <th className="px-4 lg:px-8 py-4 text-center">Image</th>
               <th className="px-4 lg:px-8 py-4 text-center">Title</th>
               <th className="px-4 lg:px-8 py-4 text-center">Description</th>
+              <th className="px-4 lg:px-8 py-4 text-center">Position</th>
+              <th className="px-4 lg:px-8 py-4 text-center">Status</th>
               <th className="px-4 lg:px-8 py-4 text-center">Action</th>
             </tr>
           </thead>
 
           <tbody className="divide-y divide-gray-200">
             {currentItems.map((item) => (
-              <tr key={item.id} className="hover:bg-gray-100 transition">
+              <tr key={item.id} className={`hover:bg-gray-100 transition ${!item.is_active ? 'bg-gray-50' : ''}`}>
                 <td className="px-4 lg:px-8 py-4 text-center">
                   <div className="w-16 h-16 lg:w-20 lg:h-20 bg-gray-100 rounded-lg overflow-hidden mx-auto">
                     <img
@@ -84,21 +120,52 @@ export default function HomePage() {
                 </td>
 
                 <td className="px-4 lg:px-8 py-4 lg:py-6 text-gray-600 text-left max-w-xs lg:max-w-xl">
-                  <p className="line-clamp-2 lg:line-clamp-3">
+                  <p className="line-clamp-2 lg:line-clamp-2">
                     {item.content || "No description available"}
                   </p>
                 </td>
 
                 <td className="px-4 lg:px-8 py-4 lg:py-6 text-center">
-                  <button
-                    onClick={() => {
-                      setSelectedItem(item);
-                      setIsModalOpen(true);
-                    }}
-                    className="p-2 rounded-lg border border-gray-300 hover:bg-gray-200 transition"
-                  >
-                    <PencilSquareIcon className="w-5 h-5 text-gray-600" />
-                  </button>
+                  <span className={`inline-flex items-center justify-center min-w-[2rem] px-2 py-1 rounded-md text-sm font-semibold ${
+                    item.is_active 
+                      ? 'bg-orange-50 text-orange-700 border border-orange-200' 
+                      : 'bg-gray-50 text-gray-600 border border-gray-200'
+                  }`}>
+                    #{item.order_position}
+                  </span>
+                </td>
+
+                <td className="px-4 lg:px-8 py-4 lg:py-6 text-center">
+                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                    item.is_active 
+                      ? 'bg-green-200 text-green-800' 
+                      : 'bg-gray-200 text-gray-800'
+                  }`}>
+                    {item.is_active ? 'Active' : 'Inactive'}
+                  </span>
+                </td>
+
+                <td className="px-2 sm:px-4 lg:px-8 py-4 lg:py-6 text-center">
+                  <div className="inline-flex items-center justify-center gap-0 rounded-md sm:rounded-lg border border-gray-200 sm:border-gray-300 overflow-hidden">
+                    <button
+                      onClick={() => {
+                        setSelectedItem(item);
+                        setIsModalOpen(true);
+                      }}
+                      className="p-1.5 sm:p-2 hover:bg-gray-100 sm:hover:bg-gray-200 transition"
+                    >
+                      <PencilSquareIcon className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
+                    </button>
+
+                    <div className="h-4 w-px sm:h-6 bg-gray-200 sm:bg-gray-300"></div>
+
+                    <button
+                      onClick={() => handleDelete(item.id)}
+                      className="p-1.5 sm:p-2 hover:bg-red-50 sm:hover:bg-red-100 transition"
+                    >
+                      <TrashIcon className="w-4 h-4 sm:w-5 sm:h-5 text-red-500" />
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
@@ -152,7 +219,7 @@ export default function HomePage() {
         {currentItems.map((item) => (
           <div
             key={item.id}
-            className="bg-white rounded-xl border border-gray-200 shadow-sm p-4"
+            className={`bg-white rounded-xl border shadow-sm p-4 ${!item.is_active ? 'border-gray-200 opacity-75' : 'border-gray-200'}`}
           >
             <div className="flex gap-4">
               {/* Image */}
@@ -168,25 +235,45 @@ export default function HomePage() {
 
               {/* Content */}
               <div className="flex-1 min-w-0">
-                <h3 className="font-semibold text-gray-900 mb-1 truncate">
-                  {item.title}
-                </h3>
+                <div className="flex items-center justify-between mb-1">
+                  <h3 className={`font-semibold truncate ${item.is_active ? 'text-gray-900' : 'text-gray-500'}`}>
+                    {item.title}
+                  </h3>
+                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ml-2 flex-shrink-0 ${
+                    item.is_active 
+                      ? 'bg-green-200 text-green-800' 
+                      : 'bg-gray-200 text-gray-600'
+                  }`}>
+                    {item.is_active ? 'Active' : 'Inactive'}
+                  </span>
+                </div>
                 <p className="text-sm text-gray-600 line-clamp-2">
                   {item.content || "No description available"}
                 </p>
               </div>
 
-              {/* Action Button */}
+              {/* Action Buttons */}
               <div className="flex-shrink-0">
-                <button
-                  onClick={() => {
-                    setSelectedItem(item);
-                    setIsModalOpen(true);
-                  }}
-                  className="p-2 rounded-lg border border-gray-300 hover:bg-gray-200 transition"
-                >
-                  <PencilSquareIcon className="w-5 h-5 text-gray-600" />
-                </button>
+                <div className="flex flex-col sm:flex-row items-center gap-0 rounded-md sm:rounded-lg border border-gray-200 sm:border-gray-300 overflow-hidden">
+                  <button
+                    onClick={() => {
+                      setSelectedItem(item);
+                      setIsModalOpen(true);
+                    }}
+                    className="p-1.5 sm:p-2 hover:bg-gray-100 sm:hover:bg-gray-200 transition"
+                  >
+                    <PencilSquareIcon className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
+                  </button>
+
+                  <div className="h-px w-4 sm:h-6 sm:w-px bg-gray-200 sm:bg-gray-300"></div>
+
+                  <button
+                    onClick={() => handleDelete(item.id)}
+                    className="p-1.5 sm:p-2 hover:bg-red-50 sm:hover:bg-red-100 transition"
+                  >
+                    <TrashIcon className="w-4 h-4 sm:w-5 sm:h-5 text-red-500" />
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -228,6 +315,20 @@ export default function HomePage() {
         onClose={() => setIsModalOpen(false)}
         onRefresh={fetchHome}
         item={selectedItem}
+        existingSectionTypes={Object.values(
+          data.reduce((acc, item) => {
+            const baseType = item.section_type.replace(/\s+\d+$/, '').trim();
+            if (!acc[baseType]) {
+              acc[baseType] = { type: baseType, isActive: false };
+            }
+            // If any section of this type is active, mark as active
+            if (item.is_active) {
+              acc[baseType].isActive = true;
+            }
+            return acc;
+          }, {})
+        )}
+        existingOrderPositions={data.map((item) => item.order_position)}
       />
     </div>
   );

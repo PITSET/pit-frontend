@@ -11,6 +11,14 @@ export const getHomeSections = async () => {
 };
 
 /**
+ * CREATE new home section
+ */
+export const createHomeSection = async (data) => {
+  const res = await api.post("/home", data);
+  return res.data;
+};
+
+/**
  * UPDATE home section
  * We send JSON instead of FormData
  */
