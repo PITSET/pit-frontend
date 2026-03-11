@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 
 // heroicons
@@ -6,7 +6,6 @@ import {
   XMarkIcon,
   InformationCircleIcon,
   ArrowUpTrayIcon,
-  CheckIcon,
 } from "@heroicons/react/24/outline";
 
 // api
@@ -19,26 +18,8 @@ export default function ProgramModal({ isOpen, onClose, onRefresh, item }) {
   const [description, setDescription] = useState("");
   const [overview, setOverview] = useState("");
   const [image, setImage] = useState(null);
-  const [videoUrl, setVideoUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [isActive, setIsActive] = useState(true);
-
-  // Close dropdown when clicking outside
-  const dropdownRef = useRef(null);
-
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target)
-      ) {
-        // Close any dropdowns if needed
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
 
   // Handle image select
   const handleImageChange = (e) => {
@@ -106,11 +87,11 @@ export default function ProgramModal({ isOpen, onClose, onRefresh, item }) {
       let imageUrl = item?.image_url || "";
 
       if (image) {
-        const safeProgramName = (item?.program_name || "new-program")
+        const safeProgram = (item?.program_name || "new-program")
           .replace(/\s+/g, "-")
           .toLowerCase();
 
-        const fileName = `program-${safeProgramName}-${Date.now()}.webp`;
+        const fileName = `program-${safeProgram}-${Date.now()}.webp`;
 
         toast.loading("Compressing & uploading image...", { id: toastId });
 
@@ -141,7 +122,6 @@ export default function ProgramModal({ isOpen, onClose, onRefresh, item }) {
         description,
         overview,
         image_url: imageUrl,
-        video_url: videoUrl,
         is_active: isActive,
       };
 
@@ -160,8 +140,7 @@ export default function ProgramModal({ isOpen, onClose, onRefresh, item }) {
       } else {
         // Update existing program
         await updateProgram(item.id, programData);
-
-        toast.success("Program updated successfully!");
+        toast.success("Program updated successfully!", { id: toastId });
       }
 
       // auto-refresh parent data
@@ -184,7 +163,6 @@ export default function ProgramModal({ isOpen, onClose, onRefresh, item }) {
     setDescription(item?.description || "");
     setOverview(item?.overview || "");
     setImage(null);
-    setVideoUrl(item?.video_url || "");
     setIsActive(item?.is_active ?? true);
   };
 
@@ -199,7 +177,6 @@ export default function ProgramModal({ isOpen, onClose, onRefresh, item }) {
         setDescription("");
         setOverview("");
         setImage(null);
-        setVideoUrl("");
         setIsActive(true);
       }
     }
@@ -246,9 +223,7 @@ export default function ProgramModal({ isOpen, onClose, onRefresh, item }) {
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 sm:space-y-5">
           {/* Program Name */}
           <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700">
-              Program Name <span className="text-red-500">*</span>
-            </label>
+            <label className="text-sm font-medium text-gray-700">Program Name</label>
 
             <input
               type="text"
@@ -265,150 +240,125 @@ export default function ProgramModal({ isOpen, onClose, onRefresh, item }) {
             />
           </div>
 
-          {/* Description */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700">Description</label>
+          {/* Active Status */}
+          <div className="flex flex-col space-y-2">
+            <label className="text-sm font-medium text-gray-700">Status</label>
+            <div className="flex items-center gap-3 py-2">
+              <button
+                type="button"
+                onClick={() => setIsActive(!isActive)}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                  isActive ? "bg-green-500" : "bg-gray-300"
+                }`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    isActive ? "translate-x-6" : "translate-x-1"
+                  }`}
+                />
+              </button>
+              <span className={`text-sm font-medium ${isActive ? "text-green-600" : "text-gray-500"}`}>
+                {isActive ? "Active" : "Inactive"}
+              </span>
+            </div>
+          </div>
 
-            <textarea
-              value={description}
-              placeholder="Enter description..."
-              onChange={(e) => setDescription(e.target.value)}
-              rows={4}
-              className="w-full rounded-lg border border-gray-300 bg-white px-3 sm:px-4 py-2 sm:py-2.5 text-sm shadow-sm
-              focus:outline-none focus:ring-2 focus:ring-orange-400 transition resize-none"
-            />
+          {/* Content */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5 items-stretch">
+            {/* Left: Image Upload */}
+            <div className="flex flex-col gap-3">
+              {/* Image Upload */}
+              <div className="space-y-1.5">
+                <span className="text-sm font-medium text-gray-700">Image</span>
+              </div>
+              <label className="relative group block rounded-lg overflow-hidden border border-gray-300 bg-white shadow-sm cursor-pointer">
+                <img
+                  src={
+                    image
+                      ? URL.createObjectURL(image)
+                      : item?.image_url || "/placeholder.png"
+                  }
+                  alt="Preview"
+                  className="w-full h-[160px] sm:h-[180px] md:h-[220px] object-cover bg-gray-100 transition-transform duration-300 group-hover:scale-105"
+                />
+
+                {/* Overlay */}
+                <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <div className="bg-primary-gradient rounded-full p-2 sm:p-3 mb-1 sm:mb-2 shadow">
+                    <ArrowUpTrayIcon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                  </div>
+
+                  <p className="text-xs sm:text-sm font-medium text-white">
+                    Upload Photo
+                  </p>
+
+                  <p className="text-xs text-white/80 hidden sm:block">
+                    JPG, PNG up to 10MB
+                  </p>
+                </div>
+
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleImageChange}
+                />
+              </label>
+            </div>
+
+            {/* Right: Description */}
+            <div className="flex flex-col space-y-2">
+              <label className="text-sm font-medium text-gray-700">
+                Description
+              </label>
+
+              <textarea
+                value={description}
+                placeholder="Enter description..."
+                onChange={(e) => setDescription(e.target.value)}
+                className="flex-1 w-full min-h-[160px] sm:min-h-[200px] md:min-h-[250px] rounded-lg border border-gray-300 bg-white px-3 sm:px-4 py-2 sm:py-3 text-sm
+                focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none transition"
+              />
+            </div>
           </div>
 
           {/* Overview */}
           <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700">Overview</label>
+            <label className="text-sm font-medium text-gray-700">
+              Overview
+            </label>
 
             <textarea
               value={overview}
               placeholder="Enter overview..."
               onChange={(e) => setOverview(e.target.value)}
-              rows={4}
-              className="w-full rounded-lg border border-gray-300 bg-white px-3 sm:px-4 py-2 sm:py-2.5 text-sm shadow-sm
-              focus:outline-none focus:ring-2 focus:ring-orange-400 transition resize-none"
+              className="w-full min-h-[100px] rounded-lg border border-gray-300 bg-white px-3 sm:px-4 py-2 sm:py-3 text-sm
+              focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none transition"
             />
           </div>
 
-          {/* Video URL */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700">Video URL</label>
-
-            <input
-              type="url"
-              value={videoUrl}
-              placeholder="https://www.youtube.com/watch?v=..."
-              onChange={(e) => setVideoUrl(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.target.blur();
-                }
-              }}
-              className="w-full rounded-lg border border-gray-300 bg-white px-3 sm:px-4 py-2 sm:py-2.5 text-sm shadow-sm
-              focus:outline-none focus:ring-2 focus:ring-orange-400 transition"
-            />
-          </div>
-
-          {/* Image Upload */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700">Program Image</label>
-
-            <div className="flex items-center gap-4">
-              {/* Current Image Preview */}
-              {(image || item?.image_url) && (
-                <div className="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
-                  <img
-                    src={image ? URL.createObjectURL(image) : item?.image_url}
-                    alt="Program preview"
-                    className="object-cover w-full h-full"
-                  />
-                </div>
-              )}
-
-              {/* Upload Button */}
-              <label className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition">
-                <ArrowUpTrayIcon className="w-4 h-4 text-gray-600" />
-                <span className="text-sm text-gray-600">
-                  {image ? "Change Image" : "Upload Image"}
-                </span>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageChange}
-                  className="hidden"
-                />
-              </label>
-
-              {image && (
-                <button
-                  type="button"
-                  onClick={() => setImage(null)}
-                  className="text-sm text-red-500 hover:text-red-700"
-                >
-                  Remove
-                </button>
-              )}
-            </div>
-          </div>
-
-          {/* Active Status */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700">Status</label>
-
-            <div className="flex items-center gap-3">
+          {/* Footer - Fixed at bottom */}
+          <div className="flex-shrink-0 bg-[#FEF2F3] rounded-b-2xl px-4 sm:px-6 py-3 sm:py-4 border-t border-gray-200">
+            <div className="flex justify-end gap-2 sm:gap-3">
               <button
-                type="button"
-                onClick={() => setIsActive(true)}
-                className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border transition ${
-                  isActive
-                    ? "bg-green-50 border-green-300 text-green-700"
-                    : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"
-                }`}
+                onClick={() => {
+                  resetForm();
+                  onClose();
+                }}
+                className="px-4 sm:px-6 py-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-white transition"
               >
-                <CheckIcon className={`w-4 h-4 ${isActive ? "text-green-500" : "text-gray-400"}`} />
-                <span className="text-sm font-medium">Active</span>
+                Cancel
               </button>
 
               <button
-                type="button"
-                onClick={() => setIsActive(false)}
-                className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border transition ${
-                  !isActive
-                    ? "bg-gray-50 border-gray-400 text-gray-700"
-                    : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"
-                }`}
+                disabled={loading}
+                onClick={handleSave}
+                className="px-4 sm:px-5 py-2 rounded-lg text-white font-medium bg-primary-gradient hover:bg-primary-gradient-hover
+                active:scale-95 focus:outline-none focus:ring-2 focus:ring-[#F65919] focus:ring-offset-2 transition disabled:opacity-60"
               >
-                <span className="text-sm font-medium">Inactive</span>
+                {loading ? (isCreate ? "Creating..." : "Saving...") : (isCreate ? "Create" : "Save")}
               </button>
             </div>
-          </div>
-        </div>
-
-        {/* Footer - Fixed */}
-        <div className="flex-shrink-0 bg-white rounded-b-2xl px-4 sm:px-6 py-3 sm:py-4 border-t border-gray-200">
-          <div className="flex items-center justify-end gap-3">
-            <button
-              type="button"
-              onClick={() => {
-                resetForm();
-                onClose();
-              }}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-orange-400 transition"
-            >
-              Cancel
-            </button>
-
-            <button
-              type="button"
-              onClick={handleSave}
-              disabled={loading}
-              className="px-6 py-2 text-sm font-medium text-white bg-orange-500 rounded-lg hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition"
-            >
-              {loading ? "Saving..." : isCreate ? "Create Program" : "Save Changes"}
-            </button>
           </div>
         </div>
       </div>
