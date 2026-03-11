@@ -76,6 +76,7 @@ export default function AboutPage() {
         ],
         showPosition: true,
         showImage: true,
+        showStatus: true,
         rows: 4
       }}
     />

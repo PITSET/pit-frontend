@@ -118,6 +118,7 @@ export default function AdminPrograms() {
         ],
         showPosition: false,
         showImage: true,
+        showStatus: true,
         rows: 4
       }}
     />

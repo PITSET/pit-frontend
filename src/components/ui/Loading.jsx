@@ -71,8 +71,12 @@ export function TableSkeleton({ rows = 4, columns = [], showPosition = false, sh
 /**
  * Skeleton loader for mobile card view
  * @param {number} cards - Number of skeleton cards
+ * @param {Object} config - Card configuration
+ * @param {boolean} config.showStatus - Show status badge
  */
-export function CardSkeleton({ cards = 4 }) {
+export function CardSkeleton({ cards = 4, config = {} }) {
+  const { showStatus = true } = config;
+  
   return (
     <div className="md:hidden space-y-4">
       {Array.from({ length: cards }).map((_, index) => (
@@ -80,24 +84,32 @@ export function CardSkeleton({ cards = 4 }) {
           key={index}
           className="bg-white rounded-xl border border-gray-200 shadow-sm p-4"
         >
-          <div className="flex gap-4">
+          <div className="flex gap-3 sm:gap-4">
+            {/* Image skeleton */}
             <div className="flex-shrink-0">
-              <div className="w-20 h-20 bg-gray-200 rounded-lg animate-pulse" />
+              <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-200 rounded-lg animate-pulse" />
             </div>
+            
+            {/* Content skeleton */}
             <div className="flex-1 min-w-0">
-              <div className="flex items-center justify-between mb-1">
-                <div className="h-5 bg-gray-200 rounded w-32 animate-pulse" />
-                <div className="h-5 w-16 bg-gray-200 rounded-full animate-pulse ml-2" />
+              <div className="flex items-start justify-between gap-2 mb-1">
+                <div className="h-5 bg-gray-200 rounded w-24 sm:w-32 animate-pulse flex-1" />
+                {showStatus && (
+                  <div className="h-5 w-14 sm:w-16 bg-gray-200 rounded-full animate-pulse flex-shrink-0" />
+                )}
               </div>
-              <div className="h-4 bg-gray-200 rounded w-full animate-pulse" />
+              <div className="h-4 bg-gray-200 rounded w-full animate-pulse mb-1" />
+              <div className="h-4 bg-gray-200 rounded w-3/4 animate-pulse" />
             </div>
+            
+            {/* Action buttons skeleton */}
             <div className="flex-shrink-0">
-              <div className="flex items-center gap-0 rounded-md border border-gray-200 overflow-hidden">
-                <div className="p-2">
+              <div className="flex flex-col sm:flex-row items-center gap-0 rounded-md border border-gray-200 overflow-hidden">
+                <div className="p-1.5 sm:p-2">
                   <div className="w-4 h-4 bg-gray-200 rounded animate-pulse" />
                 </div>
-                <div className="h-px w-4 bg-gray-200" />
-                <div className="p-2">
+                <div className="h-px w-full sm:h-full sm:w-px bg-gray-200" />
+                <div className="p-1.5 sm:p-2">
                   <div className="w-4 h-4 bg-gray-200 rounded animate-pulse" />
                 </div>
               </div>
@@ -114,22 +126,22 @@ export function CardSkeleton({ cards = 4 }) {
  */
 export function PaginationSkeleton() {
   return (
-    <div className="flex flex-col sm:flex-row items-center justify-between px-4 py-3 bg-gray-50 border-t border-gray-200 gap-3 sm:gap-0">
-      <div className="h-4 bg-gray-200 rounded w-40 animate-pulse" />
+    <div className="flex flex-col sm:flex-row items-center justify-between px-2 sm:px-4 py-3 bg-gray-50 border-t border-gray-200 gap-3 sm:gap-0">
+      <div className="h-4 bg-gray-200 rounded w-32 sm:w-40 animate-pulse" />
       <div className="flex items-center gap-1 sm:gap-2">
-        <div className="p-2 rounded-lg border border-gray-200">
+        <div className="p-1.5 sm:p-2 rounded-lg border border-gray-200">
           <div className="w-4 h-4 bg-gray-200 rounded animate-pulse" />
         </div>
-        <div className="px-3 py-1.5 rounded-lg border border-gray-200">
+        <div className="px-2 sm:px-3 py-1.5 rounded-lg border border-gray-200">
           <div className="h-4 w-4 bg-gray-200 rounded animate-pulse" />
         </div>
-        <div className="px-3 py-1.5 rounded-lg border border-gray-200">
+        <div className="px-2 sm:px-3 py-1.5 rounded-lg border border-gray-200">
           <div className="h-4 w-4 bg-gray-200 rounded animate-pulse" />
         </div>
-        <div className="px-3 py-1.5 rounded-lg border border-gray-200">
+        <div className="hidden sm:block px-3 py-1.5 rounded-lg border border-gray-200">
           <div className="h-4 w-4 bg-gray-200 rounded animate-pulse" />
         </div>
-        <div className="p-2 rounded-lg border border-gray-200">
+        <div className="p-1.5 sm:p-2 rounded-lg border border-gray-200">
           <div className="w-4 h-4 bg-gray-200 rounded animate-pulse" />
         </div>
       </div>
@@ -147,20 +159,20 @@ export function PageSkeleton({
   showCreateButton = true,
   table = {}
 }) {
-  const { columns, showPosition = false, showImage = true, rows = 4 } = table;
+  const { columns, showPosition = false, showImage = true, rows = 4, showStatus = true } = table;
   
   return (
-    <div className="p-4 md:p-6 max-w-7xl mx-auto mb-6">
+    <div className="p-3 sm:p-4 md:p-6 max-w-7xl mx-auto mb-4 sm:mb-6">
       {/* Header skeleton */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
-        <div className="h-8 bg-gray-200 rounded w-40 animate-pulse" />
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3 mb-4 sm:mb-6">
+        <div className="h-7 sm:h-8 bg-gray-200 rounded w-32 sm:w-40 animate-pulse" />
         {showCreateButton && (
-          <div className="h-10 bg-gray-200 rounded w-36 animate-pulse" />
+          <div className="h-9 sm:h-10 bg-gray-200 rounded w-28 sm:w-36 animate-pulse" />
         )}
       </div>
       
       <TableSkeleton rows={rows} columns={columns} showPosition={showPosition} showImage={showImage} />
-      <CardSkeleton cards={rows} />
+      <CardSkeleton cards={rows} config={{ showStatus }} />
       <PaginationSkeleton />
     </div>
   );
