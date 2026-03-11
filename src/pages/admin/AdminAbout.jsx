@@ -7,9 +7,9 @@ import {
   PlusIcon,
   TrashIcon,
 } from "@heroicons/react/24/outline";
-import toast from "react-hot-toast";
 
 import AboutModal from "../../components/admin_ui/AboutModal";
+import DeleteModal from "../../components/admin_ui/DeleteModal";
 
 export default function AboutPage() {
   const [data, setData] = useState([]);
@@ -18,6 +18,8 @@ export default function AboutPage() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState(null);
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -49,18 +51,9 @@ export default function AboutPage() {
     setCurrentPage(page);
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this section?")) return;
-
-    const toastId = toast.loading("Deleting section...");
-    try {
-      await deleteAboutSection(id);
-      toast.success("Section deleted successfully!", { id: toastId });
-      fetchAbout();
-    } catch (error) {
-      console.error("Failed to delete:", error);
-      toast.error("Failed to delete section", { id: toastId });
-    }
+  const handleDeleteClick = (item) => {
+    setItemToDelete(item);
+    setIsDeleteModalOpen(true);
   };
 
   const handleCreate = () => {
@@ -160,7 +153,7 @@ export default function AboutPage() {
                     <div className="h-4 w-px sm:h-6 bg-gray-200 sm:bg-gray-300"></div>
 
                     <button
-                      onClick={() => handleDelete(item.id)}
+                      onClick={() => handleDeleteClick(item)}
                       className="p-1.5 sm:p-2 hover:bg-red-50 sm:hover:bg-red-100 transition"
                     >
                       <TrashIcon className="w-4 h-4 sm:w-5 sm:h-5 text-red-500" />
@@ -268,7 +261,7 @@ export default function AboutPage() {
                   <div className="h-px w-4 sm:h-6 sm:w-px bg-gray-200 sm:bg-gray-300"></div>
 
                   <button
-                    onClick={() => handleDelete(item.id)}
+                    onClick={() => handleDeleteClick(item)}
                     className="p-1.5 sm:p-2 hover:bg-red-50 sm:hover:bg-red-100 transition"
                   >
                     <TrashIcon className="w-4 h-4 sm:w-5 sm:h-5 text-red-500" />
@@ -329,6 +322,19 @@ export default function AboutPage() {
           }, {})
         )}
         existingOrderPositions={data.map((item) => item.order_position)}
+      />
+
+      {/* Delete Modal */}
+      <DeleteModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => {
+          setIsDeleteModalOpen(false);
+          setItemToDelete(null);
+        }}
+        onRefresh={fetchAbout}
+        item={itemToDelete}
+        sectionType="About Section"
+        deleteFunction={deleteAboutSection}
       />
     </div>
   );

@@ -10,6 +10,7 @@ import {
 import toast from "react-hot-toast";
 
 import ProgramModal from "../../components/admin_ui/ProgramModal";
+import DeleteModal from "../../components/admin_ui/DeleteModal";
 
 export default function AdminPrograms() {
   const [data, setData] = useState([]);
@@ -18,6 +19,8 @@ export default function AdminPrograms() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState(null);
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -49,52 +52,36 @@ export default function AdminPrograms() {
     setCurrentPage(page);
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this program?")) return;
+  const handleDeleteClick = (item) => {
+    setItemToDelete(item);
+    setIsDeleteModalOpen(true);
+  };
 
-    console.log("=== DELETE DEBUG ===");
-    console.log("Program ID to delete:", id);
-    console.log("ID type:", typeof id);
-    console.log("===================");
-
+  // Custom delete handler for programs with cascade delete logic
+  const handleProgramDelete = async (id) => {
     const toastId = toast.loading("Deleting program...");
     try {
-      console.log("Attempting to delete program:", id);
-      
       // First try to delete the program directly
       await deleteProgram(id);
-      console.log("Program deleted successfully:", id);
       toast.success("Program deleted successfully!", { id: toastId });
       fetchPrograms();
     } catch (error) {
-      console.error("=== DELETE ERROR ===");
-      console.error("Error:", error);
-      console.error("Error response:", error.response);
-      console.error("Error message:", error.message);
-      console.error("Error request:", error.request);
-      console.error("==================");
-      
-      // Check if it's a foreign key constraint error (409 or database error codes like 23502, 23503)
+      // Check if it's a foreign key constraint error
       const status = error.response?.status;
       const errorCode = error.response?.data?.code;
       
       if (status === 409 || errorCode === '23502' || errorCode === '23503') {
-        // Try to delete related data first, then retry
         toast.loading("Program has related data. Cleaning up...", { id: toastId });
         
         try {
-          // Get and delete students - set program_id to null (needed for NOT NULL constraint)
           try {
             const studentsRes = await getProgramStudents(id);
             const students = studentsRes.data || studentsRes || [];
             for (const student of students) {
-              // Update student to remove program association
               await updateStudent(student.id, { program_id: null });
             }
-            console.log("Students cleaned up:", students.length);
           } catch (e) { console.warn("Student cleanup skipped:", e); }
           
-          // Retry deleting the program
           await deleteProgram(id);
           toast.success("Program deleted successfully!", { id: toastId });
           fetchPrograms();
@@ -110,7 +97,6 @@ export default function AdminPrograms() {
       } else if (status === 401) {
         toast.error("Unauthorized. Please login again.", { id: toastId });
       } else if (status === 400) {
-        // Bad request - show the backend error message
         const errorMsg = error.response?.data?.message || error.response?.data?.error || "Invalid request data";
         toast.error(`Cannot delete: ${errorMsg}`, { id: toastId });
       } else {
@@ -205,7 +191,7 @@ export default function AdminPrograms() {
                     <div className="h-4 w-px sm:h-6 bg-gray-200 sm:bg-gray-300"></div>
 
                     <button
-                      onClick={() => handleDelete(item.id)}
+                      onClick={() => handleDeleteClick(item)}
                       className="p-1.5 sm:p-2 hover:bg-red-50 sm:hover:bg-red-100 transition"
                     >
                       <TrashIcon className="w-4 h-4 sm:w-5 sm:h-5 text-red-500" />
@@ -313,7 +299,7 @@ export default function AdminPrograms() {
                   <div className="h-px w-4 sm:h-6 sm:w-px bg-gray-200 sm:bg-gray-300"></div>
 
                   <button
-                    onClick={() => handleDelete(item.id)}
+                    onClick={() => handleDeleteClick(item)}
                     className="p-1.5 sm:p-2 hover:bg-red-50 sm:hover:bg-red-100 transition"
                   >
                     <TrashIcon className="w-4 h-4 sm:w-5 sm:h-5 text-red-500" />
@@ -360,6 +346,19 @@ export default function AdminPrograms() {
         onClose={() => setIsModalOpen(false)}
         onRefresh={fetchPrograms}
         item={selectedItem}
+      />
+
+      {/* Delete Modal */}
+      <DeleteModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => {
+          setIsDeleteModalOpen(false);
+          setItemToDelete(null);
+        }}
+        onRefresh={fetchPrograms}
+        item={itemToDelete}
+        sectionType="Program"
+        deleteFunction={handleProgramDelete}
       />
     </div>
   );
