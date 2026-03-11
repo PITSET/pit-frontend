@@ -315,7 +315,7 @@ export default function AboutPage() {
         onClose={() => setIsModalOpen(false)}
         onRefresh={fetchAbout}
         item={selectedItem}
-        existingSectionTypes={Object.entries(
+        existingSectionTypes={Object.values(
           data.reduce((acc, item) => {
             const baseType = item.section_type.replace(/\s+\d+$/, '').trim();
             if (!acc[baseType]) {
