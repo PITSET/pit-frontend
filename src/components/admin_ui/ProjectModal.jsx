@@ -7,8 +7,6 @@ import {
   FolderIcon,
   ArrowUpTrayIcon,
   ArrowTopRightOnSquareIcon,
-  CheckCircleIcon,
-  ExclamationCircleIcon,
   PlusIcon,
   TrashIcon,
 } from "@heroicons/react/24/outline";
@@ -21,16 +19,16 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
   const isCreate = !item;
   const [name, setName] = useState("");
   const [overview, setOverview] = useState("");
-  const [objectives, setObjectives] = useState("");
-  const [tasks, setTasks] = useState("");
+  const [objectives, setObjectives] = useState([]);
+  const [tasks, setTasks] = useState([]);
   const [leader, setLeader] = useState("");
   const [duration, setDuration] = useState("");
   const [teamSize, setTeamSize] = useState("");
-  const [videoUrl, setVideoUrl] = useState("");
   const [githubUrl, setGithubUrl] = useState("");
   const [result, setResult] = useState("");
   const [loading, setLoading] = useState(false);
   const [isActive, setIsActive] = useState(true);
+  const [program, setProgram] = useState("");
 
   // Multiple images state
   const [existingImages, setExistingImages] = useState([]);
@@ -53,109 +51,6 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
-
-  const [urlValidation, setUrlValidation] = useState({
-    isValid: null,
-    message: "",
-  });
-
-  // Extract YouTube video ID from various URL formats
-  const extractYouTubeVideoId = (url) => {
-    if (!url) return null;
-
-    // Handle full iframe code
-    if (url.includes("<iframe") && url.includes("src=")) {
-      const srcMatch = url.match(/src=["']([^"']+)["']/);
-      if (srcMatch && srcMatch[1]) {
-        url = srcMatch[1];
-      }
-    }
-
-    // YouTube patterns
-    const patterns = [
-      /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&?/]+)/,
-      /youtube\.com\/shorts\/([^&?/]+)/,
-      /youtube\.com\/live\/([^&?/]+)/,
-    ];
-
-    for (const pattern of patterns) {
-      const match = url.match(pattern);
-      if (match && match[1]) {
-        return match[1];
-      }
-    }
-
-    return null;
-  };
-
-  // Validate URL format and check if it's a valid YouTube URL
-  const validateUrl = (url) => {
-    if (!url) {
-      setUrlValidation({ isValid: null, message: "" });
-      return false;
-    }
-
-    const videoId = extractYouTubeVideoId(url);
-
-    if (videoId) {
-      setUrlValidation({ isValid: true, message: "Valid YouTube video" });
-      return true;
-    }
-
-    if (url.includes("youtube.com/embed/") && !url.includes("/embed/")) {
-      setUrlValidation({
-        isValid: false,
-        message: "Invalid embed URL format",
-      });
-      return false;
-    }
-
-    setUrlValidation({
-      isValid: false,
-      message: "Please enter a valid YouTube URL",
-    });
-    return false;
-  };
-
-  // Handle video URL change with validation
-  const handleVideoUrlChange = (e) => {
-    const value = e.target.value;
-
-    let extractedUrl = value;
-    if (value.includes("<iframe") && value.includes("src=")) {
-      const srcMatch = value.match(/src=["']([^"']+)["']/);
-      if (srcMatch && srcMatch[1]) {
-        extractedUrl = srcMatch[1];
-      }
-    }
-
-    setVideoUrl(extractedUrl);
-    validateUrl(extractedUrl);
-  };
-
-  // Test video URL
-  const handleTestVideoUrl = () => {
-    if (!videoUrl) {
-      toast.error("Please enter a video URL first");
-      return;
-    }
-
-    if (!validateUrl(videoUrl)) {
-      toast.error("Please enter a valid URL");
-      return;
-    }
-
-    let urlToOpen = videoUrl;
-    if (videoUrl.includes("<iframe") && videoUrl.includes("src=")) {
-      const srcMatch = videoUrl.match(/src=["']([^"']+)["']/);
-      if (srcMatch && srcMatch[1]) {
-        urlToOpen = srcMatch[1];
-      }
-    }
-
-    window.open(urlToOpen, "_blank", "noopener,noreferrer");
-    toast.success("Opening video link in new tab");
-  };
 
   // Handle image select
   const handleImageChange = (e) => {
@@ -188,6 +83,40 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
   // Remove existing image
   const removeExistingImage = (index) => {
     setExistingImages((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  // Add objective
+  const addObjective = () => {
+    setObjectives([...objectives, ""]);
+  };
+
+  // Remove objective
+  const removeObjective = (index) => {
+    setObjectives(objectives.filter((_, i) => i !== index));
+  };
+
+  // Update objective
+  const updateObjective = (index, value) => {
+    const newObjectives = [...objectives];
+    newObjectives[index] = value;
+    setObjectives(newObjectives);
+  };
+
+  // Add task
+  const addTask = () => {
+    setTasks([...tasks, ""]);
+  };
+
+  // Remove task
+  const removeTask = (index) => {
+    setTasks(tasks.filter((_, i) => i !== index));
+  };
+
+  // Update task
+  const updateTask = (index, value) => {
+    const newTasks = [...tasks];
+    newTasks[index] = value;
+    setTasks(newTasks);
   };
 
   // Convert image to WEBP (compression + resize)
@@ -286,23 +215,18 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
         }
       }
 
-      // Convert objectives string to array if it's not already an array
-      let objectivesArray = objectives;
-      if (typeof objectives === "string" && objectives.trim() !== "") {
-        objectivesArray = objectives.split("\n").filter(item => item.trim() !== "");
-      } else if (objectives === "") {
-        objectivesArray = [];
-      }
+      // Filter out empty objectives and tasks
+      const filteredObjectives = objectives.filter(obj => obj.trim() !== "");
+      const filteredTasks = tasks.filter(task => task.trim() !== "");
 
       const projectData = {
         name,
         overview,
-        objectives: objectivesArray,
-        tasks,
+        objectives: filteredObjectives,
+        tasks: filteredTasks,
         leader,
-        duration: duration ? parseInt(duration) : null,
+        duration,
         team_size: teamSize ? parseInt(teamSize) : null,
-        video_url: videoUrl,
         github_url: githubUrl,
         images: imageUrls,
         result,
@@ -368,18 +292,17 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
   const resetForm = () => {
     setName(item?.name || "");
     setOverview(item?.overview || "");
-    setObjectives(Array.isArray(item?.objectives) ? item.objectives.join("\n") : (item?.objectives || ""));
-    setTasks(item?.tasks || "");
+    setObjectives(Array.isArray(item?.objectives) ? item.objectives : []);
+    setTasks(Array.isArray(item?.tasks) ? item.tasks : []);
     setLeader(item?.leader || "");
     setDuration(item?.duration?.toString() || "");
     setTeamSize(item?.team_size?.toString() || "");
-    setVideoUrl(item?.video_url || "");
     setGithubUrl(item?.github_url || "");
     setResult(item?.result || "");
     setExistingImages(item?.images || []);
     setNewImages([]);
     setIsActive(item?.is_featured || false); // Use is_featured field from backend
-    validateUrl(item?.video_url || "");
+    setProgram("");
   };
 
   // Load initial data when modal opens
@@ -391,18 +314,17 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
         // Reset form for create mode
         setName("");
         setOverview("");
-        setObjectives("");
-        setTasks("");
+        setObjectives([]);
+        setTasks([]);
         setLeader("");
         setDuration("");
         setTeamSize("");
-        setVideoUrl("");
         setGithubUrl("");
         setResult("");
         setExistingImages([]);
         setNewImages([]);
         setIsActive(true); // Default to active (is_featured = true)
-        setUrlValidation({ isValid: null, message: "" });
+        setProgram("");
       }
     }
   }, [isOpen, item]);
@@ -445,175 +367,229 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
         </div>
 
         {/* Body - Scrollable */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 sm:space-y-5">
-          {/* Project Name */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700">Project Name</label>
-
-            <input
-              type="text"
-              value={name}
-              placeholder="Enter project name..."
-              onChange={(e) => setName(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.target.blur();
-                }
-              }}
-              className="w-full rounded-lg border border-gray-300 bg-white px-3 sm:px-4 py-2 sm:py-2.5 text-sm shadow-sm
-              focus:outline-none focus:ring-2 focus:ring-orange-400 transition"
-            />
-          </div>
-
-          {/* Active/Inactive toggle */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700">Status</label>
-            <div className="flex items-center gap-3 py-2">
-              <button
-                type="button"
-                onClick={() => setIsActive(!isActive)}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                  isActive ? "bg-green-500" : "bg-gray-300"
-                }`}
-              >
-                <span
-                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                    isActive ? "translate-x-6" : "translate-x-1"
-                  }`}
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 sm:space-y-8">
+          {/* Two-column layout */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Left column - Image upload */}
+            <div className="space-y-4">
+              <label className="text-sm font-medium text-gray-700">Project Images</label>
+              
+              {/* Image upload area */}
+              <label className="block">
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-orange-400 hover:bg-orange-50 transition">
+                  <ArrowUpTrayIcon className="w-8 h-8 mx-auto text-gray-400 mb-2" />
+                  <span className="text-sm text-gray-500">Drop here to attach or upload</span>
+                  <span className="text-xs text-gray-400 block">Max size: 10MB</span>
+                </div>
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  className="hidden"
+                  ref={fileInputRef}
+                  onChange={handleImageChange}
                 />
-              </button>
-              <span className={`text-sm font-medium ${isActive ? "text-green-600" : "text-gray-500"}`}>
-                {isActive ? "Active" : "Inactive"}
-              </span>
-            </div>
-          </div>
+              </label>
 
-          {/* Leader & Team Size */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Leader */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">Project Leader</label>
-
-              <input
-                type="text"
-                value={leader}
-                placeholder="Enter project leader name..."
-                onChange={(e) => setLeader(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.target.blur();
-                  }
-                }}
-                className="w-full rounded-lg border border-gray-300 bg-white px-3 sm:px-4 py-2 sm:py-2.5 text-sm shadow-sm
-                focus:outline-none focus:ring-2 focus:ring-orange-400 transition"
-              />
-            </div>
-
-            {/* Team Size */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">Team Size</label>
-
-              <input
-                type="number"
-                value={teamSize}
-                placeholder="Enter team size..."
-                onChange={(e) => setTeamSize(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.target.blur();
-                  }
-                }}
-                min="1"
-                className="w-full rounded-lg border border-gray-300 bg-white px-3 sm:px-4 py-2 sm:py-2.5 text-sm shadow-sm
-                focus:outline-none focus:ring-2 focus:ring-orange-400 transition"
-              />
-            </div>
-          </div>
-
-          {/* Duration */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700">Duration (months)</label>
-
-            <input
-              type="number"
-              value={duration}
-              placeholder="Enter duration in months..."
-              onChange={(e) => setDuration(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.target.blur();
-                }
-              }}
-              min="1"
-              className="w-full rounded-lg border border-gray-300 bg-white px-3 sm:px-4 py-2 sm:py-2.5 text-sm shadow-sm
-              focus:outline-none focus:ring-2 focus:ring-orange-400 transition"
-            />
-          </div>
-
-          {/* Images */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700">Project Images</label>
-            
-            {/* Existing Images */}
-            {existingImages.length > 0 && (
-              <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 mb-3">
-                {existingImages.map((url, index) => (
-                  <div key={`existing-${index}`} className="relative group">
-                    <img
-                      src={url || "/placeholder.svg"}
-                      alt={`Project ${index + 1}`}
-                      className="w-full h-20 object-cover rounded-lg"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => removeExistingImage(index)}
-                      className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition"
-                    >
-                      <TrashIcon className="w-3 h-3" />
-                    </button>
+              {/* Existing Images */}
+              {existingImages.length > 0 && (
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-700">Existing Images</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {existingImages.map((url, index) => (
+                      <div key={`existing-${index}`} className="relative group">
+                        <img
+                          src={url || "/placeholder.svg"}
+                          alt={`Project ${index + 1}`}
+                          className="w-full h-24 object-cover rounded-lg"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeExistingImage(index)}
+                          className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition"
+                        >
+                          <TrashIcon className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-            )}
+                </div>
+              )}
 
-            {/* New Images Preview */}
-            {newImages.length > 0 && (
-              <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 mb-3">
-                {newImages.map((file, index) => (
-                  <div key={`new-${index}`} className="relative group">
-                    <img
-                      src={URL.createObjectURL(file)}
-                      alt={`New image ${index + 1}`}
-                      className="w-full h-20 object-cover rounded-lg"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => removeNewImage(index)}
-                      className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition"
-                    >
-                      <TrashIcon className="w-3 h-3" />
-                    </button>
+              {/* New Images Preview */}
+              {newImages.length > 0 && (
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-700">New Images</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {newImages.map((file, index) => (
+                      <div key={`new-${index}`} className="relative group">
+                        <img
+                          src={URL.createObjectURL(file)}
+                          alt={`New image ${index + 1}`}
+                          className="w-full h-24 object-cover rounded-lg"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeNewImage(index)}
+                          className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition"
+                        >
+                          <TrashIcon className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-            )}
+                </div>
+              )}
+            </div>
 
-            {/* Add Image Button */}
-            <label className="block">
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center cursor-pointer hover:border-orange-400 hover:bg-orange-50 transition">
-                <ArrowUpTrayIcon className="w-6 h-6 mx-auto text-gray-400" />
-                <span className="text-sm text-gray-500">Click to upload images</span>
-                <span className="text-xs text-gray-400 block">JPG, PNG up to 10MB each</span>
+            {/* Right column - Project details */}
+            <div className="space-y-4">
+              {/* Project Name */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700">Project Name</label>
+
+                <input
+                  type="text"
+                  value={name}
+                  placeholder="Enter project name..."
+                  onChange={(e) => setName(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.target.blur();
+                    }
+                  }}
+                  className="w-full rounded-lg border border-gray-300 bg-white px-3 sm:px-4 py-2 sm:py-2.5 text-sm shadow-sm
+                  focus:outline-none focus:ring-2 focus:ring-orange-400 transition"
+                />
               </div>
-              <input
-                type="file"
-                accept="image/*"
-                multiple
-                className="hidden"
-                ref={fileInputRef}
-                onChange={handleImageChange}
-              />
-            </label>
+
+              {/* Project Leader */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700">Leader</label>
+
+                <input
+                  type="text"
+                  value={leader}
+                  placeholder="Enter project leader name..."
+                  onChange={(e) => setLeader(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.target.blur();
+                    }
+                  }}
+                  className="w-full rounded-lg border border-gray-300 bg-white px-3 sm:px-4 py-2 sm:py-2.5 text-sm shadow-sm
+                  focus:outline-none focus:ring-2 focus:ring-orange-400 transition"
+                />
+              </div>
+
+              {/* Program */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700">Program</label>
+
+                <select
+                  value={program}
+                  onChange={(e) => setProgram(e.target.value)}
+                  className="w-full rounded-lg border border-gray-300 bg-white px-3 sm:px-4 py-2 sm:py-2.5 text-sm shadow-sm
+                  focus:outline-none focus:ring-2 focus:ring-orange-400 transition"
+                >
+                  <option value="">Select program...</option>
+                  <option value="mechanical">Mechanical Engineering</option>
+                  <option value="electrical">Electrical Engineering</option>
+                  <option value="computer">Computer Engineering</option>
+                  <option value="civil">Civil Engineering</option>
+                </select>
+              </div>
+
+              {/* Duration */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700">Duration</label>
+
+                <input
+                  type="text"
+                  value={duration}
+                  placeholder="e.g., 4 Weeks..."
+                  onChange={(e) => setDuration(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.target.blur();
+                    }
+                  }}
+                  className="w-full rounded-lg border border-gray-300 bg-white px-3 sm:px-4 py-2 sm:py-2.5 text-sm shadow-sm
+                  focus:outline-none focus:ring-2 focus:ring-orange-400 transition"
+                />
+              </div>
+
+              {/* Team Size */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700">Team Size</label>
+
+                <input
+                  type="text"
+                  value={teamSize}
+                  placeholder="e.g., 5 Students..."
+                  onChange={(e) => setTeamSize(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.target.blur();
+                    }
+                  }}
+                  className="w-full rounded-lg border border-gray-300 bg-white px-3 sm:px-4 py-2 sm:py-2.5 text-sm shadow-sm
+                  focus:outline-none focus:ring-2 focus:ring-orange-400 transition"
+                />
+              </div>
+
+              {/* GitHub URL */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700">Website URL</label>
+                
+                <div className="flex rounded-lg border border-gray-300 overflow-hidden bg-white focus-within:ring-2 focus-within:ring-orange-400">
+                  <input
+                    type="text"
+                    value={githubUrl}
+                    placeholder="https://github.com/username/repo"
+                    onChange={(e) => setGithubUrl(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.target.blur();
+                      }
+                    }}
+                    className="flex-1 px-3 sm:px-4 py-2 sm:py-2.5 text-sm shadow-sm outline-none transition min-w-0"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => window.open(githubUrl, "_blank", "noopener,noreferrer")}
+                    disabled={!githubUrl}
+                    className="flex items-center justify-center px-3 sm:px-4 bg-gray-50 border-l border-gray-300 text-gray-600 hover:bg-gray-100 transition disabled:opacity-50"
+                    title="Open URL"
+                  >
+                    <ArrowTopRightOnSquareIcon className="w-4 h-5 sm:w-5 sm:h-5" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Active/Inactive toggle */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700">Status</label>
+                <div className="flex items-center gap-3 py-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsActive(!isActive)}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                      isActive ? "bg-green-500" : "bg-gray-300"
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                        isActive ? "translate-x-6" : "translate-x-1"
+                      }`}
+                    />
+                  </button>
+                  <span className={`text-sm font-medium ${isActive ? "text-green-600" : "text-gray-500"}`}>
+                    {isActive ? "Active" : "Inactive"}
+                  </span>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Overview */}
@@ -624,127 +600,114 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
 
             <textarea
               value={overview}
-              placeholder="Enter project overview..."
+              placeholder="Message text goes here..."
               onChange={(e) => setOverview(e.target.value)}
-              className="w-full min-h-[100px] rounded-lg border border-gray-300 bg-white px-3 sm:px-4 py-2 sm:py-3 text-sm
+              className="w-full min-h-[120px] rounded-lg border border-gray-300 bg-white px-3 sm:px-4 py-2 sm:py-3 text-sm
               focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none transition"
             />
           </div>
 
-          {/* Objectives */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700">
-              Objectives (one per line)
-            </label>
+          {/* Objectives and Tasks - Two columns */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Objectives */}
+            <div className="space-y-3">
+              <label className="text-sm font-medium text-gray-700">Objectives</label>
+              
+              <div className="space-y-2">
+                {objectives.map((objective, index) => (
+                  <div key={`objective-${index}`} className="flex items-center gap-2">
+                    <div className="flex-shrink-0 w-2 h-2 bg-gray-900 rounded-full mt-2" />
+                    <input
+                      type="text"
+                      value={objective}
+                      placeholder="Add your message here"
+                      onChange={(e) => updateObjective(index, e.target.value)}
+                      className="flex-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm
+                      focus:outline-none focus:ring-2 focus:ring-orange-400 transition"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeObjective(index)}
+                      className="flex-shrink-0 bg-red-500 text-white rounded-lg p-1.5 hover:bg-red-600 transition"
+                    >
+                      <TrashIcon className="w-3 h-3" />
+                    </button>
+                  </div>
+                ))}
+                
+                <button
+                  type="button"
+                  onClick={addObjective}
+                  className="flex items-center gap-1 text-orange-600 hover:text-orange-700 transition"
+                >
+                  <PlusIcon className="w-4 h-4" />
+                  <span>Add Objective</span>
+                </button>
+              </div>
+            </div>
 
-            <textarea
-              value={objectives}
-              placeholder="Enter project objectives (one per line)..."
-              onChange={(e) => setObjectives(e.target.value)}
-              className="w-full min-h-[80px] rounded-lg border border-gray-300 bg-white px-3 sm:px-4 py-2 sm:py-3 text-sm
-              focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none transition"
-            />
-          </div>
-
-          {/* Tasks */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700">
-              Tasks
-            </label>
-
-            <textarea
-              value={tasks}
-              placeholder="Enter project tasks..."
-              onChange={(e) => setTasks(e.target.value)}
-              className="w-full min-h-[80px] rounded-lg border border-gray-300 bg-white px-3 sm:px-4 py-2 sm:py-3 text-sm
-              focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none transition"
-            />
+            {/* Tasks */}
+            <div className="space-y-3">
+              <label className="text-sm font-medium text-gray-700">Tasks & Activities</label>
+              
+              <div className="space-y-2">
+                {tasks.map((task, index) => (
+                  <div key={`task-${index}`} className="flex items-center gap-2">
+                    <div className="flex-shrink-0 w-2 h-2 bg-gray-900 rounded-full mt-2" />
+                    <input
+                      type="text"
+                      value={task}
+                      placeholder="Add your message here"
+                      onChange={(e) => updateTask(index, e.target.value)}
+                      className="flex-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm
+                      focus:outline-none focus:ring-2 focus:ring-orange-400 transition"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeTask(index)}
+                      className="flex-shrink-0 bg-red-500 text-white rounded-lg p-1.5 hover:bg-red-600 transition"
+                    >
+                      <TrashIcon className="w-3 h-3" />
+                    </button>
+                  </div>
+                ))}
+                
+                <button
+                  type="button"
+                  onClick={addTask}
+                  className="flex items-center gap-1 text-orange-600 hover:text-orange-700 transition"
+                >
+                  <PlusIcon className="w-4 h-4" />
+                  <span>Add Task</span>
+                </button>
+              </div>
+            </div>
           </div>
 
           {/* Result */}
           <div className="space-y-2">
             <label className="text-sm font-medium text-gray-700">
-              Result
+              Results & Conclusion
             </label>
 
             <textarea
               value={result}
-              placeholder="Enter project result..."
+              placeholder="Message text goes here..."
               onChange={(e) => setResult(e.target.value)}
-              className="w-full min-h-[80px] rounded-lg border border-gray-300 bg-white px-3 sm:px-4 py-2 sm:py-3 text-sm
+              className="w-full min-h-[120px] rounded-lg border border-gray-300 bg-white px-3 sm:px-4 py-2 sm:py-3 text-sm
               focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none transition"
             />
           </div>
 
-          {/* Video URL */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700">Video URL (YouTube)</label>
-            
-            <div className="flex rounded-lg border border-gray-300 overflow-hidden bg-white focus-within:ring-2 focus-within:ring-orange-400">
-              <input
-                type="text"
-                value={videoUrl}
-                placeholder="Paste YouTube URL..."
-                onChange={handleVideoUrlChange}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.target.blur();
-                  }
-                }}
-                className="flex-1 px-3 sm:px-4 py-2 sm:py-2.5 text-sm shadow-sm outline-none transition min-w-0"
-              />
-              <button
-                type="button"
-                onClick={handleTestVideoUrl}
-                className="flex items-center justify-center px-3 sm:px-4 bg-gray-50 border-l border-gray-300 text-gray-600 hover:bg-gray-100 transition"
-                title="Test URL"
-              >
-                <ArrowTopRightOnSquareIcon className="w-4 h-5 sm:w-5 sm:h-5" />
-              </button>
-            </div>
-            
-            {urlValidation.message && (
-              <div className={`flex items-center gap-1 text-xs ${
-                urlValidation.isValid === true ? "text-green-600" : "text-red-500"
-              }`}>
-                {urlValidation.isValid === true ? (
-                  <CheckCircleIcon className="w-3.5 h-3.5" />
-                ) : (
-                  <ExclamationCircleIcon className="w-3.5 h-3.5" />
-                )}
-                {urlValidation.message}
-              </div>
-            )}
-          </div>
-
-          {/* GitHub URL */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700">GitHub URL</label>
-
-            <input
-              type="text"
-              value={githubUrl}
-              placeholder="https://github.com/username/repo"
-              onChange={(e) => setGithubUrl(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.target.blur();
-                }
-              }}
-              className="w-full rounded-lg border border-gray-300 bg-white px-3 sm:px-4 py-2 sm:py-2.5 text-sm shadow-sm
-              focus:outline-none focus:ring-2 focus:ring-orange-400 transition"
-            />
-          </div>
-
           {/* Footer - Not Fixed */}
-          <div className="bg-[#FEF2F3] rounded-b-2xl px-4 sm:px-6 py-3 sm:py-4 border-t border-gray-200 mt-4">
+          <div className="bg-[#FEF2F3] rounded-b-2xl px-4 sm:px-6 py-4 border-t border-gray-200 mt-6">
             <div className="flex justify-end gap-2 sm:gap-3">
               <button
                 onClick={() => {
                   resetForm();
                   onClose();
                 }}
-                className="px-4 sm:px-6 py-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-white transition"
+                className="px-6 py-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-white transition"
               >
                 Cancel
               </button>
@@ -752,7 +715,7 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
               <button
                 disabled={loading}
                 onClick={handleSave}
-                className="px-4 sm:px-5 py-2 rounded-lg text-white font-medium bg-primary-gradient hover:bg-primary-gradient-hover
+                className="px-6 py-2 rounded-lg text-white font-medium bg-primary-gradient hover:bg-primary-gradient-hover
                 active:scale-95 focus:outline-none focus:ring-2 focus:ring-[#F65919] focus:ring-offset-2 transition disabled:opacity-60"
               >
                 {loading ? (isCreate ? "Creating..." : "Saving...") : (isCreate ? "Create" : "Save")}
