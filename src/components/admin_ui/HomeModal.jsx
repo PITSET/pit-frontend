@@ -530,10 +530,6 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item, existingSe
                 })}
               </div>
             )}
-
-            <p className="text-xs text-gray-500">
-              Select from existing types or type a new section type.
-            </p>
           </div>
 
           {/* Order Position & Active Status */}
