@@ -68,7 +68,7 @@ export default function HomePage() {
   // Empty state
   if (data.length === 0) {
     return (
-      <div className="p-4 md:p-6 max-w-7xl mx-auto mb-6">
+      <div className="p-4 md:p-6 max-w-7xl mx-auto min-h-[60vh] flex flex-col items-center justify-center">
         <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold text-gray-900 mb-6">
           Home Page
         </h1>
