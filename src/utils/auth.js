@@ -1,10 +1,6 @@
 import { supabase } from "../lib/supabaseClient";
 import { toast } from "react-hot-toast";
 
-// Session duration in milliseconds (default: 30 minutes)
-// This should match the backend token expiry time
-const SESSION_DURATION = 30 * 60 * 1000; // 30 minutes
-
 export const login = async (email, password) => {
   try {
     // Authenticate with Supabase directly
@@ -24,8 +20,8 @@ export const login = async (email, password) => {
     // Store token
     localStorage.setItem("token", token);
     
-    // Store session expiry time
-    const expiryTime = Date.now() + (expiresIn || SESSION_DURATION);
+    // Store session expiry time (from Supabase)
+    const expiryTime = Date.now() + expiresIn;
     localStorage.setItem("sessionExpiry", expiryTime.toString());
 
     // Store refresh token for session persistence
@@ -60,7 +56,7 @@ export const logout = async (showNotification = false) => {
 };
 
 export const isAuthenticated = () => {
-  // Just check if token exists (for backward compatibility with old logins)
+  // Just check if token exists
   return !!localStorage.getItem("token");
 };
 
@@ -89,7 +85,7 @@ export const restoreSession = async () => {
     const { session } = data;
     
     if (session) {
-      // Update stored token and expiry
+      // Update stored token and expiry (from Supabase)
       localStorage.setItem("token", session.access_token);
       const expiryTime = Date.now() + (session.expires_in * 1000);
       localStorage.setItem("sessionExpiry", expiryTime.toString());
@@ -112,7 +108,7 @@ export const restoreSession = async () => {
 export const checkSession = () => {
   const expiry = localStorage.getItem("sessionExpiry");
   
-  // If no expiry stored, session is still valid (backward compatibility)
+  // If no expiry stored, session is still valid
   if (!expiry) {
     return true;
   }
