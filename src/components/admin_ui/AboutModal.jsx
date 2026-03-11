@@ -180,7 +180,7 @@ export default function AboutModal({ isOpen, onClose, onRefresh, item, existingS
 
         // Check if section type already exists
         const existingTypesLower = existingSectionTypes.map((t) => {
-          const typeName = typeof t === 'string' ? t : t.type;
+          const typeName = typeof t === 'string' ? t : (t?.type || '');
           return typeName.toLowerCase();
         });
         if (existingTypesLower.includes(sectionTypeValue.trim().toLowerCase())) {
@@ -280,8 +280,8 @@ export default function AboutModal({ isOpen, onClose, onRefresh, item, existingS
         setShowPositionDropdown(false);
         
         // Auto-select smallest unused position for create mode
-        const maxPosition = Math.max(10, ...existingOrderPositions.filter(p => typeof p === 'number')) + 2;
-        const usedPositions = new Set(existingOrderPositions);
+        const maxPosition = Math.max(10, ...(existingOrderPositions?.filter(p => typeof p === 'number') || [])) + 2;
+        const usedPositions = new Set(existingOrderPositions || []);
         let smallestUnused = 1;
         while (usedPositions.has(smallestUnused) && smallestUnused <= maxPosition) {
           smallestUnused++;
@@ -388,9 +388,9 @@ export default function AboutModal({ isOpen, onClose, onRefresh, item, existingS
             {showSectionTypeDropdown && existingSectionTypes.length > 0 && (
               <div className="mt-1 rounded-lg border border-gray-300 bg-white shadow-sm max-h-40 overflow-y-auto">
                 {existingSectionTypes.map((item, index) => {
-                  const type = typeof item === 'string' ? item : item.type;
-                  const isActive = typeof item === 'object' ? item.isActive : true;
-                  const isCurrentSectionType = !isCreate && type.toLowerCase() === sectionType?.toLowerCase();
+                  const type = typeof item === 'string' ? item : (item?.type || '');
+                  const isActive = typeof item === 'object' ? item?.isActive : true;
+                  const isCurrentSectionType = !isCreate && sectionType && type.toLowerCase() === sectionType?.toLowerCase();
                   return (
                     <button
                       key={index}
@@ -455,7 +455,7 @@ export default function AboutModal({ isOpen, onClose, onRefresh, item, existingS
                 {/* Position dropdown */}
                 {showPositionDropdown && (
                   <div className="absolute z-10 mt-1 w-full rounded-lg border border-gray-300 bg-white shadow-sm max-h-48 overflow-y-auto">
-                    {Array.from({ length: Math.max(10, ...existingOrderPositions.filter(p => typeof p === 'number')) + 2 }, (_, i) => i + 1).map((pos) => {
+                    {Array.from({ length: Math.max(10, ...(existingOrderPositions?.filter(p => typeof p === 'number') || [])) + 2 }, (_, i) => i + 1).map((pos) => {
                       const isUsed = existingOrderPositions.includes(pos);
                       const isCurrent = item && item.order_position === pos;
                       const isDisabled = isUsed && !isCurrent;
