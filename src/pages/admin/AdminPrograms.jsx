@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getAllPrograms, deleteProgram } from "../../lib/services/programService";
+import { getAllPrograms, deleteProgram, getProgramInstructors, getProgramProjects, getProgramStudents, deleteProgramInstructor, deleteProgramProject, deleteProgramStudent, updateStudent } from "../../lib/services/programService";
 import {
   PencilSquareIcon,
   ChevronLeftIcon,
@@ -52,14 +52,70 @@ export default function AdminPrograms() {
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this program?")) return;
 
+    console.log("=== DELETE DEBUG ===");
+    console.log("Program ID to delete:", id);
+    console.log("ID type:", typeof id);
+    console.log("===================");
+
     const toastId = toast.loading("Deleting program...");
     try {
+      console.log("Attempting to delete program:", id);
+      
+      // First try to delete the program directly
       await deleteProgram(id);
+      console.log("Program deleted successfully:", id);
       toast.success("Program deleted successfully!", { id: toastId });
       fetchPrograms();
     } catch (error) {
-      console.error("Failed to delete:", error);
-      toast.error("Failed to delete program", { id: toastId });
+      console.error("=== DELETE ERROR ===");
+      console.error("Error:", error);
+      console.error("Error response:", error.response);
+      console.error("Error message:", error.message);
+      console.error("Error request:", error.request);
+      console.error("==================");
+      
+      // Check if it's a foreign key constraint error (409 or database error codes like 23502, 23503)
+      const status = error.response?.status;
+      const errorCode = error.response?.data?.code;
+      
+      if (status === 409 || errorCode === '23502' || errorCode === '23503') {
+        // Try to delete related data first, then retry
+        toast.loading("Program has related data. Cleaning up...", { id: toastId });
+        
+        try {
+          // Get and delete students - set program_id to null (needed for NOT NULL constraint)
+          try {
+            const studentsRes = await getProgramStudents(id);
+            const students = studentsRes.data || studentsRes || [];
+            for (const student of students) {
+              // Update student to remove program association
+              await updateStudent(student.id, { program_id: null });
+            }
+            console.log("Students cleaned up:", students.length);
+          } catch (e) { console.warn("Student cleanup skipped:", e); }
+          
+          // Retry deleting the program
+          await deleteProgram(id);
+          toast.success("Program deleted successfully!", { id: toastId });
+          fetchPrograms();
+          return;
+        } catch (cascadeError) {
+          console.error("Cascade delete failed:", cascadeError);
+          toast.error("Cannot delete: Please manually remove instructors, students, and projects first.", { id: toastId });
+        }
+      } else if (status === 404) {
+        toast.error("Program not found. It may have already been deleted.", { id: toastId });
+      } else if (status === 500) {
+        toast.error("Server error. Please try again later.", { id: toastId });
+      } else if (status === 401) {
+        toast.error("Unauthorized. Please login again.", { id: toastId });
+      } else if (status === 400) {
+        // Bad request - show the backend error message
+        const errorMsg = error.response?.data?.message || error.response?.data?.error || "Invalid request data";
+        toast.error(`Cannot delete: ${errorMsg}`, { id: toastId });
+      } else {
+        toast.error(error.response?.data?.message || `Failed to delete program (Error: ${status})`, { id: toastId });
+      }
     }
   };
 

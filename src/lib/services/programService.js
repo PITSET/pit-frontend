@@ -47,6 +47,46 @@ export const getProgramStudents = async (id) => {
 };
 
 /**
+ * DELETE instructor from a program
+ * @param {number|string} programId - Program ID
+ * @param {number|string} instructorId - Instructor ID
+ */
+export const deleteProgramInstructor = async (programId, instructorId) => {
+  const res = await api.delete(`/programs/${programId}/instructors/${instructorId}`);
+  return res.data;
+};
+
+/**
+ * DELETE project from a program
+ * @param {number|string} programId - Program ID
+ * @param {number|string} projectId - Project ID
+ */
+export const deleteProgramProject = async (programId, projectId) => {
+  const res = await api.delete(`/programs/${programId}/projects/${projectId}`);
+  return res.data;
+};
+
+/**
+ * DELETE student from a program
+ * @param {number|string} programId - Program ID
+ * @param {number|string} studentId - Student ID
+ */
+export const deleteProgramStudent = async (programId, studentId) => {
+  const res = await api.delete(`/programs/${programId}/students/${studentId}`);
+  return res.data;
+};
+
+/**
+ * Update student
+ * @param {number|string} id - Student ID
+ * @param {Object} data - Student data
+ */
+export const updateStudent = async (id, data) => {
+  const res = await api.put(`/students/${id}`, data);
+  return res.data;
+};
+
+/**
  * CREATE new program
  * @param {Object} data - Program data (program_name, description, image_url, video_url, overview)
  */
