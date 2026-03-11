@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getAllPrograms, deleteProgram, getProgramInstructors, getProgramProjects, getProgramStudents, deleteProgramInstructor, deleteProgramProject, deleteProgramStudent, updateStudent } from "../../lib/services/programService";
+import { getAllPrograms, deleteProgram, getProgramStudents, updateStudent } from "../../lib/services/programService";
 import {
   PencilSquareIcon,
   ChevronLeftIcon,
@@ -7,7 +7,6 @@ import {
   PlusIcon,
   TrashIcon,
 } from "@heroicons/react/24/outline";
-import toast from "react-hot-toast";
 
 import ProgramModal from "../../components/admin_ui/ProgramModal";
 import DeleteModal from "../../components/admin_ui/DeleteModal";
@@ -59,20 +58,16 @@ export default function AdminPrograms() {
 
   // Custom delete handler for programs with cascade delete logic
   const handleProgramDelete = async (id) => {
-    const toastId = toast.loading("Deleting program...");
     try {
       // First try to delete the program directly
       await deleteProgram(id);
-      toast.success("Program deleted successfully!", { id: toastId });
-      fetchPrograms();
     } catch (error) {
       // Check if it's a foreign key constraint error
       const status = error.response?.status;
       const errorCode = error.response?.data?.code;
       
       if (status === 409 || errorCode === '23502' || errorCode === '23503') {
-        toast.loading("Program has related data. Cleaning up...", { id: toastId });
-        
+        // Try to clean up related data first
         try {
           try {
             const studentsRes = await getProgramStudents(id);
@@ -82,25 +77,24 @@ export default function AdminPrograms() {
             }
           } catch (e) { console.warn("Student cleanup skipped:", e); }
           
+          // Retry deleting the program
           await deleteProgram(id);
-          toast.success("Program deleted successfully!", { id: toastId });
-          fetchPrograms();
           return;
         } catch (cascadeError) {
           console.error("Cascade delete failed:", cascadeError);
-          toast.error("Cannot delete: Please manually remove instructors, students, and projects first.", { id: toastId });
+          throw new Error("Cannot delete: Please manually remove instructors, students, and projects first.");
         }
       } else if (status === 404) {
-        toast.error("Program not found. It may have already been deleted.", { id: toastId });
+        throw new Error("Program not found. It may have already been deleted.");
       } else if (status === 500) {
-        toast.error("Server error. Please try again later.", { id: toastId });
+        throw new Error("Server error. Please try again later.");
       } else if (status === 401) {
-        toast.error("Unauthorized. Please login again.", { id: toastId });
+        throw new Error("Unauthorized. Please login again.");
       } else if (status === 400) {
         const errorMsg = error.response?.data?.message || error.response?.data?.error || "Invalid request data";
-        toast.error(`Cannot delete: ${errorMsg}`, { id: toastId });
+        throw new Error(`Cannot delete: ${errorMsg}`);
       } else {
-        toast.error(error.response?.data?.message || `Failed to delete program (Error: ${status})`, { id: toastId });
+        throw new Error(error.response?.data?.message || `Failed to delete program (Error: ${status})`);
       }
     }
   };
