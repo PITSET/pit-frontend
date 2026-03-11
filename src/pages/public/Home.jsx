@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+﻿import React, { useEffect, useState } from "react";
 import api from "../../lib/api";
 import resolveAssetUrl from "../../lib/resolveAssetUrl";
 
@@ -175,7 +175,7 @@ export default function Home() {
 className="absolute inset-0 bg-cover bg-center"
 style={{
 backgroundImage:
-`url('${resolveAssetUrl(heroSection?.image_url) || "https://static.vecteezy.com/system/resources/thumbnails/057/068/323/small/single-fresh-red-strawberry-on-table-green-background-food-fruit-sweet-macro-juicy-plant-image-photo.jpg"}')`,
+`url('${resolveAssetUrl(heroSection?.image_url) }')`,
 }}
 />
 
@@ -218,7 +218,7 @@ Explore Our Programs →
 className="absolute inset-0 bg-cover bg-center"
 style={{
 backgroundImage:
-`url('${resolveAssetUrl(aboutSection?.image_url) || "https://gratisography.com/wp-content/uploads/2024/11/gratisography-augmented-reality-800x525.jpg"}')`,
+`url('${resolveAssetUrl(aboutSection?.image_url)}')`,
 }}
 />
 
@@ -254,7 +254,9 @@ DISCOVER OUR MISSION →
 
 <div>
 <img
-src={resolveAssetUrl(founder1Section?.image_url) || "https://ikki-group.com/wp-content/uploads/2023/12/Image-Processing-face-scan-1024x1024.png"}
+src={resolveAssetUrl(founder1Section?.image_url)
+  
+}
 alt={founder1Section?.title || "Founder"}
 className="w-[580px] h-[720px] object-cover"
 />
@@ -306,7 +308,7 @@ FOUNDER & PRINCIPAL
 
 <div className="flex justify-end">
 <img
-src={resolveAssetUrl(founder2Section?.image_url) || "https://c.topshort.org/sana_ai/flux_ai_image/scene/3.webp"}
+src={resolveAssetUrl(founder2Section?.image_url)}
 alt={founder2Section?.title || "LeyKler"}
 className="w-[580px] h-[720px] object-cover"
 />
@@ -325,7 +327,7 @@ className="w-[580px] h-[720px] object-cover"
 	    className="absolute inset-0 bg-cover bg-center"
 	    style={{
 	      backgroundImage:
-	        `url('${resolveAssetUrl(programSection?.image_url) || "https://png.pngtree.com/thumb_back/fh260/background/20250227/pngtree-a-meadow-of-pink-and-purple-flowers-image_17005010.jpg"}')`,
+	        `url('${resolveAssetUrl(programSection?.image_url) }')`,
 	    }}
 	  />
 
