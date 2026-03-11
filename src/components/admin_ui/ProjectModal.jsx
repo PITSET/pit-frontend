@@ -29,7 +29,6 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
   const [videoUrl, setVideoUrl] = useState("");
   const [githubUrl, setGithubUrl] = useState("");
   const [loading, setLoading] = useState(false);
-  const [isFeatured, setIsFeatured] = useState(false);
   const [isActive, setIsActive] = useState(true);
 
   // Multiple images state
@@ -297,7 +296,6 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
         video_url: videoUrl,
         github_url: githubUrl,
         images: imageUrls,
-        is_featured: isFeatured,
         is_active: isActive,
       };
 
@@ -369,7 +367,6 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
     setGithubUrl(item?.github_url || "");
     setExistingImages(item?.images || []);
     setNewImages([]);
-    setIsFeatured(item?.is_featured || false);
     setIsActive(item?.is_active ?? true);
     validateUrl(item?.video_url || "");
   };
@@ -392,7 +389,6 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
         setGithubUrl("");
         setExistingImages([]);
         setNewImages([]);
-        setIsFeatured(false);
         setIsActive(true);
         setUrlValidation({ isValid: null, message: "" });
       }
@@ -402,23 +398,23 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/50 backdrop-blur-md overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/40 backdrop-blur-sm overflow-y-auto">
       {/* Modal */}
-      <div className="bg-white w-full max-w-[720px] max-h-[90vh] rounded-2xl shadow-2xl animate-[fadeIn_0.2s_ease-out] overflow-hidden flex flex-col my-4 border border-gray-100">
+      <div className="bg-[#FEF2F3] w-full max-w-[720px] max-h-[90vh] rounded-2xl shadow-xl animate-[fadeIn_0.2s_ease-out] overflow-hidden flex flex-col my-4">
         {/* Header - Fixed */}
-        <div className="flex-shrink-0 bg-gradient-to-r from-gray-50 to-white rounded-t-2xl px-4 sm:px-6 py-4 sm:py-5 border-b border-gray-100">
+        <div className="flex-shrink-0 bg-white rounded-t-2xl px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3 sm:gap-4">
-              <div className="bg-primary-gradient p-2.5 sm:p-3.5 rounded-xl shadow-lg">
-                <FolderIcon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="bg-red-200 p-2 sm:p-3 rounded-xl">
+                <FolderIcon className="w-5 h-5 sm:w-6 sm:h-6 text-red-500" />
               </div>
 
               <div>
-                <h2 className="text-lg sm:text-2xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
+                <h2 className="text-lg sm:text-2xl font-bold">
                   {isCreate ? "Create Project" : `Update Project (${item?.name})`}
                 </h2>
 
-                <p className="text-xs sm:text-sm text-gray-500 hidden sm:block mt-0.5">
+                <p className="text-xs sm:text-sm text-gray-500 hidden sm:block">
                   {isCreate ? "Add a new project" : "Edit your project information"}
                 </p>
               </div>
@@ -429,7 +425,7 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
                 resetForm();
                 onClose();
               }}
-              className="rounded-lg p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all duration-200 transform hover:scale-105"
+              className="rounded-lg p-2 text-gray-400 hover:text-red-500 hover:bg-red-200 transition-colors"
             >
               <XMarkIcon className="w-5 h-5" />
             </button>
@@ -437,10 +433,10 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
         </div>
 
         {/* Body - Scrollable */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 sm:space-y-6">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 sm:space-y-5">
           {/* Project Name */}
           <div className="space-y-2">
-            <label className="text-sm font-semibold text-gray-700">Project Name</label>
+            <label className="text-sm font-medium text-gray-700">Project Name</label>
 
             <input
               type="text"
@@ -452,58 +448,31 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
                   e.target.blur();
                 }
               }}
-              className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 sm:px-4 py-2.5 sm:py-3 text-sm
-              focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200
-              hover:border-gray-300"
+              className="w-full rounded-lg border border-gray-300 bg-white px-3 sm:px-4 py-2 sm:py-2.5 text-sm shadow-sm
+              focus:outline-none focus:ring-2 focus:ring-orange-400 transition"
             />
           </div>
 
-          {/* Featured & Status toggles */}
-          <div className="grid grid-cols-2 gap-4">
-            {/* Featured */}
-            <div className="flex flex-col space-y-2">
-              <label className="text-sm font-semibold text-gray-700">Featured</label>
-              <div className="flex items-center gap-3 py-2">
-                <button
-                  type="button"
-                  onClick={() => setIsFeatured(!isFeatured)}
-                  className={`relative inline-flex h-7 w-14 items-center rounded-full transition-all duration-300 ${
-                    isFeatured ? "bg-primary-gradient shadow-lg" : "bg-gray-200"
+          {/* Status toggle */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-700">Status</label>
+            <div className="flex items-center gap-3 py-2">
+              <button
+                type="button"
+                onClick={() => setIsActive(!isActive)}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                  isActive ? "bg-green-500" : "bg-gray-300"
+                }`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    isActive ? "translate-x-6" : "translate-x-1"
                   }`}
-                >
-                  <span
-                    className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-sm transition-transform duration-300 ${
-                      isFeatured ? "translate-x-8" : "translate-x-1"
-                    }`}
-                  />
-                </button>
-                <span className={`text-sm font-semibold ${isFeatured ? "text-orange-600" : "text-gray-500"}`}>
-                  {isFeatured ? "Featured" : "Regular"}
-                </span>
-              </div>
-            </div>
-
-            {/* Status */}
-            <div className="flex flex-col space-y-2">
-              <label className="text-sm font-semibold text-gray-700">Status</label>
-              <div className="flex items-center gap-3 py-2">
-                <button
-                  type="button"
-                  onClick={() => setIsActive(!isActive)}
-                  className={`relative inline-flex h-7 w-14 items-center rounded-full transition-all duration-300 ${
-                    isActive ? "bg-gradient-to-r from-green-500 to-emerald-500 shadow-lg" : "bg-gray-200"
-                  }`}
-                >
-                  <span
-                    className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-sm transition-transform duration-300 ${
-                      isActive ? "translate-x-8" : "translate-x-1"
-                    }`}
-                  />
-                </button>
-                <span className={`text-sm font-semibold ${isActive ? "text-green-600" : "text-gray-500"}`}>
-                  {isActive ? "Active" : "Inactive"}
-                </span>
-              </div>
+                />
+              </button>
+              <span className={`text-sm font-medium ${isActive ? "text-green-600" : "text-gray-500"}`}>
+                {isActive ? "Active" : "Inactive"}
+              </span>
             </div>
           </div>
 
@@ -511,7 +480,7 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Leader */}
             <div className="space-y-2">
-              <label className="text-sm font-semibold text-gray-700">Project Leader</label>
+              <label className="text-sm font-medium text-gray-700">Project Leader</label>
 
               <input
                 type="text"
@@ -523,15 +492,14 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
                     e.target.blur();
                   }
                 }}
-                className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 sm:px-4 py-2.5 sm:py-3 text-sm
-                focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200
-                hover:border-gray-300"
+                className="w-full rounded-lg border border-gray-300 bg-white px-3 sm:px-4 py-2 sm:py-2.5 text-sm shadow-sm
+                focus:outline-none focus:ring-2 focus:ring-orange-400 transition"
               />
             </div>
 
             {/* Team Size */}
             <div className="space-y-2">
-              <label className="text-sm font-semibold text-gray-700">Team Size</label>
+              <label className="text-sm font-medium text-gray-700">Team Size</label>
 
               <input
                 type="number"
@@ -544,16 +512,15 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
                   }
                 }}
                 min="1"
-                className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 sm:px-4 py-2.5 sm:py-3 text-sm
-                focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200
-                hover:border-gray-300"
+                className="w-full rounded-lg border border-gray-300 bg-white px-3 sm:px-4 py-2 sm:py-2.5 text-sm shadow-sm
+                focus:outline-none focus:ring-2 focus:ring-orange-400 transition"
               />
             </div>
           </div>
 
           {/* Duration */}
           <div className="space-y-2">
-            <label className="text-sm font-semibold text-gray-700">Duration</label>
+            <label className="text-sm font-medium text-gray-700">Duration</label>
 
             <input
               type="text"
@@ -565,30 +532,29 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
                   e.target.blur();
                 }
               }}
-              className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 sm:px-4 py-2.5 sm:py-3 text-sm
-              focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200
-              hover:border-gray-300"
+              className="w-full rounded-lg border border-gray-300 bg-white px-3 sm:px-4 py-2 sm:py-2.5 text-sm shadow-sm
+              focus:outline-none focus:ring-2 focus:ring-orange-400 transition"
             />
           </div>
 
           {/* Images */}
           <div className="space-y-2">
-            <label className="text-sm font-semibold text-gray-700">Project Images</label>
+            <label className="text-sm font-medium text-gray-700">Project Images</label>
             
             {/* Existing Images */}
             {existingImages.length > 0 && (
-              <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 mb-3">
+              <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 mb-3">
                 {existingImages.map((url, index) => (
                   <div key={`existing-${index}`} className="relative group">
                     <img
                       src={url || "/placeholder.svg"}
                       alt={`Project ${index + 1}`}
-                      className="w-full h-24 object-cover rounded-xl shadow-sm"
+                      className="w-full h-20 object-cover rounded-lg"
                     />
                     <button
                       type="button"
                       onClick={() => removeExistingImage(index)}
-                      className="absolute top-1.5 right-1.5 bg-red-500 text-white rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-all duration-200 transform hover:scale-110 shadow-md"
+                      className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition"
                     >
                       <TrashIcon className="w-3 h-3" />
                     </button>
@@ -599,18 +565,18 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
 
             {/* New Images Preview */}
             {newImages.length > 0 && (
-              <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 mb-3">
+              <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 mb-3">
                 {newImages.map((file, index) => (
                   <div key={`new-${index}`} className="relative group">
                     <img
                       src={URL.createObjectURL(file)}
                       alt={`New image ${index + 1}`}
-                      className="w-full h-24 object-cover rounded-xl shadow-sm"
+                      className="w-full h-20 object-cover rounded-lg"
                     />
                     <button
                       type="button"
                       onClick={() => removeNewImage(index)}
-                      className="absolute top-1.5 right-1.5 bg-red-500 text-white rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-all duration-200 transform hover:scale-110 shadow-md"
+                      className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition"
                     >
                       <TrashIcon className="w-3 h-3" />
                     </button>
@@ -621,10 +587,10 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
 
             {/* Add Image Button */}
             <label className="block">
-              <div className="border-2 border-dashed border-gray-300 rounded-xl p-5 text-center cursor-pointer hover:border-orange-500 hover:bg-orange-50 transition-all duration-200 transform hover:scale-[1.02]">
-                <ArrowUpTrayIcon className="w-6 h-6 mx-auto text-gray-400 mb-2" />
-                <span className="text-sm font-medium text-gray-600">Click to upload images</span>
-                <span className="text-xs text-gray-400 block mt-1">JPG, PNG up to 10MB each</span>
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center cursor-pointer hover:border-orange-400 hover:bg-orange-50 transition">
+                <ArrowUpTrayIcon className="w-6 h-6 mx-auto text-gray-400" />
+                <span className="text-sm text-gray-500">Click to upload images</span>
+                <span className="text-xs text-gray-400 block">JPG, PNG up to 10MB each</span>
               </div>
               <input
                 type="file"
@@ -639,7 +605,7 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
 
           {/* Overview */}
           <div className="space-y-2">
-            <label className="text-sm font-semibold text-gray-700">
+            <label className="text-sm font-medium text-gray-700">
               Overview
             </label>
 
@@ -647,15 +613,14 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
               value={overview}
               placeholder="Enter project overview..."
               onChange={(e) => setOverview(e.target.value)}
-              className="w-full min-h-[100px] rounded-xl border border-gray-200 bg-gray-50 px-3 sm:px-4 py-3 text-sm
-              focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent resize-none transition-all duration-200
-              hover:border-gray-300"
+              className="w-full min-h-[100px] rounded-lg border border-gray-300 bg-white px-3 sm:px-4 py-2 sm:py-3 text-sm
+              focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none transition"
             />
           </div>
 
           {/* Objectives */}
           <div className="space-y-2">
-            <label className="text-sm font-semibold text-gray-700">
+            <label className="text-sm font-medium text-gray-700">
               Objectives
             </label>
 
@@ -663,15 +628,14 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
               value={objectives}
               placeholder="Enter project objectives..."
               onChange={(e) => setObjectives(e.target.value)}
-              className="w-full min-h-[80px] rounded-xl border border-gray-200 bg-gray-50 px-3 sm:px-4 py-3 text-sm
-              focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent resize-none transition-all duration-200
-              hover:border-gray-300"
+              className="w-full min-h-[80px] rounded-lg border border-gray-300 bg-white px-3 sm:px-4 py-2 sm:py-3 text-sm
+              focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none transition"
             />
           </div>
 
           {/* Tasks */}
           <div className="space-y-2">
-            <label className="text-sm font-semibold text-gray-700">
+            <label className="text-sm font-medium text-gray-700">
               Tasks
             </label>
 
@@ -679,17 +643,16 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
               value={tasks}
               placeholder="Enter project tasks..."
               onChange={(e) => setTasks(e.target.value)}
-              className="w-full min-h-[80px] rounded-xl border border-gray-200 bg-gray-50 px-3 sm:px-4 py-3 text-sm
-              focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent resize-none transition-all duration-200
-              hover:border-gray-300"
+              className="w-full min-h-[80px] rounded-lg border border-gray-300 bg-white px-3 sm:px-4 py-2 sm:py-3 text-sm
+              focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none transition"
             />
           </div>
 
           {/* Video URL */}
           <div className="space-y-2">
-            <label className="text-sm font-semibold text-gray-700">Video URL (YouTube)</label>
+            <label className="text-sm font-medium text-gray-700">Video URL (YouTube)</label>
             
-            <div className="flex rounded-xl border border-gray-200 overflow-hidden bg-gray-50 focus-within:ring-2 focus-within:ring-orange-500 focus-within:border-transparent transition-all duration-200">
+            <div className="flex rounded-lg border border-gray-300 overflow-hidden bg-white focus-within:ring-2 focus-within:ring-orange-400">
               <input
                 type="text"
                 value={videoUrl}
@@ -700,12 +663,12 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
                     e.target.blur();
                   }
                 }}
-                className="flex-1 px-3 sm:px-4 py-2.5 sm:py-3 text-sm outline-none transition min-w-0"
+                className="flex-1 px-3 sm:px-4 py-2 sm:py-2.5 text-sm shadow-sm outline-none transition min-w-0"
               />
               <button
                 type="button"
                 onClick={handleTestVideoUrl}
-                className="flex items-center justify-center px-3 sm:px-4 bg-white border-l border-gray-200 text-gray-600 hover:bg-gray-50 transition-all duration-200"
+                className="flex items-center justify-center px-3 sm:px-4 bg-gray-50 border-l border-gray-300 text-gray-600 hover:bg-gray-100 transition"
                 title="Test URL"
               >
                 <ArrowTopRightOnSquareIcon className="w-4 h-5 sm:w-5 sm:h-5" />
@@ -728,7 +691,7 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
 
           {/* GitHub URL */}
           <div className="space-y-2">
-            <label className="text-sm font-semibold text-gray-700">GitHub URL</label>
+            <label className="text-sm font-medium text-gray-700">GitHub URL</label>
 
             <input
               type="text"
@@ -740,22 +703,21 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
                   e.target.blur();
                 }
               }}
-              className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 sm:px-4 py-2.5 sm:py-3 text-sm
-              focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200
-              hover:border-gray-300"
+              className="w-full rounded-lg border border-gray-300 bg-white px-3 sm:px-4 py-2 sm:py-2.5 text-sm shadow-sm
+              focus:outline-none focus:ring-2 focus:ring-orange-400 transition"
             />
           </div>
         </div>
 
         {/* Footer - Fixed at bottom */}
-        <div className="flex-shrink-0 bg-gradient-to-r from-gray-50 to-white rounded-b-2xl px-4 sm:px-6 py-4 sm:py-5 border-t border-gray-100">
-          <div className="flex justify-end gap-3 sm:gap-4">
+        <div className="flex-shrink-0 bg-[#FEF2F3] rounded-b-2xl px-4 sm:px-6 py-3 sm:py-4 border-t border-gray-200">
+          <div className="flex justify-end gap-2 sm:gap-3">
             <button
               onClick={() => {
                 resetForm();
                 onClose();
               }}
-              className="px-4 sm:px-6 py-2.5 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-100 transition-all duration-200 transform hover:scale-105"
+              className="px-4 sm:px-6 py-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-white transition"
             >
               Cancel
             </button>
@@ -763,9 +725,8 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
             <button
               disabled={loading}
               onClick={handleSave}
-              className="px-4 sm:px-6 py-2.5 rounded-xl text-white font-semibold bg-primary-gradient
-              hover:bg-primary-gradient-hover active:scale-95 focus:outline-none focus:ring-2 focus:ring-orange-500
-              focus:ring-offset-2 transition-all duration-200 disabled:opacity-60 shadow-lg"
+              className="px-4 sm:px-5 py-2 rounded-lg text-white font-medium bg-primary-gradient hover:bg-primary-gradient-hover
+              active:scale-95 focus:outline-none focus:ring-2 focus:ring-[#F65919] focus:ring-offset-2 transition disabled:opacity-60"
             >
               {loading ? (isCreate ? "Creating..." : "Saving...") : (isCreate ? "Create" : "Save")}
             </button>

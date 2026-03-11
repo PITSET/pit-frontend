@@ -70,7 +70,6 @@ export default function AdminProjects() {
           { label: 'Image', show: true },
           { label: 'Project Name', show: true },
           { label: 'Overview', show: true },
-          { label: 'Featured', show: true },
           { label: 'Status', show: true },
           { label: 'Action', show: true }
         ],
@@ -163,7 +162,6 @@ export default function AdminProjects() {
               <th className="px-4 lg:px-8 py-4 text-center">Image</th>
               <th className="px-4 lg:px-8 py-4 text-center">Project Name</th>
               <th className="px-4 lg:px-8 py-4 text-center">Overview</th>
-              <th className="px-4 lg:px-8 py-4 text-center">Featured</th>
               <th className="px-4 lg:px-8 py-4 text-center">Status</th>
               <th className="px-4 lg:px-8 py-4 text-center">Action</th>
             </tr>
@@ -190,16 +188,6 @@ export default function AdminProjects() {
                   <p className="line-clamp-2 lg:line-clamp-2">
                     {item.overview || "No overview available"}
                   </p>
-                </td>
-
-                <td className="px-4 lg:px-8 py-4 lg:py-6 text-center">
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                    item.is_featured 
-                      ? 'bg-purple-100 text-purple-800' 
-                      : 'bg-gray-100 text-gray-600'
-                  }`}>
-                    {item.is_featured ? 'Featured' : 'Regular'}
-                  </span>
                 </td>
 
                 <td className="px-4 lg:px-8 py-4 lg:py-6 text-center">
@@ -308,16 +296,9 @@ export default function AdminProjects() {
                   </h3>
                   <div className="flex gap-1 ml-2">
                     <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                      item.is_featured 
-                        ? 'bg-purple-100 text-purple-800' 
-                        : 'bg-gray-100 text-gray-600'
-                    }`}>
-                      {item.is_featured ? 'Featured' : 'Regular'}
-                    </span>
-                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
                       item.is_active 
                         ? 'bg-green-100 text-green-800' 
-                        : 'bg-gray-200 text-gray-600'
+                        : 'bg-gray-200 text-gray-800'
                     }`}>
                       {item.is_active ? 'Active' : 'Inactive'}
                     </span>
