@@ -139,7 +139,7 @@ export default function AboutPage() {
                   <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                     item.is_active 
                       ? 'bg-green-100 text-green-800' 
-                      : 'bg-gray-100 text-gray-800'
+                      : 'bg-gray-200 text-gray-800'
                   }`}>
                     {item.is_active ? 'Active' : 'Inactive'}
                   </span>
@@ -242,7 +242,7 @@ export default function AboutPage() {
                   <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ml-2 flex-shrink-0 ${
                     item.is_active 
                       ? 'bg-green-100 text-green-800' 
-                      : 'bg-gray-100 text-gray-600'
+                      : 'bg-gray-200 text-gray-600'
                   }`}>
                     {item.is_active ? 'Active' : 'Inactive'}
                   </span>
