@@ -101,7 +101,7 @@ export default function HomePage() {
                 <td className="px-4 lg:px-8 py-4 text-center">
                   <div className="w-16 h-16 lg:w-20 lg:h-20 bg-gray-100 rounded-lg overflow-hidden mx-auto">
                     <img
-                      src={item.image_url || "/placeholder.png"}
+                      src={item.image_url || "/placeholder.svg"}
                       alt={item.title}
                       className="object-cover w-full h-full"
                     />
@@ -219,7 +219,7 @@ export default function HomePage() {
               <div className="flex-shrink-0">
                 <div className="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden">
                   <img
-                    src={item.image_url || "/placeholder.png"}
+                    src={item.image_url || "/placeholder.svg"}
                     alt={item.title}
                     className="object-cover w-full h-full"
                   />
