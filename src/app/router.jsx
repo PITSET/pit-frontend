@@ -13,6 +13,7 @@ import AdminAbout from "../pages/admin/AdminAbout";
 import ProtectedRoute from "../components/admin_ui/ProtectdRoute";
 import Login from "../pages/admin/Login";
 import AdminContact from "../pages/admin/AdminContact";
+import AdminPrograms from "../pages/admin/AdminPrograms";
 
 const router = createBrowserRouter([
   {
@@ -49,7 +50,7 @@ const router = createBrowserRouter([
         path: "academics",
         element: <Navigate to="/admin/academics/programs" replace />,
       },
-      { path: "academics/programs", element: <Dashboard /> },
+      { path: "academics/programs", element: <AdminPrograms /> },
       { path: "academics/projects", element: <Dashboard /> },
       {
         path: "team",
