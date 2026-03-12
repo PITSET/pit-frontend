@@ -249,9 +249,9 @@ export default function AdminMembers() {
                     <td className="px-4 lg:px-8 py-4 lg:py-6 text-center">
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                         (item.role || item.leader || '').toLowerCase() === 'founder'
-                          ? 'bg-purple-100 text-purple-800'
+                          ? 'bg-orange-100 text-orange-800'
                           : (item.role || item.leader || '').toLowerCase() === 'instructor'
-                          ? 'bg-blue-100 text-blue-800'
+                          ? 'bg-orange-100 text-orange-800'
                           : 'bg-gray-200 text-gray-800'
                       }`}>
                         {(item.role || item.leader) || 'Unknown'}
@@ -355,9 +355,9 @@ export default function AdminMembers() {
                       <div className="flex gap-1 ml-2">
                         <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
                           (item.role || item.leader || '').toLowerCase() === 'founder'
-                            ? 'bg-purple-100 text-purple-800'
+                            ? 'bg-orange-100 text-orange-800'
                             : (item.role || item.leader || '').toLowerCase() === 'instructor'
-                            ? 'bg-blue-100 text-blue-800'
+                            ? 'bg-orange-100 text-orange-800'
                             : 'bg-gray-200 text-gray-800'
                         }`}>
                           {(item.role || item.leader) || 'Unknown'}
