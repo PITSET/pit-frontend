@@ -766,7 +766,7 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
                       window.open(urlToOpen, "_blank", "noopener,noreferrer");
                     }}
                     disabled={!githubUrl || !!urlError}
-                    className="flex items-center justify-center px-3 sm:px-4 bg-gray-50 border-l border-gray-300 text-gray-600 hover:bg-gray-100 transition disabled:opacity-50"
+                    className="flex items-center justify-center px-3 sm:px-4 bg-primary-gradient border-l border-gray-300 text-white hover:bg-primary-gradient-hover transition disabled:opacity-50"
                     title="Open GitHub Repository"
                   >
                     <ArrowTopRightOnSquareIcon className="w-4 h-5 sm:w-5 sm:h-5" />
