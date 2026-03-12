@@ -274,9 +274,21 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
       }
 
       if (isCreate) {
-        // Validate required fields
-        if (!name || !name.trim() || programIds.length === 0) {
-          toast.error("Project name and at least one program are required", { id: toastId });
+        // Validate required fields for create
+        if (!name || !name.trim()) {
+          toast.error("Please enter a project name", { id: toastId });
+          setLoading(false);
+          return;
+        }
+
+        if (!leader || !leader.trim()) {
+          toast.error("Please enter a project leader", { id: toastId });
+          setLoading(false);
+          return;
+        }
+
+        if (programIds.length === 0) {
+          toast.error("Please select at least one program", { id: toastId });
           setLoading(false);
           return;
         }
@@ -286,6 +298,19 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
 
         toast.success("Project created successfully!");
       } else {
+        // Validate required fields for update
+        if (!name || !name.trim()) {
+          toast.error("Please enter a project name", { id: toastId });
+          setLoading(false);
+          return;
+        }
+
+        if (!leader || !leader.trim()) {
+          toast.error("Please enter a project leader", { id: toastId });
+          setLoading(false);
+          return;
+        }
+
         // Update existing project
         await updateProject(item.id, projectData);
         toast.success("Project updated successfully!", { id: toastId });
