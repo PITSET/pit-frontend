@@ -185,18 +185,32 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
       let imageUrls = [...existingImages];
 
       // Delete old images that were removed
-      if (item?.images) {
+      if (item?.images && item.images.length > 0) {
         const currentImages = item.images;
         for (const oldUrl of currentImages) {
-          if (!imageUrls.includes(oldUrl)) {
+          // Check if this image was removed by the user
+          // Compare without query params for accurate matching
+          const oldUrlWithoutParams = oldUrl.split("?")[0];
+          const stillExists = imageUrls.some(url => url.split("?")[0] === oldUrlWithoutParams);
+          
+          if (!stillExists) {
             try {
-              const urlParts = oldUrl.split("/");
-              const fileName = urlParts[urlParts.length - 1].split("?")[0];
+              // Extract filename from URL
+              const urlParts = oldUrlWithoutParams.split("/");
+              const fileName = urlParts[urlParts.length - 1];
+              
               if (fileName) {
-                await supabase.storage.from("project_images").remove([fileName]);
+                console.log("Deleting image:", fileName);
+                const { error: deleteError } = await supabase.storage
+                  .from("project_images")
+                  .remove([fileName]);
+                  
+                if (deleteError) {
+                  console.error("Failed to delete image:", deleteError);
+                }
               }
             } catch (err) {
-              console.warn("Failed to delete old image:", err);
+              console.error("Error deleting image:", err);
             }
           }
         }
