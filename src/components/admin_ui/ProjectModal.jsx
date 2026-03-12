@@ -339,15 +339,12 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
         team_size: teamSize && teamSize.trim() ? parseInt(teamSize) : null,
         github_url: githubUrl?.trim() || null,
         images: imageUrls.length > 0 ? imageUrls : [],
-        result: result?.trim() || null,
+        video_url: result?.trim() || null,
         is_featured: isActive,
         program_ids: programIds,
       };
 
-      // Add student_ids only for create (backend requires it)
-      if (isCreate) {
-        projectData.student_ids = [1]; // Backend requires at least one student_id
-      }
+      // Note: student_ids is optional - currently not sent as there's no student selection UI
 
       if (isCreate) {
         // Validate required fields for create
@@ -459,13 +456,13 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
     setDuration(item?.duration?.toString() || "");
     setTeamSize(item?.team_size?.toString() || "");
     setGithubUrl(item?.github_url || "");
-    setResult(item?.result || "");
+    setResult(item?.video_url || ""); // Use video_url from backend
     setExistingImages(item?.images || []);
     setNewImages([]);
     setIsActive(item?.is_featured || false); // Use is_featured field from backend
     
-    // Reset program_ids (currently not stored in item, so default to empty)
-    setProgramIds([]);
+    // Load program_ids from item (backend returns programs as array of IDs)
+    setProgramIds(Array.isArray(item?.programs) ? item.programs : []);
   };
 
   // Load initial data when modal opens
@@ -687,7 +684,10 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
                     {/* Dropdown options */}
                     {showProgramDropdown && (
                       <div className="mt-1 rounded-lg border border-gray-300 bg-white shadow-sm max-h-40 overflow-y-auto">
-                        {programs.map(program => (
+                        {programs.map(program => {
+                          // Check multiple possible field names for active status
+                          const isProgramActive = program.is_featured || program.is_active || program.status === 'active';
+                          return (
                           <button
                             key={program.id}
                             type="button"
@@ -698,12 +698,21 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
                                 : "text-gray-700 bg-white hover:bg-gray-100"
                             }`}
                           >
-                            <span>{program.program_name}</span>
+                            <div className="flex items-center gap-2">
+                              <span>{program.program_name}</span>
+                              <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium ${
+                                isProgramActive 
+                                  ? "bg-green-100 text-green-800" 
+                                  : "bg-gray-100 text-gray-600"
+                              }`}>
+                                {isProgramActive ? "Active" : "Inactive"}
+                              </span>
+                            </div>
                             {programIds.includes(program.id) && (
                               <CheckIcon className="w-4 h-4 text-orange-500" />
                             )}
                           </button>
-                        ))}
+                        )})}
                       </div>
                     )}
                   </>
@@ -726,6 +735,7 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
                         e.target.blur();
                       }
                     }}
+                    onWheel={(e) => e.target.blur()}
                     className="w-full rounded-lg border border-gray-300 bg-white px-3 sm:px-4 py-2 sm:py-2.5 pr-12 text-sm shadow-sm
                     focus:outline-none focus:ring-2 focus:ring-orange-400 transition"
                   />
@@ -747,6 +757,7 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
                       e.target.blur();
                     }
                   }}
+                  onWheel={(e) => e.target.blur()}
                   className="w-full rounded-lg border border-gray-300 bg-white px-3 sm:px-4 py-2 sm:py-2.5 text-sm shadow-sm
                   focus:outline-none focus:ring-2 focus:ring-orange-400 transition"
                 />
