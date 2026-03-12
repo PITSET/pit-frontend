@@ -1,12 +1,17 @@
 import { useEffect, useState } from "react";
-import { getAboutSections } from "../../lib/services/aboutService";
+import { getAboutSections, deleteAboutSection } from "../../lib/services/aboutService";
 import {
   PencilSquareIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
+  PlusIcon,
+  TrashIcon,
 } from "@heroicons/react/24/outline";
 
 import AboutModal from "../../components/admin_ui/AboutModal";
+import DeleteModal from "../../components/admin_ui/DeleteModal";
+import EmptyState from "../../components/admin_ui/EmptyState";
+import Loading from "../../components/ui/Loading";
 
 export default function AboutPage() {
   const [data, setData] = useState([]);
@@ -15,6 +20,8 @@ export default function AboutPage() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState(null);
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -25,6 +32,7 @@ export default function AboutPage() {
       const response = await getAboutSections();
       setData(response.data);
     } catch (err) {
+      console.error("Failed to fetch about data:", err);
       setError("Failed to fetch about data");
     } finally {
       setLoading(false);
@@ -45,57 +53,188 @@ export default function AboutPage() {
     setCurrentPage(page);
   };
 
-  if (loading) return <p className="p-8">Loading...</p>;
-  if (error) return <p className="p-8 text-red-500">{error}</p>;
+  const handleDeleteClick = (item) => {
+    setItemToDelete(item);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleCreate = () => {
+    setSelectedItem(null);
+    setIsModalOpen(true);
+  };
+
+  if (loading) return (
+    <Loading 
+      table={{
+        columns: [
+          { label: 'Image', show: true },
+          { label: 'Title', show: true },
+          { label: 'Description', show: true },
+          { label: 'Position', show: true },
+          { label: 'Status', show: true },
+          { label: 'Action', show: true }
+        ],
+        showPosition: true,
+        showImage: true,
+        showStatus: true,
+        rows: 4
+      }}
+    />
+  );
+
+  // Handle rate limiting (429) specifically
+  const isRateLimited = error.includes('429');
+  if (error) return (
+    <div className="p-4 md:p-6 max-w-7xl mx-auto min-h-[60vh] flex flex-col items-center justify-center">
+      <div className="text-center max-w-md">
+        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-orange-100 flex items-center justify-center">
+          <svg className="w-8 h-8 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+          {isRateLimited ? 'Too Many Requests' : 'Unable to Load'}
+        </h3>
+        <p className="text-gray-600 mb-4">
+          {isRateLimited 
+            ? 'Please wait a moment and try again. We\'re experiencing high traffic.'
+            : error}
+        </p>
+        <button 
+          onClick={fetchAbout}
+          className="px-4 py-2 bg-orange-500 text-white font-medium rounded-lg hover:bg-orange-600 transition focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2"
+        >
+          Try Again
+        </button>
+      </div>
+    </div>
+  );
+
+  // Empty state
+  if (data.length === 0) {
+    return (
+      <>
+        <div className="p-4 md:p-6 max-w-7xl mx-auto min-h-[60vh] flex flex-col items-center justify-center">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold text-gray-900 mb-6">
+            About Page
+          </h1>
+
+          <EmptyState
+            title="No About Sections Yet"
+            description="Get started by creating your first about section. You can add history, mission, vision, or any other section type."
+            buttonText="Create First Section"
+            onButtonClick={handleCreate}
+          />
+        </div>
+
+        {/* Modal - rendered even when empty */}
+        <AboutModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onRefresh={fetchAbout}
+          item={selectedItem}
+          existingSectionTypes={[]}
+          existingOrderPositions={[]}
+        />
+      </>
+    );
+  }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
-      <h1 className="text-3xl font-semibold mb-8">About Page</h1>
+    <div className="p-4 md:p-6 max-w-7xl mx-auto mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+        <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold text-gray-900">
+          About Page
+        </h1>
 
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+        <button
+          onClick={handleCreate}
+          className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3 py-2.5 sm:py-2.5 md:py-2 bg-primary-gradient text-white font-medium text-sm rounded-lg hover:bg-primary-gradient-hover focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2 transition-all duration-200 shadow-sm hover:shadow-md"
+        >
+          <PlusIcon className="w-4 h-4 sm:w-5 sm:h-5" />
+          <span className="hidden sm:inline">Create Section</span>
+          <span className="sm:hidden">Create</span>
+        </button>
+      </div>
+
+      {/* Desktop Table View */}
+      <div className="hidden md:block bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
         <table className="w-full">
           <thead className="bg-gray-50 border-b border-gray-300">
             <tr className="text-sm font-semibold text-gray-600">
-              <th className="px-8 py-4 text-center">Image</th>
-              <th className="px-8 py-4 text-center">Title</th>
-              <th className="px-8 py-4 text-center">Description</th>
-              <th className="px-8 py-4 text-center">Action</th>
+              <th className="px-4 lg:px-8 py-4 text-center">Image</th>
+              <th className="px-4 lg:px-8 py-4 text-center">Title</th>
+              <th className="px-4 lg:px-8 py-4 text-center">Description</th>
+              <th className="px-4 lg:px-8 py-4 text-center">Position</th>
+              <th className="px-4 lg:px-8 py-4 text-center">Status</th>
+              <th className="px-4 lg:px-8 py-4 text-center">Action</th>
             </tr>
           </thead>
 
           <tbody className="divide-y divide-gray-200">
             {currentItems.map((item) => (
-              <tr key={item.id} className="hover:bg-gray-100 transition">
-                <td className="px-8 py-4 text-center">
-                  <div className="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden mx-auto">
+              <tr key={item.id} className={`hover:bg-gray-100 transition ${!item.is_active ? 'bg-gray-50' : ''}`}>
+                <td className="px-4 lg:px-8 py-4 text-center">
+                  <div className="w-16 h-16 lg:w-20 lg:h-20 bg-gray-100 rounded-lg overflow-hidden mx-auto">
                     <img
-                      src={item.image_url || "/placeholder.png"}
+                      src={item.image_url || "/placeholder.svg"}
                       alt={item.title}
                       className="object-cover w-full h-full"
                     />
                   </div>
                 </td>
 
-                <td className="px-8 py-6 text-center font-medium">
+                <td className="px-4 lg:px-8 py-4 lg:py-6 text-center font-medium">
                   {item.title}
                 </td>
 
-                <td className="px-8 py-6 text-gray-600 text-left max-w-xl">
-                  <p className="line-clamp-3">
+                <td className="px-4 lg:px-8 py-4 lg:py-6 text-gray-600 text-left max-w-xs lg:max-w-xl">
+                  <p className="line-clamp-2 lg:line-clamp-2">
                     {item.content || "No description available"}
                   </p>
                 </td>
 
-                <td className="px-8 py-6 text-center">
-                  <button
-                    onClick={() => {
-                      setSelectedItem(item);
-                      setIsModalOpen(true);
-                    }}
-                    className="p-2 rounded-lg border border-gray-300 hover:bg-gray-200 transition"
-                  >
-                    <PencilSquareIcon className="w-5 h-5 text-gray-600" />
-                  </button>
+                <td className="px-4 lg:px-8 py-4 lg:py-6 text-center">
+                  <span className={`inline-flex items-center justify-center min-w-[2rem] px-2 py-1 rounded-md text-sm font-semibold ${
+                    item.is_active 
+                      ? 'bg-orange-50 text-orange-700 border border-orange-200' 
+                      : 'bg-gray-50 text-gray-600 border border-gray-200'
+                  }`}>
+                    #{item.order_position}
+                  </span>
+                </td>
+
+                <td className="px-4 lg:px-8 py-4 lg:py-6 text-center">
+                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                    item.is_active 
+                      ? 'bg-green-100 text-green-800' 
+                      : 'bg-gray-200 text-gray-800'
+                  }`}>
+                    {item.is_active ? 'Active' : 'Inactive'}
+                  </span>
+                </td>
+
+                <td className="px-2 sm:px-4 lg:px-8 py-4 lg:py-6 text-center">
+                  <div className="inline-flex items-center justify-center gap-0 rounded-md sm:rounded-lg border border-gray-200 sm:border-gray-300 overflow-hidden">
+                    <button
+                      onClick={() => {
+                        setSelectedItem(item);
+                        setIsModalOpen(true);
+                      }}
+                      className="p-1.5 sm:p-2 hover:bg-gray-100 sm:hover:bg-gray-200 transition"
+                    >
+                      <PencilSquareIcon className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
+                    </button>
+
+                    <div className="h-4 w-px sm:h-6 bg-gray-200 sm:bg-gray-300"></div>
+
+                    <button
+                      onClick={() => handleDeleteClick(item)}
+                      className="p-1.5 sm:p-2 hover:bg-red-50 sm:hover:bg-red-100 transition"
+                    >
+                      <TrashIcon className="w-4 h-4 sm:w-5 sm:h-5 text-red-500" />
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
@@ -104,12 +243,12 @@ export default function AboutPage() {
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="flex items-center justify-between px-4 py-3 bg-gray-50 border-t border-gray-200">
-            <div className="text-sm text-gray-600">
+          <div className="flex flex-col sm:flex-row items-center justify-between px-4 py-3 bg-gray-50 border-t border-gray-200 gap-3 sm:gap-0">
+            <div className="text-sm text-gray-600 order-2 sm:order-1">
               Showing {indexOfFirstItem + 1} to{" "}
               {Math.min(indexOfLastItem, data.length)} of {data.length} results
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 sm:gap-2 order-1 sm:order-2">
               <button
                 onClick={() => handlePageChange(currentPage - 1)}
                 disabled={currentPage === 1}
@@ -144,12 +283,134 @@ export default function AboutPage() {
         )}
       </div>
 
+      {/* Mobile Card View */}
+      <div className="md:hidden space-y-4">
+        {currentItems.map((item) => (
+          <div
+            key={item.id}
+            className={`bg-white rounded-xl border shadow-sm p-4 ${!item.is_active ? 'border-gray-200 opacity-75' : 'border-gray-200'}`}
+          >
+            <div className="flex gap-4">
+              {/* Image */}
+              <div className="flex-shrink-0">
+                <div className="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden">
+                  <img
+                    src={item.image_url || "/placeholder.svg"}
+                    alt={item.title}
+                    className="object-cover w-full h-full"
+                  />
+                </div>
+              </div>
+
+              {/* Content */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between mb-1">
+                  <h3 className={`font-semibold truncate ${item.is_active ? 'text-gray-900' : 'text-gray-500'}`}>
+                    {item.title}
+                  </h3>
+                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ml-2 flex-shrink-0 ${
+                    item.is_active 
+                      ? 'bg-green-100 text-green-800' 
+                      : 'bg-gray-200 text-gray-600'
+                  }`}>
+                    {item.is_active ? 'Active' : 'Inactive'}
+                  </span>
+                </div>
+                <p className="text-sm text-gray-600 line-clamp-2">
+                  {item.content || "No description available"}
+                </p>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex-shrink-0">
+                <div className="flex flex-col sm:flex-row items-center gap-0 rounded-md sm:rounded-lg border border-gray-200 sm:border-gray-300 overflow-hidden">
+                  <button
+                    onClick={() => {
+                      setSelectedItem(item);
+                      setIsModalOpen(true);
+                    }}
+                    className="p-1.5 sm:p-2 hover:bg-gray-100 sm:hover:bg-gray-200 transition"
+                  >
+                    <PencilSquareIcon className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
+                  </button>
+
+                  <div className="h-px w-4 sm:h-6 sm:w-px bg-gray-200 sm:bg-gray-300"></div>
+
+                  <button
+                    onClick={() => handleDeleteClick(item)}
+                    className="p-1.5 sm:p-2 hover:bg-red-50 sm:hover:bg-red-100 transition"
+                  >
+                    <TrashIcon className="w-4 h-4 sm:w-5 sm:h-5 text-red-500" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+
+        {/* Mobile Pagination */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between px-2 py-3 bg-gray-50 rounded-lg border border-gray-200">
+            <div className="text-xs sm:text-sm text-gray-600">
+              {indexOfFirstItem + 1}-{Math.min(indexOfLastItem, data.length)} of{" "}
+              {data.length}
+            </div>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="p-1.5 sm:p-2 rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition"
+              >
+                <ChevronLeftIcon className="w-4 h-4 text-gray-600" />
+              </button>
+              <span className="px-2 text-sm font-medium text-gray-600">
+                {currentPage}/{totalPages}
+              </span>
+              <button
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className="p-1.5 sm:p-2 rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition"
+              >
+                <ChevronRightIcon className="w-4 h-4 text-gray-600" />
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
       {/* Modal */}
       <AboutModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onRefresh={fetchAbout}
         item={selectedItem}
+        existingSectionTypes={Object.values(
+          data.reduce((acc, item) => {
+            const baseType = item.section_type.replace(/\s+\d+$/, '').trim();
+            if (!acc[baseType]) {
+              acc[baseType] = { type: baseType, isActive: false };
+            }
+            // If any section of this type is active, mark as active
+            if (item.is_active) {
+              acc[baseType].isActive = true;
+            }
+            return acc;
+          }, {})
+        )}
+        existingOrderPositions={data.map((item) => item.order_position)}
+      />
+
+      {/* Delete Modal */}
+      <DeleteModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => {
+          setIsDeleteModalOpen(false);
+          setItemToDelete(null);
+        }}
+        onRefresh={fetchAbout}
+        item={itemToDelete}
+        sectionType="About Section"
+        deleteFunction={deleteAboutSection}
       />
     </div>
   );

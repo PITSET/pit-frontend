@@ -4,6 +4,9 @@ import { useState, useEffect } from "react";
 // Heroicons (password show/hide)
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
 
+// Toast notifications (like Google, Facebook login)
+import { toast } from "react-hot-toast";
+
 // Auth utility (handles API request)
 import { login } from "../../utils/auth";
 
@@ -34,12 +37,6 @@ export default function Login() {
 
   // Loading indicator during login request
   const [loading, setLoading] = useState(false);
-
-  // Error message shown when login fails
-  const [error, setError] = useState("");
-
-  // Success message shown when login succeeds
-  const [success, setSuccess] = useState("");
 
   /* ===============================
      AUTO REDIRECT IF ALREADY LOGGED IN
@@ -72,19 +69,12 @@ export default function Login() {
     // Start loading state
     setLoading(true);
 
-    // Clear previous messages
-    setError("");
-    setSuccess("");
-
     try {
-      // Call login API
-      const res = await login(email, password);
+      // Call login API using Supabase auth
+      await login(email, password);
 
-      // Save token to localStorage
-      localStorage.setItem("token", res.token);
-
-      // Show success message
-      setSuccess("Login successful! Redirecting...");
+      // Show success message (toast notification)
+      toast.success("Login successful! Redirecting...");
 
       // Redirect to dashboard after short delay
       setTimeout(() => {
@@ -92,32 +82,46 @@ export default function Login() {
       }, 1200);
     } catch (err) {
       /* ===============================
-         ERROR HANDLING
+         ERROR HANDLING - Show toast notification
          =============================== */
 
+      // Supabase auth error message
+      if (err.message) {
+        // Handle common Supabase auth errors
+        if (err.message.includes("Invalid login credentials")) {
+          toast.error("Invalid email or password");
+        } else if (err.message.includes("Email not confirmed")) {
+          toast.error("Please confirm your email address");
+        } else if (err.message.includes("Too many requests")) {
+          toast.error("Too many login attempts. Please try again later.");
+        } else {
+          toast.error(err.message);
+        }
+      }
+
       // Backend error message
-      if (err.response?.data?.message) {
-        setError(err.response.data.message);
+      else if (err.response?.data?.message) {
+        toast.error(err.response.data.message);
       }
 
       // Backend error field
       else if (err.response?.data?.error) {
-        setError(err.response.data.error);
+        toast.error(err.response.data.error);
       }
 
       // Unauthorized
       else if (err.response?.status === 401) {
-        setError("Invalid email or password");
+        toast.error("Invalid email or password");
       }
 
       // Missing fields
       else if (err.response?.status === 400) {
-        setError("Email and password are required");
+        toast.error("Email and password are required");
       }
 
       // Generic fallback
       else {
-        setError("Login failed. Please try again.");
+        toast.error("Login failed. Please try again.");
       }
     }
 
@@ -197,6 +201,9 @@ export default function Login() {
               type="email"
               placeholder="Email"
               required
+              autoComplete="username"
+              name="email"
+              id="email"
               className="w-full px-5 py-3 rounded-full bg-red-200/70 placeholder-gray-700 focus:outline-none focus:ring-2 focus:ring-red-400 shadow-sm"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -208,6 +215,9 @@ export default function Login() {
                 type={showPassword ? "text" : "password"}
                 placeholder="Password"
                 required
+                autoComplete="current-password"
+                name="password"
+                id="password"
                 className="w-full px-5 py-3 rounded-full bg-red-200/70 placeholder-gray-700 focus:outline-none focus:ring-2 focus:ring-red-400 shadow-sm"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -225,20 +235,6 @@ export default function Login() {
                 )}
               </button>
             </div>
-
-            {/* SUCCESS */}
-            {success && (
-              <div className="bg-green-100 text-green-700 px-4 py-2 rounded-lg text-sm">
-                {success}
-              </div>
-            )}
-
-            {/* ERROR */}
-            {error && (
-              <div className="bg-red-100 text-red-700 px-4 py-2 rounded-lg text-sm">
-                {error}
-              </div>
-            )}
 
             {/* BUTTON */}
             <div className="flex justify-center">

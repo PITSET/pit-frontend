@@ -1,23 +1,41 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Outlet } from "react-router-dom";
 import { Bars3Icon } from "@heroicons/react/24/outline";
-import { Toaster } from "react-hot-toast";
 
 import Sidebar from "./Sidebar";
+import { logout, restoreSession } from "../../utils/auth";
 
 export default function AdminLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  // Periodic session check - auto logout when session expires
+  useEffect(() => {
+    const checkSessionExpiry = async () => {
+      const expiry = localStorage.getItem("sessionExpiry");
+      
+      if (expiry && Date.now() > parseInt(expiry)) {
+        // Try to restore session using refresh token
+        const session = await restoreSession();
+        
+        if (!session) {
+          // If restore failed, logout
+          logout(true);
+        }
+        // If restore succeeded, session has been updated
+      }
+    };
+
+    // Check immediately on mount
+    checkSessionExpiry();
+
+    // Check every 30 seconds
+    const interval = setInterval(checkSessionExpiry, 30000);
+
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <div className="flex h-screen bg-gray-50">
-      <Toaster
-        position="top-center"
-        toastOptions={{
-          duration: 3000,
-          style: { fontSize: "14px" },
-          success: { iconTheme: { primary: "#f97316", secondary: "#fff" } },
-        }}
-      />
       {sidebarOpen && (
         <div
           className="fixed inset-0 z-30 bg-black/40 md:hidden"

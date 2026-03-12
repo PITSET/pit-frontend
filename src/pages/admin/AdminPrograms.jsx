@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getHomeSections, deleteHomeSection } from "../../lib/services/homeService";
+import { getAllPrograms, deleteProgram, getProgramStudents, updateStudent } from "../../lib/services/programService";
 import {
   PencilSquareIcon,
   ChevronLeftIcon,
@@ -8,12 +8,12 @@ import {
   TrashIcon,
 } from "@heroicons/react/24/outline";
 
-import HomeModal from "../../components/admin_ui/HomeModal";
+import ProgramModal from "../../components/admin_ui/ProgramModal";
 import DeleteModal from "../../components/admin_ui/DeleteModal";
 import EmptyState from "../../components/admin_ui/EmptyState";
 import Loading from "../../components/ui/Loading";
 
-export default function HomePage() {
+export default function AdminPrograms() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -27,20 +27,20 @@ export default function HomePage() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 4;
 
-  const fetchHome = async () => {
+  const fetchPrograms = async () => {
     try {
-      const response = await getHomeSections();
+      const response = await getAllPrograms();
       setData(response.data);
     } catch (err) {
-      console.error("Failed to fetch home data:", err);
-      setError("Failed to fetch home data");
+      console.error("Failed to fetch programs:", err);
+      setError("Failed to fetch programs");
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchHome();
+    fetchPrograms();
   }, []);
 
   // Calculate pagination
@@ -58,6 +58,49 @@ export default function HomePage() {
     setIsDeleteModalOpen(true);
   };
 
+  // Custom delete handler for programs with cascade delete logic
+  const handleProgramDelete = async (id) => {
+    try {
+      // First try to delete the program directly
+      await deleteProgram(id);
+    } catch (error) {
+      // Check if it's a foreign key constraint error
+      const status = error.response?.status;
+      const errorCode = error.response?.data?.code;
+      
+      if (status === 409 || errorCode === '23502' || errorCode === '23503') {
+        // Try to clean up related data first
+        try {
+          try {
+            const studentsRes = await getProgramStudents(id);
+            const students = studentsRes.data || studentsRes || [];
+            for (const student of students) {
+              await updateStudent(student.id, { program_id: null });
+            }
+          } catch (e) { console.warn("Student cleanup skipped:", e); }
+          
+          // Retry deleting the program
+          await deleteProgram(id);
+          return;
+        } catch (cascadeError) {
+          console.error("Cascade delete failed:", cascadeError);
+          throw new Error("Cannot delete: Please manually remove instructors, students, and projects first.");
+        }
+      } else if (status === 404) {
+        throw new Error("Program not found. It may have already been deleted.");
+      } else if (status === 500) {
+        throw new Error("Server error. Please try again later.");
+      } else if (status === 401) {
+        throw new Error("Unauthorized. Please login again.");
+      } else if (status === 400) {
+        const errorMsg = error.response?.data?.message || error.response?.data?.error || "Invalid request data";
+        throw new Error(`Cannot delete: ${errorMsg}`);
+      } else {
+        throw new Error(error.response?.data?.message || `Failed to delete program (Error: ${status})`);
+      }
+    }
+  };
+
   const handleCreate = () => {
     setSelectedItem(null);
     setIsModalOpen(true);
@@ -68,13 +111,12 @@ export default function HomePage() {
       table={{
         columns: [
           { label: 'Image', show: true },
-          { label: 'Title', show: true },
+          { label: 'Program Name', show: true },
           { label: 'Description', show: true },
-          { label: 'Position', show: true },
           { label: 'Status', show: true },
           { label: 'Action', show: true }
         ],
-        showPosition: true,
+        showPosition: false,
         showImage: true,
         showStatus: true,
         rows: 4
@@ -101,7 +143,7 @@ export default function HomePage() {
             : error}
         </p>
         <button 
-          onClick={fetchHome}
+          onClick={fetchPrograms}
           className="px-4 py-2 bg-orange-500 text-white font-medium rounded-lg hover:bg-orange-600 transition focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2"
         >
           Try Again
@@ -116,25 +158,23 @@ export default function HomePage() {
       <>
         <div className="p-4 md:p-6 max-w-7xl mx-auto min-h-[60vh] flex flex-col items-center justify-center">
           <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold text-gray-900 mb-6">
-            Home Page
+            Programs
           </h1>
 
           <EmptyState
-            title="No Home Sections Yet"
-            description="Get started by creating your first home section. You can add hero, about, program, contact, or any other section type."
-            buttonText="Create First Section"
+            title="No Programs Yet"
+            description="Get started by creating your first program. You can add program details, descriptions, and images."
+            buttonText="Create First Program"
             onButtonClick={handleCreate}
           />
         </div>
 
         {/* Modal - rendered even when empty */}
-        <HomeModal
+        <ProgramModal
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
-          onRefresh={fetchHome}
+          onRefresh={fetchPrograms}
           item={selectedItem}
-          existingSectionTypes={[]}
-          existingOrderPositions={[]}
         />
       </>
     );
@@ -144,15 +184,15 @@ export default function HomePage() {
     <div className="p-4 md:p-6 max-w-7xl mx-auto mb-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
         <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold text-gray-900">
-          Home Page
+          Programs
         </h1>
 
         <button
           onClick={handleCreate}
-          className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-3 sm:py-2.5 md:py-2 bg-primary-gradient text-white font-medium text-sm rounded-lg hover:bg-primary-gradient-hover focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2 transition-all duration-200 shadow-md hover:shadow-lg"
+          className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3 py-2.5 sm:py-2.5 md:py-2 bg-primary-gradient text-white font-medium text-sm rounded-lg hover:bg-primary-gradient-hover focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2 transition-all duration-200 shadow-sm hover:shadow-md"
         >
-          <PlusIcon className="w-5 h-5" />
-          <span className="hidden sm:inline">Create Section</span>
+          <PlusIcon className="w-4 h-4 sm:w-5 sm:h-5" />
+          <span className="hidden sm:inline">Create Program</span>
           <span className="sm:hidden">Create</span>
         </button>
       </div>
@@ -163,9 +203,8 @@ export default function HomePage() {
           <thead className="bg-gray-50 border-b border-gray-300">
             <tr className="text-sm font-semibold text-gray-600">
               <th className="px-4 lg:px-8 py-4 text-center">Image</th>
-              <th className="px-4 lg:px-8 py-4 text-center">Title</th>
+              <th className="px-4 lg:px-8 py-4 text-center">Program Name</th>
               <th className="px-4 lg:px-8 py-4 text-center">Description</th>
-              <th className="px-4 lg:px-8 py-4 text-center">Position</th>
               <th className="px-4 lg:px-8 py-4 text-center">Status</th>
               <th className="px-4 lg:px-8 py-4 text-center">Action</th>
             </tr>
@@ -178,36 +217,26 @@ export default function HomePage() {
                   <div className="w-16 h-16 lg:w-20 lg:h-20 bg-gray-100 rounded-lg overflow-hidden mx-auto">
                     <img
                       src={item.image_url || "/placeholder.svg"}
-                      alt={item.title}
+                      alt={item.program_name}
                       className="object-cover w-full h-full"
                     />
                   </div>
                 </td>
 
                 <td className="px-4 lg:px-8 py-4 lg:py-6 text-center font-medium">
-                  {item.title}
+                  {item.program_name}
                 </td>
 
                 <td className="px-4 lg:px-8 py-4 lg:py-6 text-gray-600 text-left max-w-xs lg:max-w-xl">
                   <p className="line-clamp-2 lg:line-clamp-2">
-                    {item.content || "No description available"}
+                    {item.description || "No description available"}
                   </p>
-                </td>
-
-                <td className="px-4 lg:px-8 py-4 lg:py-6 text-center">
-                  <span className={`inline-flex items-center justify-center min-w-[2rem] px-2 py-1 rounded-md text-sm font-semibold ${
-                    item.is_active 
-                      ? 'bg-orange-50 text-orange-700 border border-orange-200' 
-                      : 'bg-gray-50 text-gray-600 border border-gray-200'
-                  }`}>
-                    #{item.order_position}
-                  </span>
                 </td>
 
                 <td className="px-4 lg:px-8 py-4 lg:py-6 text-center">
                   <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                     item.is_active 
-                      ? 'bg-green-200 text-green-800' 
+                      ? 'bg-green-100 text-green-800' 
                       : 'bg-gray-200 text-gray-800'
                   }`}>
                     {item.is_active ? 'Active' : 'Inactive'}
@@ -296,7 +325,7 @@ export default function HomePage() {
                 <div className="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden">
                   <img
                     src={item.image_url || "/placeholder.svg"}
-                    alt={item.title}
+                    alt={item.program_name}
                     className="object-cover w-full h-full"
                   />
                 </div>
@@ -306,18 +335,18 @@ export default function HomePage() {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between mb-1">
                   <h3 className={`font-semibold truncate ${item.is_active ? 'text-gray-900' : 'text-gray-500'}`}>
-                    {item.title}
+                    {item.program_name}
                   </h3>
                   <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ml-2 flex-shrink-0 ${
                     item.is_active 
-                      ? 'bg-green-200 text-green-800' 
+                      ? 'bg-green-100 text-green-800' 
                       : 'bg-gray-200 text-gray-600'
                   }`}>
                     {item.is_active ? 'Active' : 'Inactive'}
                   </span>
                 </div>
                 <p className="text-sm text-gray-600 line-clamp-2">
-                  {item.content || "No description available"}
+                  {item.description || "No description available"}
                 </p>
               </div>
 
@@ -379,25 +408,11 @@ export default function HomePage() {
       </div>
 
       {/* Modal */}
-      <HomeModal
+      <ProgramModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onRefresh={fetchHome}
+        onRefresh={fetchPrograms}
         item={selectedItem}
-        existingSectionTypes={Object.values(
-          data.reduce((acc, item) => {
-            const baseType = item.section_type.replace(/\s+\d+$/, '').trim();
-            if (!acc[baseType]) {
-              acc[baseType] = { type: baseType, isActive: false };
-            }
-            // If any section of this type is active, mark as active
-            if (item.is_active) {
-              acc[baseType].isActive = true;
-            }
-            return acc;
-          }, {})
-        )}
-        existingOrderPositions={data.map((item) => item.order_position)}
       />
 
       {/* Delete Modal */}
@@ -407,10 +422,10 @@ export default function HomePage() {
           setIsDeleteModalOpen(false);
           setItemToDelete(null);
         }}
-        onRefresh={fetchHome}
+        onRefresh={fetchPrograms}
         item={itemToDelete}
-        sectionType="Home Section"
-        deleteFunction={deleteHomeSection}
+        sectionType="Program"
+        deleteFunction={handleProgramDelete}
       />
     </div>
   );
