@@ -249,13 +249,21 @@ export default function AdminMembers() {
 
                     <td className="px-4 lg:px-8 py-4 lg:py-6 text-center">
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        item.is_founder
+                        item.is_founder && item.is_instructor
+                          ? 'bg-orange-100 text-orange-800'
+                          : item.is_founder
                           ? 'bg-orange-100 text-orange-800'
                           : item.is_instructor
                           ? 'bg-orange-100 text-orange-800'
                           : 'bg-gray-200 text-gray-800'
                       }`}>
-                        {item.is_founder ? 'Founder' : item.is_instructor ? 'Instructor' : 'Unknown'}
+                        {item.is_founder && item.is_instructor 
+                          ? 'Founder, Instructor' 
+                          : item.is_founder 
+                          ? 'Founder' 
+                          : item.is_instructor 
+                          ? 'Instructor' 
+                          : 'Unknown'}
                       </span>
                     </td>
 
@@ -355,13 +363,21 @@ export default function AdminMembers() {
                       </h3>
                       <div className="flex gap-1 ml-2">
                         <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                          item.is_founder
+                          item.is_founder && item.is_instructor
+                            ? 'bg-orange-100 text-orange-800'
+                            : item.is_founder
                             ? 'bg-orange-100 text-orange-800'
                             : item.is_instructor
                             ? 'bg-orange-100 text-orange-800'
                             : 'bg-gray-200 text-gray-800'
                         }`}>
-                          {item.is_founder ? 'Founder' : item.is_instructor ? 'Instructor' : 'Unknown'}
+                          {item.is_founder && item.is_instructor 
+                            ? 'Founder, Instructor' 
+                            : item.is_founder 
+                            ? 'Founder' 
+                            : item.is_instructor 
+                            ? 'Instructor' 
+                            : 'Unknown'}
                         </span>
                       </div>
                     </div>
