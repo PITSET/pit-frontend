@@ -695,7 +695,16 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
                                 : "text-gray-700 bg-white hover:bg-gray-100"
                             }`}
                           >
-                            <span>{program.program_name}</span>
+                            <div className="flex items-center gap-2">
+                              <span>{program.program_name}</span>
+                              <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium ${
+                                program.is_featured 
+                                  ? "bg-green-100 text-green-800" 
+                                  : "bg-gray-100 text-gray-600"
+                              }`}>
+                                {program.is_featured ? "Active" : "Inactive"}
+                              </span>
+                            </div>
                             {programIds.includes(program.id) && (
                               <CheckIcon className="w-4 h-4 text-orange-500" />
                             )}
