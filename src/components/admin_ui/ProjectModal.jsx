@@ -909,14 +909,14 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
               <div className="space-y-2">
                 {tasks.length === 0 ? (
                   <div className="border-2 border-dashed border-gray-200 rounded-lg p-6 text-center">
-                    <div className="bg-blue-50 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
-                      <PlusIcon className="w-6 h-6 text-blue-400" />
+                    <div className="bg-orange-50 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
+                      <PlusIcon className="w-6 h-6 text-orange-400" />
                     </div>
                     <p className="text-sm text-gray-500 mb-2">No tasks added yet</p>
                     <button
                       type="button"
                       onClick={addTask}
-                      className="text-sm text-blue-600 hover:text-blue-700 font-medium transition"
+                      className="text-sm text-orange-600 hover:text-orange-700 font-medium transition"
                     >
                       Add your first task
                     </button>
@@ -925,11 +925,11 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
                   tasks.map((task, index) => (
                     <div 
                       key={`task-${index}`} 
-                      className="group bg-white rounded-lg border border-gray-200 hover:border-blue-300 transition-all duration-200 shadow-sm hover:shadow-md"
+                      className="group bg-white rounded-lg border border-gray-200 hover:border-orange-300 transition-all duration-200 shadow-sm hover:shadow-md"
                     >
                       <div className="flex items-start gap-2 p-3">
-                        <div className="flex-shrink-0 w-7 h-7 bg-blue-100 rounded-full flex items-center justify-center mt-0.5">
-                          <span className="text-xs font-bold text-blue-600">{index + 1}</span>
+                        <div className="flex-shrink-0 w-7 h-7 bg-orange-100 rounded-full flex items-center justify-center mt-0.5">
+                          <span className="text-xs font-bold text-orange-600">{index + 1}</span>
                         </div>
                         <textarea
                           ref={(el) => {
@@ -968,7 +968,7 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
                   <button
                     type="button"
                     onClick={addTask}
-                    className="w-full flex items-center justify-center gap-2 py-2.5 border-2 border-dashed border-gray-300 rounded-lg text-sm text-gray-500 hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50 transition"
+                    className="w-full flex items-center justify-center gap-2 py-2.5 border-2 border-dashed border-gray-300 rounded-lg text-sm text-gray-500 hover:border-orange-400 hover:text-orange-600 hover:bg-orange-50 transition"
                   >
                     <PlusIcon className="w-4 h-4" />
                     <span>Add Task</span>
