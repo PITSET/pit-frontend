@@ -16,6 +16,8 @@ import ProtectedRoute from "../components/admin_ui/ProtectdRoute";
 import Login from "../pages/admin/Login";
 import AdminContact from "../pages/admin/AdminContact";
 import AdminPrograms from "../pages/admin/AdminPrograms";
+import AdminProjects from "../pages/admin/AdminProjects";
+import AdminMembers from "../pages/admin/AdminMembers";
 
 const router = createBrowserRouter([
   {
@@ -53,12 +55,12 @@ const router = createBrowserRouter([
         element: <Navigate to="/admin/academics/programs" replace />,
       },
       { path: "academics/programs", element: <AdminPrograms /> },
-      { path: "academics/projects", element: <Dashboard /> },
+      { path: "academics/projects", element: <AdminProjects /> },
       {
         path: "team",
-        element: <Navigate to="/admin/team/instructors" replace />,
+        element: <Navigate to="/admin/team/members" replace />,
       },
-      { path: "team/instructors", element: <Dashboard /> },
+      { path: "team/members", element: <AdminMembers /> },
       { path: "contact", element: <AdminContact /> },
     ],
   },
