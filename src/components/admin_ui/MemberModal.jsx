@@ -634,76 +634,92 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
             />
           </div>
 
-          {/* Academic Achievements - Using Objectives pattern */}
+          {/* Academic Achievements */}
           <div className="space-y-3">
             <label className="text-sm font-medium text-gray-700">Academic Achievements</label>
             
             <div className="space-y-2">
-              {academicAchievements.map((achievement, index) => (
-                <div key={`achievement-${index}`} className="flex items-center gap-2">
-                  <div className="flex-shrink-0 w-2 h-2 bg-gray-900 rounded-full mt-2" />
-                  <input
-                    type="text"
-                    value={achievement}
-                    placeholder="Add academic achievement"
-                    onChange={(e) => updateAcademicAchievement(index, e.target.value)}
-                    className="flex-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-400 transition"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => removeAcademicAchievement(index)}
-                    className="flex-shrink-0 text-red-500 hover:bg-red-50 rounded-lg p-2 transition"
-                    title="Remove achievement"
-                  >
-                    <TrashIcon className="w-5 h-5" />
-                  </button>
+              {academicAchievements.length === 0 ? (
+                <div className="text-center py-4 text-gray-400 text-sm">
+                  No academic achievements added yet
                 </div>
-              ))}
+              ) : (
+                academicAchievements.map((achievement, index) => (
+                  <div key={`achievement-${index}`} className="flex items-center gap-2 bg-white p-2 rounded-lg border border-gray-200 shadow-sm hover:border-orange-300 transition group">
+                    <div className="flex-shrink-0 w-6 h-6 bg-orange-100 rounded-full flex items-center justify-center">
+                      <span className="text-xs font-medium text-orange-600">{index + 1}</span>
+                    </div>
+                    <input
+                      type="text"
+                      value={achievement}
+                      placeholder="Add academic achievement"
+                      onChange={(e) => updateAcademicAchievement(index, e.target.value)}
+                      className="flex-1 bg-transparent border-0 text-sm focus:outline-none focus:ring-0"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeAcademicAchievement(index)}
+                      className="flex-shrink-0 text-gray-400 hover:text-red-500 p-1 rounded-lg hover:bg-red-50 transition opacity-0 group-hover:opacity-100"
+                      title="Remove achievement"
+                    >
+                      <TrashIcon className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))
+              )}
               
               <button
                 type="button"
                 onClick={addAcademicAchievement}
-                className="flex items-center gap-1 text-orange-600 hover:text-orange-700 transition"
+                className="flex items-center justify-center gap-2 w-full py-2.5 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-orange-400 hover:text-orange-500 hover:bg-orange-50 transition"
               >
-                <PlusIcon className="w-4 h-4" />
-                <span>Add Academic Achievement</span>
+                <PlusIcon className="w-5 h-5" />
+                <span className="text-sm font-medium">Add Academic Achievement</span>
               </button>
             </div>
           </div>
 
-          {/* Skills - Using Tasks pattern */}
+          {/* Skills */}
           <div className="space-y-3">
             <label className="text-sm font-medium text-gray-700">Skills</label>
             
             <div className="space-y-2">
-              {skills.map((skill, index) => (
-                <div key={`skill-${index}`} className="flex items-center gap-2">
-                  <div className="flex-shrink-0 w-2 h-2 bg-gray-900 rounded-full mt-2" />
-                  <input
-                    type="text"
-                    value={skill}
-                    placeholder="Add skill"
-                    onChange={(e) => updateSkill(index, e.target.value)}
-                    className="flex-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-400 transition"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => removeSkill(index)}
-                    className="flex-shrink-0 text-red-500 hover:bg-red-50 rounded-lg p-2 transition"
-                    title="Remove skill"
-                  >
-                    <TrashIcon className="w-5 h-5" />
-                  </button>
+              {skills.length === 0 ? (
+                <div className="text-center py-4 text-gray-400 text-sm">
+                  No skills added yet
                 </div>
-              ))}
+              ) : (
+                skills.map((skill, index) => (
+                  <div key={`skill-${index}`} className="flex items-center gap-2 bg-white p-2 rounded-lg border border-gray-200 shadow-sm hover:border-orange-300 transition group">
+                    <div className="flex-shrink-0 w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center">
+                      <StarIcon className="w-3 h-3 text-blue-600" />
+                    </div>
+                    <input
+                      type="text"
+                      value={skill}
+                      placeholder="Add skill"
+                      onChange={(e) => updateSkill(index, e.target.value)}
+                      className="flex-1 bg-transparent border-0 text-sm focus:outline-none focus:ring-0"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeSkill(index)}
+                      className="flex-shrink-0 text-gray-400 hover:text-red-500 p-1 rounded-lg hover:bg-red-50 transition opacity-0 group-hover:opacity-100"
+                      title="Remove skill"
+                    >
+                      <TrashIcon className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))
+              )}
               
               <button
                 type="button"
                 onClick={addSkill}
-                className="flex items-center gap-1 text-orange-600 hover:text-orange-700 transition"
+                className="flex items-center justify-center gap-2 w-full py-2.5 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-orange-400 hover:text-orange-500 hover:bg-orange-50 transition"
               >
-                <PlusIcon className="w-4 h-4" />
-                <span>Add Skill</span>
+                <PlusIcon className="w-5 h-5" />
+                <span className="text-sm font-medium">Add Skill</span>
               </button>
             </div>
           </div>
