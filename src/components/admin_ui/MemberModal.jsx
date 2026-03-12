@@ -149,6 +149,12 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
     setSkills(newSkills);
   };
 
+  // Auto-resize textarea
+  const adjustTextareaHeight = (element) => {
+    element.style.height = 'auto';
+    element.style.height = element.scrollHeight + 'px';
+  };
+
   // Convert image to WEBP (compression + resize)
   const convertToWebp = (file) => {
     return new Promise((resolve) => {
@@ -645,24 +651,29 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
                 </div>
               ) : (
                 academicAchievements.map((achievement, index) => (
-                  <div key={`achievement-${index}`} className="flex items-center gap-2 bg-white p-2 rounded-lg border border-gray-200 shadow-sm hover:border-orange-300 transition group">
-                    <div className="flex-shrink-0 w-6 h-6 bg-orange-100 rounded-full flex items-center justify-center">
+                  <div key={`achievement-${index}`} className="flex items-start gap-2 bg-white p-2 rounded-lg border border-gray-200 shadow-sm hover:border-orange-300 transition group">
+                    <div className="flex-shrink-0 w-6 h-6 bg-orange-100 rounded-full flex items-center justify-center mt-1">
                       <span className="text-xs font-medium text-orange-600">{index + 1}</span>
                     </div>
-                    <input
-                      type="text"
+                    <textarea
+                      rows={1}
                       value={achievement}
                       placeholder="Add academic achievement"
-                      onChange={(e) => updateAcademicAchievement(index, e.target.value)}
-                      className="flex-1 bg-transparent border-0 text-sm focus:outline-none focus:ring-0"
+                      onChange={(e) => {
+                        updateAcademicAchievement(index, e.target.value);
+                        adjustTextareaHeight(e.target);
+                      }}
+                      onInput={(e) => adjustTextareaHeight(e.target)}
+                      className="flex-1 bg-transparent border-0 text-sm resize-none overflow-hidden focus:outline-none focus:ring-0"
+                      style={{ minHeight: '24px', height: '24px' }}
                     />
                     <button
                       type="button"
                       onClick={() => removeAcademicAchievement(index)}
-                      className="flex-shrink-0 text-gray-400 hover:text-red-500 p-1 rounded-lg hover:bg-red-50 transition opacity-0 group-hover:opacity-100"
+                      className="flex-shrink-0 text-gray-400 hover:text-red-500 p-2 rounded-lg hover:bg-red-50 transition opacity-0 group-hover:opacity-100 mt-1"
                       title="Remove achievement"
                     >
-                      <TrashIcon className="w-4 h-4" />
+                      <TrashIcon className="w-5 h-5" />
                     </button>
                   </div>
                 ))
@@ -690,24 +701,29 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
                 </div>
               ) : (
                 skills.map((skill, index) => (
-                  <div key={`skill-${index}`} className="flex items-center gap-2 bg-white p-2 rounded-lg border border-gray-200 shadow-sm hover:border-orange-300 transition group">
-                    <div className="flex-shrink-0 w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center">
+                  <div key={`skill-${index}`} className="flex items-start gap-2 bg-white p-2 rounded-lg border border-gray-200 shadow-sm hover:border-orange-300 transition group">
+                    <div className="flex-shrink-0 w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center mt-1">
                       <StarIcon className="w-3 h-3 text-blue-600" />
                     </div>
-                    <input
-                      type="text"
+                    <textarea
+                      rows={1}
                       value={skill}
                       placeholder="Add skill"
-                      onChange={(e) => updateSkill(index, e.target.value)}
-                      className="flex-1 bg-transparent border-0 text-sm focus:outline-none focus:ring-0"
+                      onChange={(e) => {
+                        updateSkill(index, e.target.value);
+                        adjustTextareaHeight(e.target);
+                      }}
+                      onInput={(e) => adjustTextareaHeight(e.target)}
+                      className="flex-1 bg-transparent border-0 text-sm resize-none overflow-hidden focus:outline-none focus:ring-0"
+                      style={{ minHeight: '24px', height: '24px' }}
                     />
                     <button
                       type="button"
                       onClick={() => removeSkill(index)}
-                      className="flex-shrink-0 text-gray-400 hover:text-red-500 p-1 rounded-lg hover:bg-red-50 transition opacity-0 group-hover:opacity-100"
+                      className="flex-shrink-0 text-gray-400 hover:text-red-500 p-2 rounded-lg hover:bg-red-50 transition opacity-0 group-hover:opacity-100 mt-1"
                       title="Remove skill"
                     >
-                      <TrashIcon className="w-4 h-4" />
+                      <TrashIcon className="w-5 h-5" />
                     </button>
                   </div>
                 ))
