@@ -6,6 +6,7 @@ import AdminLayout from "../components/layout/AdminLayout";
 import Home from "../pages/public/Home";
 import About from "../pages/public/About";
 import Contact from "../pages/public/Contact";
+import Program from "../pages/public/Program";
 
 
 // Admin Pages
@@ -26,6 +27,7 @@ const router = createBrowserRouter([
       { path: "/", element: <Home /> },
       { path: "/about", element: <About /> },
       { path: "/contact", element: <Contact /> },
+      { path: "/program", element: <Program /> },
     ],
   },
 
