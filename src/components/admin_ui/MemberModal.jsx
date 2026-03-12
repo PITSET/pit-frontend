@@ -485,6 +485,7 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
                 <div className="relative">
                   <input
                     type="email"
+                    autoComplete="email"
                     value={email}
                     placeholder="email@example.com"
                     onChange={handleEmailChange}
