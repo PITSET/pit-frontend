@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { BsArrowLeft, BsArrowRight } from "react-icons/bs";
 
 export default function ProjectsCarousel({ projects = [], isLoadingProjects = false }) {
@@ -56,9 +57,12 @@ export default function ProjectsCarousel({ projects = [], isLoadingProjects = fa
                 {isLoadingProjects ? "" : projects[index]?.overview || projects[index]?.desc || "No overview available"}
               </p>
 
-              <button className="bg-[#1a1a1a] text-white font-medium px-7 py-3 rounded-lg w-max transition duration-300 hover:bg-black hover:shadow-lg mb-10">
+              <Link
+                to={`/projects/${projects[index]?.id}`}
+                className="bg-[#1a1a1a] text-white font-medium px-7 py-3 rounded-lg w-max transition duration-300 hover:bg-black hover:shadow-lg mb-10 inline-block"
+              >
                 Read More
-              </button>
+              </Link>
 
               {/* Bottom Controls row: Indicators + Navigation */}
               <div className="flex items-center justify-between w-full mt-auto">
