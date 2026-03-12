@@ -344,10 +344,7 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
         program_ids: programIds,
       };
 
-      // Add student_ids only for create (backend requires it)
-      if (isCreate) {
-        projectData.student_ids = [1]; // Backend requires at least one student_id
-      }
+      // Note: student_ids is optional - currently not sent as there's no student selection UI
 
       if (isCreate) {
         // Validate required fields for create
