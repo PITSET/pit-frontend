@@ -18,7 +18,7 @@ export default function Navbar() {
   };
 
   return (
-    <div className="w-full bg-white shadow-md relative z-50">
+    <div className="w-full bg-white shadow-md sticky top-0 z-50">
       {/* ================= NAVBAR ================= */}
       <header className="flex justify-between items-center h-[90px] px-8 lg:px-24 relative">
         {/* Logo */}
