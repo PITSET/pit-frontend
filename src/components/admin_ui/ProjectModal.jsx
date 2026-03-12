@@ -830,7 +830,10 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
               
               <div className="space-y-2">
                 {objectives.length === 0 ? (
-                  <div className="border-2 border-dashed border-gray-200 rounded-lg p-6 text-center">
+                  <div 
+                    onClick={addObjective}
+                    className="border-2 border-dashed border-gray-200 rounded-lg p-6 text-center cursor-pointer hover:border-orange-300 hover:bg-orange-50 transition"
+                  >
                     <div className="bg-orange-50 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
                       <PlusIcon className="w-6 h-6 text-orange-400" />
                     </div>
@@ -908,7 +911,10 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
               
               <div className="space-y-2">
                 {tasks.length === 0 ? (
-                  <div className="border-2 border-dashed border-gray-200 rounded-lg p-6 text-center">
+                  <div 
+                    onClick={addTask}
+                    className="border-2 border-dashed border-gray-200 rounded-lg p-6 text-center cursor-pointer hover:border-orange-300 hover:bg-orange-50 transition"
+                  >
                     <div className="bg-orange-50 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
                       <PlusIcon className="w-6 h-6 text-orange-400" />
                     </div>
