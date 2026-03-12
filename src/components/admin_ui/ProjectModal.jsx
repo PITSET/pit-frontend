@@ -9,6 +9,8 @@ import {
   ArrowTopRightOnSquareIcon,
   PlusIcon,
   TrashIcon,
+  ChevronDownIcon,
+  CheckIcon,
 } from "@heroicons/react/24/outline";
 
 // api
@@ -657,14 +659,9 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
                           ? `${programIds.length} program(s) selected`
                           : "Select program(s)..."}
                       </span>
-                      <svg 
+                      <ChevronDownIcon 
                         className={`w-4 h-4 text-gray-500 transition-transform ${showProgramDropdown ? "rotate-180" : ""}`} 
-                        fill="none" 
-                        stroke="currentColor" 
-                        viewBox="0 0 24 24"
-                      >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                      </svg>
+                      />
                     </button>
 
                     {/* Dropdown options */}
@@ -683,14 +680,7 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
                           >
                             <span>{program.program_name}</span>
                             {programIds.includes(program.id) && (
-                              <svg 
-                                className="w-4 h-4 text-orange-500" 
-                                fill="none" 
-                                stroke="currentColor" 
-                                viewBox="0 0 24 24"
-                              >
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                              </svg>
+                              <CheckIcon className="w-4 h-4 text-orange-500" />
                             )}
                           </button>
                         ))}
