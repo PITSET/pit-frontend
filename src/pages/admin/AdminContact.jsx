@@ -1,12 +1,16 @@
 import { useEffect, useState, useMemo } from "react";
-import { getAllContacts } from "../../lib/services/adminContactService";
+import { getAllContacts, deleteContact } from "../../lib/services/adminContactService";
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
   FunnelIcon,
   EnvelopeIcon,
+  PencilSquareIcon,
+  TrashIcon,
 } from "@heroicons/react/24/outline";
 
+import ContactModal from "../../components/admin_ui/ContactModal";
+import DeleteModal from "../../components/admin_ui/DeleteModal";
 import EmptyState from "../../components/admin_ui/EmptyState";
 import Loading from "../../components/ui/Loading";
 
@@ -22,10 +26,16 @@ export default function Contact() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
+  // Modal states
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState(null);
+
   const fetchContacts = async () => {
     try {
-      const result = await getAllContacts();
-      setContacts(result.data || []);
+      const response = await getAllContacts();
+      setContacts(response.data || []);
     } catch (err) {
       console.error("Error fetching contacts:", err);
       setError("Failed to fetch contacts");
@@ -62,6 +72,18 @@ export default function Contact() {
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
+  };
+
+  // Handle edit click
+  const handleEditClick = (item) => {
+    setSelectedItem(item);
+    setIsModalOpen(true);
+  };
+
+  // Handle delete click
+  const handleDeleteClick = (item) => {
+    setItemToDelete(item);
+    setIsDeleteModalOpen(true);
   };
 
   // Get unique statuses for filter buttons
@@ -232,6 +254,7 @@ export default function Contact() {
                   <th className="px-4 lg:px-8 py-4 text-center">Email</th>
                   <th className="px-4 lg:px-8 py-4 text-center">Message</th>
                   <th className="px-4 lg:px-8 py-4 text-center">Status</th>
+                  <th className="px-4 lg:px-8 py-4 text-center">Action</th>
                 </tr>
               </thead>
 
@@ -270,6 +293,26 @@ export default function Contact() {
                       }`}>
                         {contact.status || 'Unknown'}
                       </span>
+                    </td>
+
+                    <td className="px-2 sm:px-4 lg:px-8 py-4 lg:py-6 text-center">
+                      <div className="inline-flex items-center justify-center gap-0 rounded-md sm:rounded-lg border border-gray-200 sm:border-gray-300 overflow-hidden">
+                        <button
+                          onClick={() => handleEditClick(contact)}
+                          className="p-1.5 sm:p-2 hover:bg-gray-100 sm:hover:bg-gray-200 transition"
+                        >
+                          <PencilSquareIcon className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
+                        </button>
+
+                        <div className="h-4 w-px sm:h-6 bg-gray-200 sm:bg-gray-300"></div>
+
+                        <button
+                          onClick={() => handleDeleteClick(contact)}
+                          className="p-1.5 sm:p-2 hover:bg-red-50 sm:hover:bg-red-100 transition"
+                        >
+                          <TrashIcon className="w-4 h-4 sm:w-5 sm:h-5 text-red-500" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -355,6 +398,24 @@ export default function Contact() {
                     {contact.message || "No message"}
                   </p>
                 </div>
+
+                {/* Action Buttons */}
+                <div className="flex items-center gap-2 mt-4 pt-3 border-t border-gray-100">
+                  <button
+                    onClick={() => handleEditClick(contact)}
+                    className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition"
+                  >
+                    <PencilSquareIcon className="w-4 h-4" />
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => handleDeleteClick(contact)}
+                    className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 text-sm font-medium text-red-600 bg-white border border-red-300 rounded-lg hover:bg-red-50 hover:border-red-400 transition"
+                  >
+                    <TrashIcon className="w-4 h-4" />
+                    Delete
+                  </button>
+                </div>
               </div>
             ))}
 
@@ -385,6 +446,30 @@ export default function Contact() {
           </div>
         </>
       )}
+
+      {/* Contact Modal */}
+      <ContactModal
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          setSelectedItem(null);
+        }}
+        onRefresh={fetchContacts}
+        item={selectedItem}
+      />
+
+      {/* Delete Modal */}
+      <DeleteModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => {
+          setIsDeleteModalOpen(false);
+          setItemToDelete(null);
+        }}
+        onRefresh={fetchContacts}
+        item={itemToDelete}
+        deleteFunction={deleteContact}
+        sectionType="contact"
+      />
     </div>
   );
 }
