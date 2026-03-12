@@ -456,13 +456,13 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
     setDuration(item?.duration?.toString() || "");
     setTeamSize(item?.team_size?.toString() || "");
     setGithubUrl(item?.github_url || "");
-    setResult(item?.result || "");
+    setResult(item?.video_url || ""); // Use video_url from backend
     setExistingImages(item?.images || []);
     setNewImages([]);
     setIsActive(item?.is_featured || false); // Use is_featured field from backend
     
-    // Reset program_ids (currently not stored in item, so default to empty)
-    setProgramIds([]);
+    // Load program_ids from item (backend returns programs as array of IDs)
+    setProgramIds(Array.isArray(item?.programs) ? item.programs : []);
   };
 
   // Load initial data when modal opens
