@@ -560,10 +560,10 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
                         <button
                           type="button"
                           onClick={() => removeExistingImage(index)}
-                          className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1.5 hover:bg-red-600 transition shadow-md"
+                          className="absolute top-2 right-2 bg-white text-red-500 rounded-full p-2 hover:bg-red-50 transition shadow-md border border-gray-100"
                           title="Remove image"
                         >
-                          <TrashIcon className="w-4 h-4" />
+                          <TrashIcon className="w-5 h-5" />
                         </button>
                       </div>
                     ))}
@@ -586,10 +586,10 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
                         <button
                           type="button"
                           onClick={() => removeNewImage(index)}
-                          className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1.5 hover:bg-red-600 transition shadow-md"
+                          className="absolute top-2 right-2 bg-white text-red-500 rounded-full p-2 hover:bg-red-50 transition shadow-md border border-gray-100"
                           title="Remove image"
                         >
-                          <TrashIcon className="w-4 h-4" />
+                          <TrashIcon className="w-5 h-5" />
                         </button>
                       </div>
                     ))}
@@ -840,10 +840,10 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
                     <button
                       type="button"
                       onClick={() => removeObjective(index)}
-                      className="flex-shrink-0 bg-red-500 text-white rounded-lg p-2 hover:bg-red-600 transition shadow-sm"
+                      className="flex-shrink-0 text-red-500 hover:bg-red-50 rounded-lg p-2 transition"
                       title="Remove objective"
                     >
-                      <TrashIcon className="w-4 h-4" />
+                      <TrashIcon className="w-5 h-5" />
                     </button>
                   </div>
                 ))}
@@ -878,10 +878,10 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
                     <button
                       type="button"
                       onClick={() => removeTask(index)}
-                      className="flex-shrink-0 bg-red-500 text-white rounded-lg p-2 hover:bg-red-600 transition shadow-sm"
+                      className="flex-shrink-0 text-red-500 hover:bg-red-50 rounded-lg p-2 transition"
                       title="Remove task"
                     >
-                      <TrashIcon className="w-4 h-4" />
+                      <TrashIcon className="w-5 h-5" />
                     </button>
                   </div>
                 ))}
