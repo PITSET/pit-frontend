@@ -37,6 +37,10 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
   const [showProgramDropdown, setShowProgramDropdown] = useState(false);
   const [urlError, setUrlError] = useState("");
 
+  // Refs for auto-focus on newly added objectives and tasks
+  const objectiveRefs = useRef([]);
+  const taskRefs = useRef([]);
+
   // Validate GitHub Repository URL (optional field)
   const validateGithubUrl = (url) => {
     // Empty is allowed (optional field)
@@ -166,6 +170,13 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
   // Add objective
   const addObjective = () => {
     setObjectives([...objectives, ""]);
+    // Focus the newly added input field
+    setTimeout(() => {
+      const newIndex = objectives.length;
+      if (objectiveRefs.current[newIndex]) {
+        objectiveRefs.current[newIndex].focus();
+      }
+    }, 0);
   };
 
   // Remove objective
@@ -183,6 +194,13 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
   // Add task
   const addTask = () => {
     setTasks([...tasks, ""]);
+    // Focus the newly added input field
+    setTimeout(() => {
+      const newIndex = tasks.length;
+      if (taskRefs.current[newIndex]) {
+        taskRefs.current[newIndex].focus();
+      }
+    }, 0);
   };
 
   // Remove task
@@ -858,6 +876,7 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
                         </div>
                         <textarea
                           ref={(el) => {
+                            objectiveRefs.current[index] = el;
                             if (el) {
                               el.style.height = 'auto';
                               el.style.height = el.scrollHeight + 'px';
@@ -939,6 +958,7 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
                         </div>
                         <textarea
                           ref={(el) => {
+                            taskRefs.current[index] = el;
                             if (el) {
                               el.style.height = 'auto';
                               el.style.height = el.scrollHeight + 'px';
