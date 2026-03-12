@@ -33,20 +33,20 @@ export default function AdminMembers() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 4;
 
-  const fetchProjects = async () => {
+  const fetchMembers = async () => {
     try {
-      const response = await getAllProjects();
+      const response = await getAllMembers();
       setData(response.data);
     } catch (err) {
-      console.error("Failed to fetch projects:", err);
-      setError("Failed to fetch projects");
+      console.error("Failed to fetch members:", err);
+      setError("Failed to fetch members");
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchProjects();
+    fetchMembers();
   }, []);
 
   // Filter and search data
@@ -134,7 +134,7 @@ export default function AdminMembers() {
             : error}
         </p>
         <button 
-          onClick={fetchProjects}
+          onClick={fetchMembers}
           className="px-4 py-2 bg-orange-500 text-white font-medium rounded-lg hover:bg-orange-600 transition focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2"
         >
           Try Again
@@ -164,7 +164,7 @@ export default function AdminMembers() {
         <MemberModal
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
-          onRefresh={fetchProjects}
+          onRefresh={fetchMembers}
           item={selectedItem}
         />
       </>
@@ -477,7 +477,7 @@ export default function AdminMembers() {
       <MemberModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onRefresh={fetchProjects}
+        onRefresh={fetchMembers}
         item={selectedItem}
       />
 
@@ -488,10 +488,10 @@ export default function AdminMembers() {
           setIsDeleteModalOpen(false);
           setItemToDelete(null);
         }}
-        onRefresh={fetchProjects}
+        onRefresh={fetchMembers}
         item={itemToDelete}
         sectionType="Project"
-        deleteFunction={deleteProject}
+        deleteFunction={deleteMember}
       />
     </div>
   );
