@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import api from "../../lib/api";
+import { getAllContacts } from "../../lib/services/adminContactService";
 
 export default function Contact() {
   const [contacts, setContacts] = useState([]);
@@ -7,8 +7,8 @@ export default function Contact() {
 
   const fetchContacts = async () => {
     try {
-      const res = await api.get("/contacts");
-      setContacts(res.data.data);
+      const result = await getAllContacts();
+      setContacts(result.data || []);
     } catch (error) {
       console.error("Error fetching contacts:", error);
     } finally {
