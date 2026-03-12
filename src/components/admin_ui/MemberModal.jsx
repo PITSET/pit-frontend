@@ -499,11 +499,11 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
 
               <div>
                 <h2 className="text-lg sm:text-2xl font-bold">
-                  {isCreate ? "Create Project" : `Update Project (${item?.name})`}
+                  {isCreate ? "Create Member" : `Update Member (${item?.name})`}
                 </h2>
 
                 <p className="text-xs sm:text-sm text-gray-500 hidden sm:block">
-                  {isCreate ? "Add a new project" : "Edit your project information"}
+                  {isCreate ? "Add a new member" : "Edit your member information"}
                 </p>
               </div>
             </div>
@@ -526,7 +526,7 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Left column - Image upload */}
             <div className="space-y-4">
-              <label className="text-sm font-medium text-gray-700">Project Images</label>
+              <label className="text-sm font-medium text-gray-700">Member Images</label>
               
               {/* Image upload area */}
               <label className="block">
@@ -554,7 +554,7 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
                       <div key={`existing-${index}`} className="relative group">
                         <img
                           src={url || "/placeholder.svg"}
-                          alt={`Project ${index + 1}`}
+                          alt={`Member ${index + 1}`}
                           className="w-full h-24 object-cover rounded-lg"
                         />
                         <button
@@ -598,16 +598,16 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
               )}
             </div>
 
-            {/* Right column - Project details */}
+            {/* Right column - Member details */}
             <div className="space-y-4">
-              {/* Project Name */}
+              {/* Instructor Name */}
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Project Name</label>
+                <label className="text-sm font-medium text-gray-700">Instructor Name</label>
 
                 <input
                   type="text"
                   value={name}
-                  placeholder="Enter project name..."
+                  placeholder="Enter instructor name..."
                   onChange={(e) => setName(e.target.value)}
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
@@ -619,14 +619,14 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
                 />
               </div>
 
-              {/* Project Leader */}
+              {/* Role */}
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Leader</label>
+                <label className="text-sm font-medium text-gray-700">Role</label>
 
                 <input
                   type="text"
                   value={leader}
-                  placeholder="Enter project leader name..."
+                  placeholder="Enter role..."
                   onChange={(e) => setLeader(e.target.value)}
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
@@ -781,7 +781,7 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
 
               {/* Active/Inactive toggle */}
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Status</label>
+                <label className="text-sm font-medium text-gray-700">Role</label>
                 <div className="flex items-center gap-3 py-2">
                   <button
                     type="button"
@@ -804,15 +804,15 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
             </div>
           </div>
 
-          {/* Overview */}
+          {/* Overview -> Biography */}
           <div className="space-y-2">
             <label className="text-sm font-medium text-gray-700">
-              Overview
+              Biography
             </label>
 
             <textarea
               value={overview}
-              placeholder="Message text goes here..."
+              placeholder="Enter biography..."
               onChange={(e) => setOverview(e.target.value)}
               className="w-full min-h-[120px] rounded-lg border border-gray-300 bg-white px-3 sm:px-4 py-2 sm:py-3 text-sm
               focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none transition"

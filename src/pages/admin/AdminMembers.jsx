@@ -6,7 +6,6 @@ import {
   ChevronRightIcon,
   PlusIcon,
   TrashIcon,
-  MagnifyingGlassIcon,
   FunnelIcon,
 } from "@heroicons/react/24/outline";
 
@@ -25,9 +24,8 @@ export default function AdminMembers() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
 
-  // Search and filter state
-  const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
+  // Role filter state
+  const [roleFilter, setRoleFilter] = useState("all");
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -49,33 +47,25 @@ export default function AdminMembers() {
     fetchMembers();
   }, []);
 
-  // Filter and search data
+  // Filter data by role
   const filteredData = useMemo(() => {
     let result = data;
 
-    // Filter by status
-    if (statusFilter !== "all") {
-      const isActive = statusFilter === "active";
-      result = result.filter(item => item.is_featured === isActive);
-    }
-
-    // Filter by search query
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase().trim();
-      result = result.filter(item => 
-        item.name?.toLowerCase().includes(query) ||
-        item.overview?.toLowerCase().includes(query) ||
-        item.leader?.toLowerCase().includes(query)
-      );
+    // Filter by role (instructor or founder)
+    if (roleFilter !== "all") {
+      result = result.filter(item => {
+        const role = (item.role || item.leader || '').toLowerCase();
+        return role === roleFilter;
+      });
     }
 
     return result;
-  }, [data, searchQuery, statusFilter]);
+  }, [data, roleFilter]);
 
-  // Reset page when search/filter changes
+  // Reset page when filter changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, statusFilter]);
+  }, [roleFilter]);
 
   // Calculate pagination
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
@@ -102,9 +92,9 @@ export default function AdminMembers() {
       table={{
         columns: [
           { label: 'Image', show: true },
-          { label: 'Project Name', show: true },
-          { label: 'Overview', show: true },
-          { label: 'Status', show: true },
+          { label: 'Instructor Name', show: true },
+          { label: 'Biography', show: true },
+          { label: 'Role', show: true },
           { label: 'Action', show: true }
         ],
         showPosition: false,
@@ -148,14 +138,14 @@ export default function AdminMembers() {
     return (
       <>
         <div className="p-4 md:p-6 max-w-7xl mx-auto min-h-[60vh] flex flex-col items-center justify-center">
-          <h1 className:text-2xl="text-xl sm md:text-3xl font-semibold text-gray-900 mb-6">
-            Projects
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold text-gray-900 mb-6">
+            Members
           </h1>
 
           <EmptyState
-            title="No Projects Yet"
-            description="Get started by creating your first project. You can add project details, descriptions, and images."
-            buttonText="Create First Project"
+            title="No Members Yet"
+            description="Get started by creating your first member. You can add member details, descriptions, and images."
+            buttonText="Create First Member"
             onButtonClick={handleCreate}
           />
         </div>
@@ -175,7 +165,7 @@ export default function AdminMembers() {
     <div className="p-4 md:p-6 max-w-7xl mx-auto mb-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
         <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold text-gray-900">
-          Projects
+          Members
         </h1>
 
         <button
@@ -183,40 +173,25 @@ export default function AdminMembers() {
           className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3 py-2.5 sm:py-2.5 md:py-2 bg-primary-gradient text-white font-medium text-sm rounded-lg hover:bg-primary-gradient-hover focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2 transition-all duration-200 shadow-sm hover:shadow-md"
         >
           <PlusIcon className="w-4 h-4 sm:w-5 sm:h-5" />
-          <span className="hidden sm:inline">Create Project</span>
+          <span className="hidden sm:inline">Create Member</span>
           <span className="sm:hidden">Create</span>
         </button>
       </div>
 
-      {/* Search and Filter */}
+      {/* Role Filter */}
       <div className="flex flex-col sm:flex-row gap-3 mb-4">
-        {/* Search Input */}
-        <div className="relative flex-1">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
-          </div>
-          <input
-            type="text"
-            placeholder="Search projects..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-2 focus:ring-orange-400 focus:border-orange-400 sm:text-sm transition"
-          />
-        </div>
-
-        {/* Status Filter */}
-        <div className="relative w-full sm:w-40">
+        <div className="relative w-full sm:w-48">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
             <FunnelIcon className="h-5 w-5 text-gray-400" />
           </div>
           <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
+            value={roleFilter}
+            onChange={(e) => setRoleFilter(e.target.value)}
             className="block w-full pl-10 pr-10 py-2.5 border border-gray-300 rounded-lg leading-5 bg-white focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-400 sm:text-sm transition appearance-none cursor-pointer"
           >
-            <option value="all">All</option>
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
+            <option value="all">All Roles</option>
+            <option value="instructor">Instructor</option>
+            <option value="founder">Founder</option>
           </select>
           <div className="absolute inset-y-0 right-0 flex items-center pointer-events-none pr-3">
             <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -227,33 +202,9 @@ export default function AdminMembers() {
       </div>
 
       {/* Results count */}
-      {(searchQuery || statusFilter !== "all") && (
+      {roleFilter !== "all" && (
         <div className="mb-4 text-sm text-gray-600">
-          Showing {filteredData.length} of {data.length} projects
-        </div>
-      )}
-
-      {/* No results found */}
-      {filteredData.length === 0 && data.length > 0 && (
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-8 text-center">
-          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
-            <MagnifyingGlassIcon className="w-8 h-8 text-gray-400" />
-          </div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">
-            No projects found
-          </h3>
-          <p className="text-gray-600 mb-4">
-            Try adjusting your search or filter criteria
-          </p>
-          <button
-            onClick={() => {
-              setSearchQuery("");
-              setStatusFilter("all");
-            }}
-            className="px-4 py-2 bg-orange-500 text-white font-medium rounded-lg hover:bg-orange-600 transition"
-          >
-            Clear filters
-          </button>
+          Showing {filteredData.length} of {data.length} members
         </div>
       )}
 
@@ -265,9 +216,9 @@ export default function AdminMembers() {
               <thead className="bg-gray-50 border-b border-gray-300">
                 <tr className="text-sm font-semibold text-gray-600">
                   <th className="px-4 lg:px-8 py-4 text-center">Image</th>
-                  <th className="px-4 lg:px-8 py-4 text-center">Project Name</th>
-                  <th className="px-4 lg:px-8 py-4 text-center">Overview</th>
-                  <th className="px-4 lg:px-8 py-4 text-center">Status</th>
+                  <th className="px-4 lg:px-8 py-4 text-center">Instructor Name</th>
+                  <th className="px-4 lg:px-8 py-4 text-center">Biography</th>
+                  <th className="px-4 lg:px-8 py-4 text-center">Role</th>
                   <th className="px-4 lg:px-8 py-4 text-center">Action</th>
                 </tr>
               </thead>
@@ -291,7 +242,7 @@ export default function AdminMembers() {
 
                     <td className="px-4 lg:px-8 py-4 lg:py-6 text-gray-600 text-left max-w-xs lg:max-w-xl">
                       <p className="line-clamp-2 lg:line-clamp-2">
-                        {item.overview || "No overview available"}
+                        {item.overview || "No biography available"}
                       </p>
                     </td>
 
@@ -410,7 +361,7 @@ export default function AdminMembers() {
                       </div>
                     </div>
                     <p className="text-sm text-gray-600 line-clamp-2">
-                      {item.overview || "No overview available"}
+                      {item.overview || "No biography available"}
                     </p>
                   </div>
 
@@ -490,7 +441,7 @@ export default function AdminMembers() {
         }}
         onRefresh={fetchMembers}
         item={itemToDelete}
-        sectionType="Project"
+        sectionType="Member"
         deleteFunction={deleteMember}
       />
     </div>
