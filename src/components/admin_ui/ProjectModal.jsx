@@ -37,6 +37,10 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
   const [showProgramDropdown, setShowProgramDropdown] = useState(false);
   const [urlError, setUrlError] = useState("");
 
+  // Refs for auto-focus on newly added objectives and tasks
+  const objectiveRefs = useRef([]);
+  const taskRefs = useRef([]);
+
   // Validate GitHub Repository URL (optional field)
   const validateGithubUrl = (url) => {
     // Empty is allowed (optional field)
@@ -166,6 +170,13 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
   // Add objective
   const addObjective = () => {
     setObjectives([...objectives, ""]);
+    // Focus the newly added input field
+    setTimeout(() => {
+      const newIndex = objectives.length;
+      if (objectiveRefs.current[newIndex]) {
+        objectiveRefs.current[newIndex].focus();
+      }
+    }, 0);
   };
 
   // Remove objective
@@ -183,6 +194,13 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
   // Add task
   const addTask = () => {
     setTasks([...tasks, ""]);
+    // Focus the newly added input field
+    setTimeout(() => {
+      const newIndex = tasks.length;
+      if (taskRefs.current[newIndex]) {
+        taskRefs.current[newIndex].focus();
+      }
+    }, 0);
   };
 
   // Remove task
@@ -823,77 +841,165 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Objectives */}
             <div className="space-y-3">
-              <label className="text-sm font-medium text-gray-700">Objectives</label>
+              <div className="flex items-center justify-between">
+                <label className="text-sm font-semibold text-gray-700">Objectives</label>
+                <span className="text-xs text-gray-400">{objectives.length} item{objectives.length !== 1 ? 's' : ''}</span>
+              </div>
               
               <div className="space-y-2">
-                {objectives.map((objective, index) => (
-                  <div key={`objective-${index}`} className="flex items-center gap-2">
-                    <div className="flex-shrink-0 w-2 h-2 bg-gray-900 rounded-full mt-2" />
-                    <input
-                      type="text"
-                      value={objective}
-                      placeholder="Add your message here"
-                      onChange={(e) => updateObjective(index, e.target.value)}
-                      className="flex-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm
-                      focus:outline-none focus:ring-2 focus:ring-orange-400 transition"
-                    />
+                {objectives.length === 0 ? (
+                  <div 
+                    onClick={addObjective}
+                    className="border-2 border-dashed border-gray-200 rounded-lg p-6 text-center cursor-pointer hover:border-orange-300 hover:bg-orange-50 transition"
+                  >
+                    <div className="bg-orange-50 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
+                      <PlusIcon className="w-6 h-6 text-orange-400" />
+                    </div>
+                    <p className="text-sm text-gray-500 mb-2">No objectives added yet</p>
                     <button
                       type="button"
-                      onClick={() => removeObjective(index)}
-                      className="flex-shrink-0 text-red-500 hover:bg-red-50 rounded-lg p-2 transition"
-                      title="Remove objective"
+                      onClick={addObjective}
+                      className="text-sm text-orange-600 hover:text-orange-700 font-medium transition"
                     >
-                      <TrashIcon className="w-5 h-5" />
+                      Add your first objective
                     </button>
                   </div>
-                ))}
+                ) : (
+                  objectives.map((objective, index) => (
+                    <div 
+                      key={`objective-${index}`} 
+                      className="group bg-white rounded-lg border border-gray-200 hover:border-orange-300 transition-all duration-200 shadow-sm hover:shadow-md"
+                    >
+                      <div className="flex items-start gap-2 p-3">
+                        <div className="flex-shrink-0 w-7 h-7 bg-orange-100 rounded-full flex items-center justify-center mt-0.5">
+                          <span className="text-xs font-bold text-orange-600">{index + 1}</span>
+                        </div>
+                        <textarea
+                          ref={(el) => {
+                            objectiveRefs.current[index] = el;
+                            if (el) {
+                              el.style.height = 'auto';
+                              el.style.height = el.scrollHeight + 'px';
+                            }
+                          }}
+                          value={objective}
+                          placeholder="Enter objective..."
+                          onChange={(e) => {
+                            updateObjective(index, e.target.value);
+                            // Auto-resize
+                            setTimeout(() => {
+                              e.target.style.height = 'auto';
+                              e.target.style.height = e.target.scrollHeight + 'px';
+                            }, 0);
+                          }}
+                          rows={1}
+                          className="flex-1 text-sm border-0 bg-transparent outline-none resize-none focus:ring-0 placeholder-gray-400 min-h-[40px]"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeObjective(index)}
+                          className="flex-shrink-0 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg p-2 transition opacity-0 group-hover:opacity-100"
+                          title="Remove objective"
+                        >
+                          <TrashIcon className="w-5 h-5" />
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                )}
                 
-                <button
-                  type="button"
-                  onClick={addObjective}
-                  className="flex items-center gap-1 text-orange-600 hover:text-orange-700 transition"
-                >
-                  <PlusIcon className="w-4 h-4" />
-                  <span>Add Objective</span>
-                </button>
+                {objectives.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={addObjective}
+                    className="w-full flex items-center justify-center gap-2 py-2.5 border-2 border-dashed border-gray-300 rounded-lg text-sm text-gray-500 hover:border-orange-400 hover:text-orange-600 hover:bg-orange-50 transition"
+                  >
+                    <PlusIcon className="w-4 h-4" />
+                    <span>Add Objective</span>
+                  </button>
+                )}
               </div>
             </div>
 
             {/* Tasks */}
             <div className="space-y-3">
-              <label className="text-sm font-medium text-gray-700">Tasks & Activities</label>
+              <div className="flex items-center justify-between">
+                <label className="text-sm font-semibold text-gray-700">Tasks & Activities</label>
+                <span className="text-xs text-gray-400">{tasks.length} item{tasks.length !== 1 ? 's' : ''}</span>
+              </div>
               
               <div className="space-y-2">
-                {tasks.map((task, index) => (
-                  <div key={`task-${index}`} className="flex items-center gap-2">
-                    <div className="flex-shrink-0 w-2 h-2 bg-gray-900 rounded-full mt-2" />
-                    <input
-                      type="text"
-                      value={task}
-                      placeholder="Add your message here"
-                      onChange={(e) => updateTask(index, e.target.value)}
-                      className="flex-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm
-                      focus:outline-none focus:ring-2 focus:ring-orange-400 transition"
-                    />
+                {tasks.length === 0 ? (
+                  <div 
+                    onClick={addTask}
+                    className="border-2 border-dashed border-gray-200 rounded-lg p-6 text-center cursor-pointer hover:border-orange-300 hover:bg-orange-50 transition"
+                  >
+                    <div className="bg-orange-50 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
+                      <PlusIcon className="w-6 h-6 text-orange-400" />
+                    </div>
+                    <p className="text-sm text-gray-500 mb-2">No tasks added yet</p>
                     <button
                       type="button"
-                      onClick={() => removeTask(index)}
-                      className="flex-shrink-0 text-red-500 hover:bg-red-50 rounded-lg p-2 transition"
-                      title="Remove task"
+                      onClick={addTask}
+                      className="text-sm text-orange-600 hover:text-orange-700 font-medium transition"
                     >
-                      <TrashIcon className="w-5 h-5" />
+                      Add your first task
                     </button>
                   </div>
-                ))}
+                ) : (
+                  tasks.map((task, index) => (
+                    <div 
+                      key={`task-${index}`} 
+                      className="group bg-white rounded-lg border border-gray-200 hover:border-orange-300 transition-all duration-200 shadow-sm hover:shadow-md"
+                    >
+                      <div className="flex items-start gap-2 p-3">
+                        <div className="flex-shrink-0 w-7 h-7 bg-orange-100 rounded-full flex items-center justify-center mt-0.5">
+                          <span className="text-xs font-bold text-orange-600">{index + 1}</span>
+                        </div>
+                        <textarea
+                          ref={(el) => {
+                            taskRefs.current[index] = el;
+                            if (el) {
+                              el.style.height = 'auto';
+                              el.style.height = el.scrollHeight + 'px';
+                            }
+                          }}
+                          value={task}
+                          placeholder="Enter task or activity..."
+                          onChange={(e) => {
+                            updateTask(index, e.target.value);
+                            // Auto-resize
+                            setTimeout(() => {
+                              e.target.style.height = 'auto';
+                              e.target.style.height = e.target.scrollHeight + 'px';
+                            }, 0);
+                          }}
+                          rows={1}
+                          className="flex-1 text-sm border-0 bg-transparent outline-none resize-none focus:ring-0 placeholder-gray-400 min-h-[40px]"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeTask(index)}
+                          className="flex-shrink-0 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg p-2 transition opacity-0 group-hover:opacity-100"
+                          title="Remove task"
+                        >
+                          <TrashIcon className="w-5 h-5" />
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                )}
                 
-                <button
-                  type="button"
-                  onClick={addTask}
-                  className="flex items-center gap-1 text-orange-600 hover:text-orange-700 transition"
-                >
-                  <PlusIcon className="w-4 h-4" />
-                  <span>Add Task</span>
-                </button>
+                {tasks.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={addTask}
+                    className="w-full flex items-center justify-center gap-2 py-2.5 border-2 border-dashed border-gray-300 rounded-lg text-sm text-gray-500 hover:border-orange-400 hover:text-orange-600 hover:bg-orange-50 transition"
+                  >
+                    <PlusIcon className="w-4 h-4" />
+                    <span>Add Task</span>
+                  </button>
+                )}
               </div>
             </div>
           </div>
