@@ -169,39 +169,35 @@ export default function Home() {
     <main className="w-full">
 
 {/* HERO */}
-<section className="relative h-[90vh] w-full flex items-center">
+<section className="relative min-h-[90vh] md:min-h-[95vh] w-full flex items-center">
 
 <div
 className="absolute inset-0 bg-cover bg-center"
 style={{
-backgroundImage:
-`url('${resolveAssetUrl(heroSection?.image_url) }')`,
+backgroundImage: `url('${resolveAssetUrl(heroSection?.image_url)}')`,
 }}
 />
 
 <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent"></div>
 
-<div className="relative max-w-7xl mx-auto px-6 lg:px-12 w-full">
+<div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 w-full">
 
-<div className="max-w-2xl text-white">
+<div className="max-w-xl md:max-w-2xl text-white">
 
-<h1 className="font-bold text-[64px] leading-[1.1] mb-6">
-{heroSection?.title ? (
-  heroSection.title
-) : (
-  <>
-    Empowering Future <br />
-    Technologists
-  </>
+<h1 className="font-bold text-3xl sm:text-4xl md:text-5xl lg:text-6xl leading-tight mb-6">
+{heroSection?.title || (
+<>
+Empowering Future <br /> Technologists
+</>
 )}
 </h1>
 
-<p className="text-[16px] text-gray-200 mb-8 max-w-lg">
+<p className="text-sm md:text-base text-gray-200 mb-8">
 {heroSection?.content ||
-  "Through practical education and innovative programs, we prepare students to meet real-world challenges and lead in a rapidly evolving technological landscape."}
+"Through practical education and innovative programs, we prepare students to meet real-world challenges and lead in a rapidly evolving technological landscape."}
 </p>
 
-<button className="bg-red-600 text-white hover:bg-white hover:text-red-600 transition px-7 py-3 rounded-md font-semibold shadow-lg">
+<button className="bg-red-600 text-white hover:bg-white hover:text-red-600 transition px-6 py-3 rounded-md font-semibold shadow-lg">
 Explore Our Programs →
 </button>
 
@@ -212,32 +208,31 @@ Explore Our Programs →
 
 
 {/* ABOUT SECTION */}
-<section className="relative h-[80vh] w-full flex items-center">
+<section className="relative min-h-[90vh] md:min-h-[95vh] w-full flex items-center">
 
 <div
 className="absolute inset-0 bg-cover bg-center"
 style={{
-backgroundImage:
-`url('${resolveAssetUrl(aboutSection?.image_url)}')`,
+backgroundImage: `url('${resolveAssetUrl(aboutSection?.image_url)}')`,
 }}
 />
 
 <div className="absolute inset-0 bg-black/50"></div>
 
-<div className="relative max-w-7xl mx-auto w-full px-6 lg:px-12 flex justify-end">
+<div className="relative max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-12 flex justify-end">
 
-<div className="max-w-md text-white -mt-10">
+<div className="max-w-md text-white">
 
-<h2 className="font-bold text-[48px] mb-4">
+<h2 className="font-bold text-3xl md:text-5xl mb-4">
 {aboutSection?.title || "About Us"}
 </h2>
 
-<p className="text-[16px] text-gray-200 mb-6 leading-relaxed">
+<p className="text-sm md:text-base text-gray-200 mb-6 leading-relaxed">
 {aboutSection?.content ||
-  "Prometheus Institute of Technology is dedicated to providing quality technology education that builds strong foundations, practical skills, and innovative thinking for future professionals."}
+"Prometheus Institute of Technology is dedicated to providing quality technology education that builds strong foundations, practical skills, and innovative thinking for future professionals."}
 </p>
 
-<button className="text-[16px] border border-white px-6 py-3 rounded-md text-white transition hover:bg-red-600 hover:border-red-600">
+<button className="border border-white px-6 py-3 rounded-md text-white transition hover:bg-red-600 hover:border-red-600">
 DISCOVER OUR MISSION →
 </button>
 
@@ -247,34 +242,31 @@ DISCOVER OUR MISSION →
 </section>
 
 
-{/* FOUNDER SECTION */}
-<section className="w-full bg-gray-100 py-24">
+<section className="w-full bg-gray-100 py-16 md:py-24">
 
-<div className="max-w-7xl mx-auto px-6 lg:px-12 grid md:grid-cols-2 gap-16 items-center">
+<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
 
 <div>
 <img
-src={resolveAssetUrl(founder1Section?.image_url)
-  
-}
+src={resolveAssetUrl(founder1Section?.image_url)}
 alt={founder1Section?.title || "Founder"}
-className="w-[580px] h-[720px] object-cover"
+className="w-full max-w-[520px] h-[380px] md:h-[620px] object-cover rounded-lg"
 />
 </div>
 
 <div>
 
-<p className="font-bold text-[24px] text-red-600 mb-3">
+<p className="font-bold text-lg text-red-600 mb-3">
 FOUNDER & PRINCIPAL
 </p>
 
-<h2 className="font-bold text-[64px] text-gray-900 mb-6">
+<h2 className="font-bold text-3xl md:text-5xl lg:text-6xl text-gray-900 mb-6">
 {founder1Section?.title || "Sheenaymu"}
 </h2>
 
-<p className="text-[16px] text-gray-600 leading-relaxed">
+<p className="text-gray-600 leading-relaxed">
 {founder1Section?.content ||
-  "At Prometheus Institute of Technology, our mission is to create a clear pathway for students to succeed in the world of technology."}
+"At Prometheus Institute of Technology, our mission is to create a clear pathway for students to succeed in the world of technology."}
 </p>
 
 </div>
@@ -319,45 +311,40 @@ className="w-[580px] h-[720px] object-cover"
 </section>
 
 
-{/* PROGRAMS SECTION */}
-<section className="relative w-full h-[80vh] flex items-center">
+<section className="relative w-full min-h-[90vh] md:min-h-[95vh] flex items-center">
 
-  {/* Background Image */}
-	  <div
-	    className="absolute inset-0 bg-cover bg-center"
-	    style={{
-	      backgroundImage:
-	        `url('${resolveAssetUrl(programSection?.image_url) }')`,
-	    }}
-	  />
+{/* Background Image */}
+<div
+className="absolute inset-0 bg-cover bg-center"
+style={{
+backgroundImage: `url('${resolveAssetUrl(programSection?.image_url)}')`,
+}}
+/>
 
-  {/* Overlay */}
-  <div className="absolute inset-0 bg-black/40"></div>
+{/* Overlay */}
+<div className="absolute inset-0 bg-black/40"></div>
 
-  {/* Content */}
-  <div className="relative max-w-7xl mx-auto px-6 lg:px-12 w-full">
+{/* Content */}
+<div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 w-full">
 
-    <div className="max-w-md text-white">
+<div className="max-w-md text-white">
 
-      {/* Title */}
-	      <h2 className="font-[var(--font-family-robotoCondensed)] font-bold text-[48px] mb-4">
-	        {programSection?.title || "Programs"}
-	      </h2>
+<h2 className="font-bold text-3xl md:text-5xl mb-4">
+{programSection?.title || "Programs"}
+</h2>
 
-      {/* Paragraph */}
-	      <p className="font-[var(--font-family-roboto)] text-[16px] text-gray-200 mb-6">
-	        {programSection?.content ||
-	          "Our programs are designed to provide strong technical foundations, practical skills, and industry-relevant knowledge to prepare students for future careers in technology."}
-	      </p>
+<p className="text-sm md:text-base text-gray-200 mb-6">
+{programSection?.content ||
+"Our programs are designed to provide strong technical foundations, practical skills, and industry-relevant knowledge to prepare students for future careers in technology."}
+</p>
 
-      {/* Button */}
-      <button className="font-[var(--font-family-robotoCondensed)] text-[16px] bg-red-600 text-white px-6 py-3 rounded-md border border-red-600 hover:bg-white hover:text-red-600 transition">
-        VIEW ALL PROGRAMS →
-      </button>
+<button className="text-sm md:text-base bg-red-600 text-white px-6 py-3 rounded-md border border-red-600 hover:bg-white hover:text-red-600 transition">
+VIEW ALL PROGRAMS →
+</button>
 
-    </div>
+</div>
 
-  </div>
+</div>
 
 </section>
 
