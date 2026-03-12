@@ -5,6 +5,8 @@ import AdminLayout from "../components/layout/AdminLayout";
 // Public Pages
 import Home from "../pages/public/Home";
 import About from "../pages/public/About";
+import Contact from "../pages/public/Contact";
+
 
 // Admin Pages
 import Dashboard from "../pages/admin/Dashboard";
@@ -23,7 +25,7 @@ const router = createBrowserRouter([
     children: [
       { path: "/", element: <Home /> },
       { path: "/about", element: <About /> },
-      { path: "/contact", element: <About /> },
+      { path: "/contact", element: <Contact /> },
     ],
   },
 
