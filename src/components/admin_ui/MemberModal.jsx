@@ -357,8 +357,8 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
         <div className="flex-shrink-0 bg-white rounded-t-2xl px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 sm:gap-3">
-              <div className="bg-orange-200 p-2 sm:p-3 rounded-xl">
-                <UserIcon className="w-5 h-5 sm:w-6 sm:h-6 text-orange-500" />
+              <div className="bg-red-200 p-2 sm:p-3 rounded-xl">
+                <UserIcon className="w-5 h-5 sm:w-6 sm:h-6 text-red-500" />
               </div>
 
               <div>
