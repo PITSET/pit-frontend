@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import { BsArrowUpRightSquare, BsCheckCircleFill, BsListCheck } from "react-icons/bs";
 import resolveAssetUrl from "../../lib/resolveAssetUrl";
 import api from "../../lib/api";
+import Loader from "../../components/ui/Loader";
 
 const formatProjectDate = (value) => {
   if (!value) return "";
@@ -65,11 +66,7 @@ export default function ProjectDetail() {
   }, [id]);
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-red-600"></div>
-      </div>
-    );
+    return <Loader label="Loading project..." />;
   }
 
   if (!project) {
