@@ -61,6 +61,11 @@ export default function About() {
   const [instructors, setInstructors] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Scroll to top on mount
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "instant" });
+  }, []);
+
   useEffect(() => {
     const fetchData = async () => {
       try {

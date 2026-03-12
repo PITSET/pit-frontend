@@ -103,9 +103,12 @@ export default function ProjectsCarousel({ projects = [], isLoadingProjects = fa
 
         {/* View All Projects Button */}
         <div className="flex justify-center mt-12 md:mt-24">
-          <button className="border border-red-600 text-red-600 text-sm font-semibold tracking-wider px-8 py-4 rounded-lg transition-colors duration-300 hover:bg-red-600 hover:text-white flex items-center gap-2">
+          <Link
+            to="/projects"
+            className="border border-red-600 text-red-600 text-sm font-semibold tracking-wider px-8 py-4 rounded-lg transition-colors duration-300 hover:bg-red-600 hover:text-white flex items-center gap-2"
+          >
             VIEW ALL PROJECTS <BsArrowRight className="text-lg" />
-          </button>
+          </Link>
         </div>
       </div>
     </section>
