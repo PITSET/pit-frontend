@@ -54,8 +54,9 @@ export default function AdminMembers() {
     // Filter by role (instructor or founder)
     if (roleFilter !== "all") {
       result = result.filter(item => {
-        const role = (item.role || item.leader || '').toLowerCase();
-        return role === roleFilter;
+        if (roleFilter === "founder") return item.is_founder === true;
+        if (roleFilter === "instructor") return item.is_instructor === true;
+        return true;
       });
     }
 
@@ -242,19 +243,19 @@ export default function AdminMembers() {
 
                     <td className="px-4 lg:px-8 py-4 lg:py-6 text-gray-600 text-left max-w-xs lg:max-w-xl">
                       <p className="line-clamp-2 lg:line-clamp-2">
-                        {item.overview || "No biography available"}
+                        {item.bio || "No biography available"}
                       </p>
                     </td>
 
                     <td className="px-4 lg:px-8 py-4 lg:py-6 text-center">
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        (item.role || item.leader || '').toLowerCase() === 'founder'
+                        item.is_founder
                           ? 'bg-orange-100 text-orange-800'
-                          : (item.role || item.leader || '').toLowerCase() === 'instructor'
+                          : item.is_instructor
                           ? 'bg-orange-100 text-orange-800'
                           : 'bg-gray-200 text-gray-800'
                       }`}>
-                        {(item.role || item.leader) || 'Unknown'}
+                        {item.is_founder ? 'Founder' : item.is_instructor ? 'Instructor' : 'Unknown'}
                       </span>
                     </td>
 
@@ -354,18 +355,18 @@ export default function AdminMembers() {
                       </h3>
                       <div className="flex gap-1 ml-2">
                         <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                          (item.role || item.leader || '').toLowerCase() === 'founder'
+                          item.is_founder
                             ? 'bg-orange-100 text-orange-800'
-                            : (item.role || item.leader || '').toLowerCase() === 'instructor'
+                            : item.is_instructor
                             ? 'bg-orange-100 text-orange-800'
                             : 'bg-gray-200 text-gray-800'
                         }`}>
-                          {(item.role || item.leader) || 'Unknown'}
+                          {item.is_founder ? 'Founder' : item.is_instructor ? 'Instructor' : 'Unknown'}
                         </span>
                       </div>
                     </div>
                     <p className="text-sm text-gray-600 line-clamp-2">
-                      {item.overview || "No biography available"}
+                      {item.bio || "No biography available"}
                     </p>
                   </div>
 
