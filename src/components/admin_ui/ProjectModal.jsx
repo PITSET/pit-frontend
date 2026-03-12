@@ -684,7 +684,10 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
                     {/* Dropdown options */}
                     {showProgramDropdown && (
                       <div className="mt-1 rounded-lg border border-gray-300 bg-white shadow-sm max-h-40 overflow-y-auto">
-                        {programs.map(program => (
+                        {programs.map(program => {
+                          // Check multiple possible field names for active status
+                          const isProgramActive = program.is_featured || program.is_active || program.status === 'active';
+                          return (
                           <button
                             key={program.id}
                             type="button"
@@ -698,18 +701,18 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
                             <div className="flex items-center gap-2">
                               <span>{program.program_name}</span>
                               <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium ${
-                                program.is_featured 
+                                isProgramActive 
                                   ? "bg-green-100 text-green-800" 
                                   : "bg-gray-100 text-gray-600"
                               }`}>
-                                {program.is_featured ? "Active" : "Inactive"}
+                                {isProgramActive ? "Active" : "Inactive"}
                               </span>
                             </div>
                             {programIds.includes(program.id) && (
                               <CheckIcon className="w-4 h-4 text-orange-500" />
                             )}
                           </button>
-                        ))}
+                        )})}
                       </div>
                     )}
                   </>
