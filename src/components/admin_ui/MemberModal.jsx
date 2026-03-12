@@ -275,6 +275,12 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
           return;
         }
 
+        if (!bio || !bio.trim()) {
+          toast.error("Please enter a biography", { id: toastId });
+          setLoading(false);
+          return;
+        }
+
         // At least one role must be selected
         if (!isFounder && !isInstructor) {
           toast.error("Please select at least one role: Founder or Instructor", { id: toastId });
@@ -297,6 +303,12 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
         // Validate required fields for update
         if (!name || !name.trim()) {
           toast.error("Please enter a name", { id: toastId });
+          setLoading(false);
+          return;
+        }
+
+        if (!bio || !bio.trim()) {
+          toast.error("Please enter a biography", { id: toastId });
           setLoading(false);
           return;
         }
@@ -651,7 +663,7 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
 
           {/* Bio */}
           <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700">Biography</label>
+            <label className="text-sm font-medium text-gray-700">Biography (required)</label>
             <textarea
               value={bio}
               placeholder="Enter biography..."
