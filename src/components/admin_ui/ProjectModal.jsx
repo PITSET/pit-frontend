@@ -35,15 +35,18 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
   const [showProgramDropdown, setShowProgramDropdown] = useState(false);
   const [urlError, setUrlError] = useState("");
 
-  // Validate URL (GitHub or other valid websites)
-  const validateUrl = (url) => {
-    if (!url) return true; // Empty is handled separately
+  // Validate GitHub Repository URL (optional field)
+  const validateGithubUrl = (url) => {
+    // Empty is allowed (optional field)
+    if (!url || !url.trim()) {
+      return { valid: true, message: "" };
+    }
     
     let urlToCheck = url.trim();
     
     // Must not contain spaces
     if (urlToCheck.includes(' ')) {
-      return false;
+      return { valid: false, message: "URL cannot contain spaces" };
     }
     
     // Add https:// if no protocol provided
@@ -53,13 +56,37 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
     
     try {
       const urlObj = new URL(urlToCheck);
-      // Must have valid protocol and hostname with a dot (domain format)
-      return (urlObj.protocol === 'http:' || urlObj.protocol === 'https:') && 
-             urlObj.hostname && 
-             urlObj.hostname.length > 0 &&
-             urlObj.hostname.includes('.');
+      
+      // Must have valid protocol
+      if (urlObj.protocol !== 'http:' && urlObj.protocol !== 'https:') {
+        return { valid: false, message: "URL must use HTTP or HTTPS protocol" };
+      }
+      
+      // Must be from github.com or github.io
+      const hostname = urlObj.hostname.toLowerCase();
+      const isGithubDomain = hostname === 'github.com' || hostname === 'www.github.com' || hostname.endsWith('.github.io');
+      
+      if (!isGithubDomain) {
+        return { valid: false, message: "URL must be a valid GitHub repository (github.com or github.io)" };
+      }
+      
+      // Must have a valid path structure: /username/repo or /org/repo
+      // For github.io, also allow custom subdomains like username.github.io/repo
+      const pathParts = urlObj.pathname.split('/').filter(p => p);
+      
+      if (pathParts.length < 2) {
+        return { valid: false, message: "Please enter a valid GitHub repository URL (e.g., https://github.com/username/repo)" };
+      }
+      
+      // Basic repo name validation (no spaces, valid characters)
+      const repoName = pathParts[1];
+      if (!repoName || repoName.includes(' ') || !/^[a-zA-Z0-9._-]+$/.test(repoName)) {
+        return { valid: false, message: "Invalid repository name in URL" };
+      }
+      
+      return { valid: true, message: "" };
     } catch {
-      return false;
+      return { valid: false, message: "Invalid URL format" };
     }
   };
 
@@ -316,16 +343,14 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
           return;
         }
 
-        if (!githubUrl || !githubUrl.trim()) {
-          toast.error("Please enter a website URL", { id: toastId });
-          setLoading(false);
-          return;
-        }
-
-        if (githubUrl && !validateUrl(githubUrl)) {
-          toast.error("Please enter a valid URL (e.g., https://github.com/... or website.com)", { id: toastId });
-          setLoading(false);
-          return;
+        // GitHub URL is optional - only validate if provided
+        if (githubUrl && githubUrl.trim()) {
+          const githubValidation = validateGithubUrl(githubUrl);
+          if (!githubValidation.valid) {
+            toast.error(githubValidation.message, { id: toastId });
+            setLoading(false);
+            return;
+          }
         }
 
         if (programIds.length === 0) {
@@ -352,16 +377,14 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
           return;
         }
 
-        if (!githubUrl || !githubUrl.trim()) {
-          toast.error("Please enter a website URL", { id: toastId });
-          setLoading(false);
-          return;
-        }
-
-        if (githubUrl && !validateUrl(githubUrl)) {
-          toast.error("Please enter a valid URL (e.g., https://github.com/... or website.com)", { id: toastId });
-          setLoading(false);
-          return;
+        // GitHub URL is optional - only validate if provided
+        if (githubUrl && githubUrl.trim()) {
+          const githubValidation = validateGithubUrl(githubUrl);
+          if (!githubValidation.valid) {
+            toast.error(githubValidation.message, { id: toastId });
+            setLoading(false);
+            return;
+          }
         }
 
         // Update existing project
@@ -719,21 +742,22 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
                 />
               </div>
 
-              {/* GitHub URL */}
+              {/* GitHub Repository URL */}
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Website URL</label>
+                <label className="text-sm font-medium text-gray-700">GitHub Repository URL</label>
                 
                 <div className="flex rounded-lg border border-gray-300 overflow-hidden bg-white focus-within:ring-2 focus-within:ring-orange-400">
                   <input
                     type="text"
                     value={githubUrl}
-                    placeholder="https://github.com/username/repo or website.com"
+                    placeholder="https://github.com/username/repository"
                     onChange={(e) => {
                       const value = e.target.value;
                       setGithubUrl(value);
-                      // Validate URL format
-                      if (value && !validateUrl(value)) {
-                        setUrlError("Please enter a valid URL");
+                      // Validate GitHub URL format
+                      if (value) {
+                        const validation = validateGithubUrl(value);
+                        setUrlError(validation.message);
                       } else {
                         setUrlError("");
                       }
@@ -753,7 +777,7 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
                     }}
                     disabled={!githubUrl || !!urlError}
                     className="flex items-center justify-center px-3 sm:px-4 bg-gray-50 border-l border-gray-300 text-gray-600 hover:bg-gray-100 transition disabled:opacity-50"
-                    title="Open URL"
+                    title="Open GitHub Repository"
                   >
                     <ArrowTopRightOnSquareIcon className="w-4 h-5 sm:w-5 sm:h-5" />
                   </button>
