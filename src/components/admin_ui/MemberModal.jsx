@@ -10,6 +10,8 @@ import {
   TrashIcon,
   ChevronDownIcon,
   CheckIcon,
+  StarIcon,
+  AcademicCapIcon,
 } from "@heroicons/react/24/outline";
 
 // api
@@ -24,6 +26,7 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
   const [name, setName] = useState("");
   const [bio, setBio] = useState("");
   const [email, setEmail] = useState("");
+  const [emailError, setEmailError] = useState("");
   const [academicAchievements, setAcademicAchievements] = useState([]);
   const [skills, setSkills] = useState([]);
   const [isFounder, setIsFounder] = useState(false);
@@ -91,6 +94,25 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
 
     setImage(file);
     toast.success("Image selected");
+  };
+
+  // Validate email format
+  const validateEmail = (emailValue) => {
+    if (!emailValue) return true; // Empty is allowed (optional field)
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(emailValue);
+  };
+
+  // Handle email change with validation
+  const handleEmailChange = (e) => {
+    const value = e.target.value;
+    setEmail(value);
+    
+    if (value && !validateEmail(value)) {
+      setEmailError("Please enter a valid email address");
+    } else {
+      setEmailError("");
+    }
   };
 
   // Add academic achievement
@@ -442,7 +464,7 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
             <div className="space-y-4">
               {/* Name */}
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Name *</label>
+                <label className="text-sm font-medium text-gray-700">Name (required)</label>
                 <input
                   type="text"
                   value={name}
@@ -454,25 +476,46 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
 
               {/* Email */}
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Email</label>
-                <input
-                  type="email"
-                  value={email}
-                  placeholder="email@example.com"
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full rounded-lg border border-gray-300 bg-white px-3 sm:px-4 py-2 sm:py-2.5 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-400 transition"
-                />
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-medium text-gray-700">Email</label>
+                  {emailError && (
+                    <span className="text-xs text-red-500">{emailError}</span>
+                  )}
+                </div>
+                <div className="relative">
+                  <input
+                    type="email"
+                    value={email}
+                    placeholder="email@example.com"
+                    onChange={handleEmailChange}
+                    className={`w-full rounded-lg border bg-white px-3 sm:px-4 py-2 sm:py-2.5 text-sm shadow-sm focus:outline-none focus:ring-2 transition ${
+                      emailError 
+                        ? "border-red-300 focus:ring-red-400" 
+                        : email && validateEmail(email)
+                        ? "border-green-300 focus:ring-green-400"
+                        : "border-gray-300 focus:ring-orange-400"
+                    }`}
+                  />
+                  {email && validateEmail(email) && !emailError && (
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                      <CheckIcon className="w-5 h-5 text-green-500" />
+                    </div>
+                  )}
+                </div>
+                {email && !emailError && validateEmail(email) && (
+                  <p className="text-xs text-green-600">Valid email address</p>
+                )}
               </div>
 
               {/* Role Selection */}
               <div className="space-y-3">
-                <label className="text-sm font-medium text-gray-700">Role *</label>
+                <label className="text-sm font-medium text-gray-700">Role (required)</label>
                 <div className="space-y-3">
                   {/* Founder Toggle */}
                   <div className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200 shadow-sm">
                     <div className="flex items-center gap-3">
-                      <div className={`p-2 rounded-lg ${isFounder ? 'bg-purple-100' : 'bg-gray-100'}`}>
-                        <span className={`text-sm font-medium ${isFounder ? 'text-purple-600' : 'text-gray-500'}`}>★</span>
+                      <div className={`p-2 rounded-lg ${isFounder ? 'bg-orange-100' : 'bg-gray-100'}`}>
+                        <StarIcon className={`w-5 h-5 ${isFounder ? 'text-orange-500' : 'text-gray-400'}`} />
                       </div>
                       <div>
                         <p className="text-sm font-medium text-gray-700">Founder</p>
@@ -483,7 +526,7 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
                       type="button"
                       onClick={() => setIsFounder(!isFounder)}
                       className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                        isFounder ? "bg-purple-500" : "bg-gray-200"
+                        isFounder ? "bg-primary-gradient" : "bg-gray-200"
                       }`}
                     >
                       <span
@@ -497,8 +540,8 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
                   {/* Instructor Toggle */}
                   <div className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200 shadow-sm">
                     <div className="flex items-center gap-3">
-                      <div className={`p-2 rounded-lg ${isInstructor ? 'bg-blue-100' : 'bg-gray-100'}`}>
-                        <span className={`text-sm font-medium ${isInstructor ? 'text-blue-600' : 'text-gray-500'}`}>📚</span>
+                      <div className={`p-2 rounded-lg ${isInstructor ? 'bg-orange-100' : 'bg-gray-100'}`}>
+                        <AcademicCapIcon className={`w-5 h-5 ${isInstructor ? 'text-orange-500' : 'text-gray-400'}`} />
                       </div>
                       <div>
                         <p className="text-sm font-medium text-gray-700">Instructor</p>
@@ -509,7 +552,7 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
                       type="button"
                       onClick={() => setIsInstructor(!isInstructor)}
                       className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                        isInstructor ? "bg-blue-500" : "bg-gray-200"
+                        isInstructor ? "bg-primary-gradient" : "bg-gray-200"
                       }`}
                     >
                       <span
@@ -525,7 +568,7 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
               {/* Programs - Only show if instructor is selected */}
               {isInstructor && (
                 <div className="space-y-2" ref={programDropdownRef}>
-                  <label className="text-sm font-medium text-gray-700">Programs *</label>
+                  <label className="text-sm font-medium text-gray-700">Programs (required)</label>
                   
                   {programsLoading ? (
                     <div className="flex items-center gap-2 text-gray-500">
