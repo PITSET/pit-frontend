@@ -25,8 +25,8 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
   const [bio, setBio] = useState("");
   const [positionTitle, setPositionTitle] = useState("");
   const [email, setEmail] = useState("");
-  const [academicAchievements, setAcademicAchievements] = useState("");
-  const [skills, setSkills] = useState("");
+  const [academicAchievements, setAcademicAchievements] = useState([]);
+  const [skills, setSkills] = useState([]);
   const [isFounder, setIsFounder] = useState(false);
   const [isInstructor, setIsInstructor] = useState(false);
   
@@ -108,6 +108,40 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
     setExistingImage("");
   };
 
+  // Add academic achievement
+  const addAcademicAchievement = () => {
+    setAcademicAchievements([...academicAchievements, ""]);
+  };
+
+  // Remove academic achievement
+  const removeAcademicAchievement = (index) => {
+    setAcademicAchievements(academicAchievements.filter((_, i) => i !== index));
+  };
+
+  // Update academic achievement
+  const updateAcademicAchievement = (index, value) => {
+    const newAchievements = [...academicAchievements];
+    newAchievements[index] = value;
+    setAcademicAchievements(newAchievements);
+  };
+
+  // Add skill
+  const addSkill = () => {
+    setSkills([...skills, ""]);
+  };
+
+  // Remove skill
+  const removeSkill = (index) => {
+    setSkills(skills.filter((_, i) => i !== index));
+  };
+
+  // Update skill
+  const updateSkill = (index, value) => {
+    const newSkills = [...skills];
+    newSkills[index] = value;
+    setSkills(newSkills);
+  };
+
   // Convert image to WEBP (compression + resize)
   const convertToWebp = (file) => {
     return new Promise((resolve) => {
@@ -184,16 +218,9 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
         imageUrlToSave = `${data.publicUrl}?t=${Date.now()}`;
       }
 
-      // Parse academic achievements and skills (comma-separated strings to arrays)
-      const academicAchievementsArray = academicAchievements
-        .split(',')
-        .map(item => item.trim())
-        .filter(item => item !== '');
-      
-      const skillsArray = skills
-        .split(',')
-        .map(item => item.trim())
-        .filter(item => item !== '');
+      // Filter out empty achievements and skills
+      const filteredAchievements = academicAchievements.filter(item => item.trim() !== "");
+      const filteredSkills = skills.filter(item => item.trim() !== "");
 
       const memberData = {
         name: name?.trim() || null,
@@ -201,8 +228,8 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
         position_title: positionTitle?.trim() || null,
         email: email?.trim() || null,
         image_url: imageUrlToSave || null,
-        academic_achievements: academicAchievementsArray.length > 0 ? academicAchievementsArray : [],
-        skills: skillsArray.length > 0 ? skillsArray : [],
+        academic_achievements: filteredAchievements.length > 0 ? filteredAchievements : [],
+        skills: filteredSkills.length > 0 ? filteredSkills : [],
         is_founder: isFounder,
         is_instructor: isInstructor,
         program_ids: programIds,
@@ -305,8 +332,8 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
     setPositionTitle(item?.position_title || "");
     setEmail(item?.email || "");
     setExistingImage(item?.image_url || "");
-    setAcademicAchievements(Array.isArray(item?.academic_achievements) ? item.academic_achievements.join(', ') : "");
-    setSkills(Array.isArray(item?.skills) ? item.skills.join(', ') : "");
+    setAcademicAchievements(Array.isArray(item?.academic_achievements) ? item.academic_achievements : []);
+    setSkills(Array.isArray(item?.skills) ? item.skills : []);
     setIsFounder(item?.is_founder || false);
     setIsInstructor(item?.is_instructor || false);
     setNewImage(null);
@@ -328,8 +355,8 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
         setPositionTitle("");
         setEmail("");
         setExistingImage("");
-        setAcademicAchievements("");
-        setSkills("");
+        setAcademicAchievements([]);
+        setSkills([]);
         setIsFounder(false);
         setIsInstructor(false);
         setNewImage(null);
@@ -419,7 +446,7 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
                       <img
                         src={URL.createObjectURL(newImage)}
                         alt="New image preview"
-                        className="w-full-cover rounded-lg"
+                        className="w-full h-40 object-cover rounded-lg"
                       />
                     ) : (
                       <img
@@ -572,30 +599,78 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
             />
           </div>
 
-          {/* Academic Achievements */}
-          <div className="space-y-2">
+          {/* Academic Achievements - Using Objectives pattern */}
+          <div className="space-y-3">
             <label className="text-sm font-medium text-gray-700">Academic Achievements</label>
-            <input
-              type="text"
-              value={academicAchievements}
-              placeholder="Enter achievements separated by commas..."
-              onChange={(e) => setAcademicAchievements(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 bg-white px-3 sm:px-4 py-2 sm:py-2.5 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-400 transition"
-            />
-            <p className="text-xs text-gray-500">Separate multiple achievements with commas</p>
+            
+            <div className="space-y-2">
+              {academicAchievements.map((achievement, index) => (
+                <div key={`achievement-${index}`} className="flex items-center gap-2">
+                  <div className="flex-shrink-0 w-2 h-2 bg-gray-900 rounded-full mt-2" />
+                  <input
+                    type="text"
+                    value={achievement}
+                    placeholder="Add academic achievement"
+                    onChange={(e) => updateAcademicAchievement(index, e.target.value)}
+                    className="flex-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-400 transition"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeAcademicAchievement(index)}
+                    className="flex-shrink-0 text-red-500 hover:bg-red-50 rounded-lg p-2 transition"
+                    title="Remove achievement"
+                  >
+                    <TrashIcon className="w-5 h-5" />
+                  </button>
+                </div>
+              ))}
+              
+              <button
+                type="button"
+                onClick={addAcademicAchievement}
+                className="flex items-center gap-1 text-orange-600 hover:text-orange-700 transition"
+              >
+                <PlusIcon className="w-4 h-4" />
+                <span>Add Academic Achievement</span>
+              </button>
+            </div>
           </div>
 
-          {/* Skills */}
-          <div className="space-y-2">
+          {/* Skills - Using Tasks pattern */}
+          <div className="space-y-3">
             <label className="text-sm font-medium text-gray-700">Skills</label>
-            <input
-              type="text"
-              value={skills}
-              placeholder="Enter skills separated by commas..."
-              onChange={(e) => setSkills(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 bg-white px-3 sm:px-4 py-2 sm:py-2.5 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-400 transition"
-            />
-            <p className="text-xs text-gray-500">Separate multiple skills with commas</p>
+            
+            <div className="space-y-2">
+              {skills.map((skill, index) => (
+                <div key={`skill-${index}`} className="flex items-center gap-2">
+                  <div className="flex-shrink-0 w-2 h-2 bg-gray-900 rounded-full mt-2" />
+                  <input
+                    type="text"
+                    value={skill}
+                    placeholder="Add skill"
+                    onChange={(e) => updateSkill(index, e.target.value)}
+                    className="flex-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-400 transition"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeSkill(index)}
+                    className="flex-shrink-0 text-red-500 hover:bg-red-50 rounded-lg p-2 transition"
+                    title="Remove skill"
+                  >
+                    <TrashIcon className="w-5 h-5" />
+                  </button>
+                </div>
+              ))}
+              
+              <button
+                type="button"
+                onClick={addSkill}
+                className="flex items-center gap-1 text-orange-600 hover:text-orange-700 transition"
+              >
+                <PlusIcon className="w-4 h-4" />
+                <span>Add Skill</span>
+              </button>
+            </div>
           </div>
 
           {/* Footer - Not Fixed */}
