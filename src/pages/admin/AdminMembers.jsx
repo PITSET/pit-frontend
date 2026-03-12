@@ -92,7 +92,7 @@ export default function AdminMembers() {
       table={{
         columns: [
           { label: 'Image', show: true },
-          { label: 'Instructor Name', show: true },
+          { label: 'Name', show: true },
           { label: 'Biography', show: true },
           { label: 'Role', show: true },
           { label: 'Action', show: true }
@@ -216,7 +216,7 @@ export default function AdminMembers() {
               <thead className="bg-gray-50 border-b border-gray-300">
                 <tr className="text-sm font-semibold text-gray-600">
                   <th className="px-4 lg:px-8 py-4 text-center">Image</th>
-                  <th className="px-4 lg:px-8 py-4 text-center">Instructor Name</th>
+                  <th className="px-4 lg:px-8 py-4 text-center">Name</th>
                   <th className="px-4 lg:px-8 py-4 text-center">Biography</th>
                   <th className="px-4 lg:px-8 py-4 text-center">Role</th>
                   <th className="px-4 lg:px-8 py-4 text-center">Action</th>

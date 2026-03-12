@@ -600,14 +600,14 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
 
             {/* Right column - Member details */}
             <div className="space-y-4">
-              {/* Instructor Name */}
+              {/* Name */}
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Instructor Name</label>
+                <label className="text-sm font-medium text-gray-700">Name</label>
 
                 <input
                   type="text"
                   value={name}
-                  placeholder="Enter instructor name..."
+                  placeholder="Enter name..."
                   onChange={(e) => setName(e.target.value)}
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
