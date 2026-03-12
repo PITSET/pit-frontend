@@ -1,6 +1,7 @@
-﻿import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import api from "../../lib/api";
 import resolveAssetUrl from "../../lib/resolveAssetUrl";
+import ProjectsCarousel from "../../components/ui/ProjectsCarousel";
 
 const normalizeSectionType = (value) => String(value || "").trim().toLowerCase();
 
@@ -60,9 +61,18 @@ export default function Home() {
     const load = async () => {
       setIsLoadingProjects(true);
       try {
-        const res = await api.get("/home");
+        const [homeRes, projectsRes] = await Promise.all([
+          api.get("/home").catch((e) => {
+            console.error("Failed to load /api/home:", e);
+            return { data: [] };
+          }),
+          api.get("/projects").catch((e) => {
+            console.error("Failed to load /api/projects:", e);
+            return { data: [] };
+          }),
+        ]);
 
-        const raw = Array.isArray(res.data) ? res.data : res.data?.data || res.data?.home || [];
+        const raw = Array.isArray(homeRes.data) ? homeRes.data : homeRes.data?.data || homeRes.data?.home || [];
         const activeItems = (Array.isArray(raw) ? raw : []).filter((item) => item?.is_active === true);
         const sortedItems = [...activeItems].sort(
           (a, b) => (Number(a?.order_position) || 0) - (Number(b?.order_position) || 0),
@@ -107,23 +117,39 @@ export default function Home() {
         setFounder1Section(founder1);
         setFounder2Section(founder2);
 
-        const projectItems = (Array.isArray(raw) ? raw : [])
-          .filter((item) => item?.is_active === true)
-          .filter((item) => normalizeSectionType(item?.section_type) === "project")
+        const rawProjects = Array.isArray(projectsRes.data) ? projectsRes.data : projectsRes.data?.data || projectsRes.data?.projects || [];
+        const projectItems = rawProjects
+          .filter((item) => item?.is_active !== false)
           .sort((a, b) => (Number(a?.order_position) || 0) - (Number(b?.order_position) || 0))
-          .map((item) => ({
-            image: resolveAssetUrl(item?.image || item?.image_url || item?.cover || item?.cover_url || ""),
-            date: formatProjectDate(
-              item?.date || item?.published_at || item?.updated_at || item?.created_at,
-            ),
-            title: item?.title || item?.name || "",
-            desc: item?.desc || item?.description || item?.content || "",
-          }))
-          .filter((item) => item.title || item.desc || item.image);
+          .map((item) => {
+            let imgVal = item?.image || item?.image_url || item?.cover || item?.cover_url;
+            if (!imgVal && item?.images) {
+              imgVal = Array.isArray(item.images) ? item.images[0] : item.images;
+              if (typeof imgVal === "string" && imgVal.startsWith("[")) {
+                try {
+                  const parsed = JSON.parse(imgVal);
+                  imgVal = Array.isArray(parsed) ? parsed[0] : imgVal;
+                } catch (e) {
+                  // ignore
+                }
+              }
+            }
+
+            return {
+              ...item,
+              image: resolveAssetUrl(imgVal || ""),
+              date: formatProjectDate(
+                item?.created_at || item?.updated_at || item?.date || item?.published_at
+              ),
+              title: item?.name || item?.title || "",
+              desc: item?.overview || item?.desc || item?.description || item?.content || "",
+            };
+        })
+        .filter((item) => item.title || item.desc || item.image);
 
         setProjects(projectItems);
       } catch (e) {
-        console.error("Failed to load /api/home projects:", e);
+        console.error("Failed to load data in Home:", e);
         if (!isActive) return;
         setHeroSection(null);
         setAboutSection(null);
@@ -143,27 +169,6 @@ export default function Home() {
       isActive = false;
     };
   }, []);
-
-  const [index, setIndex] = useState(0);
-
-  useEffect(() => {
-    if (!projects.length) {
-      setIndex(0);
-      return;
-    }
-
-    setIndex((current) => (current >= projects.length ? 0 : current));
-  }, [projects]);
-
-  const nextProject = () => {
-    if (!projects.length) return;
-    setIndex((index + 1) % projects.length);
-  };
-
-  const prevProject = () => {
-    if (!projects.length) return;
-    setIndex((index - 1 + projects.length) % projects.length);
-  };
 
   return (
     <main className="w-full">
@@ -352,92 +357,7 @@ VIEW ALL PROGRAMS →
 </section>
 
 {/* PROJECTS */}
-<section className="py-24 bg-gray-200">
-
-<div className="max-w-6xl mx-auto px-6">
-
-<h2 className="text-center font-bold text-[48px] mb-14">
-Projects
-</h2>
-
-<div className="flex justify-center">
-
-<div className="relative bg-[#f3f3f5] w-[650px] h-[320px] rounded-2xl shadow-[0_20px_40px_rgba(0,0,0,0.15)] flex items-center px-12 gap-10">
-
-{/* IMAGE */}
-<img
-src={projects[index]?.image || ""}
-alt="project"
-className="w-[200px] h-[200px] object-cover rounded-xl shadow-md"
-/>
-
-{/* TEXT */}
-<div>
-
-<p className="text-sm text-gray-500">
-{isLoadingProjects ? "" : projects[index]?.date || ""}
-</p>
-
-<h3 className="font-bold text-xl mt-1">
-{isLoadingProjects ? "" : projects[index]?.title || ""}
-</h3>
-
-<p className="text-gray-600 text-sm mt-2 max-w-[260px]">
-{isLoadingProjects ? "" : projects[index]?.desc || ""}
-</p>
-
-<button className="mt-4 bg-black text-white border border-black text-sm px-5 py-2 rounded-md transition duration-300 hover:bg-white hover:text-black">
-Read More
-</button>
-
-<div className="flex gap-2 mt-6">
-{projects.map((_,i)=>(
-<span
-key={i}
-className={`h-2 rounded-full ${
-i===index ? "bg-red-500 w-6" : "bg-gray-400 w-2"
-}`}
-></span>
-))}
-</div>
-
-</div>
-
-{/* ARROWS */}
-<div className="absolute bottom-6 right-8 flex gap-4">
-
-<button
-onClick={prevProject}
-disabled={!projects.length}
-className="w-10 h-10 rounded-full bg-white shadow-md flex items-center justify-center text-red-500 text-lg transition hover:bg-red-500 hover:text-white"
->
-←
-</button>
-
-<button
-onClick={nextProject}
-disabled={!projects.length}
-className="w-10 h-10 rounded-full bg-white shadow-md flex items-center justify-center text-red-500 text-lg transition hover:bg-red-500 hover:text-white"
->
-→
-</button>
-
-</div>
-
-</div>
-
-</div>
-
-{/* VIEW ALL PROJECTS BUTTON */}
-<div className="flex justify-center mt-14">
-<button className="border border-red-500 text-red-500 px-8 py-3 rounded-md font-semibold transition hover:bg-red-500 hover:text-white">
-VIEW ALL PROJECTS →
-</button>
-</div>
-
-</div>
-
-</section>
+<ProjectsCarousel projects={projects} isLoadingProjects={isLoadingProjects} />
 
 </main>
 );
