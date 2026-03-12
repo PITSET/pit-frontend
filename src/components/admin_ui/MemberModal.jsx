@@ -229,6 +229,26 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
           .getPublicUrl(fileName);
 
         imageUrlToSave = `${data.publicUrl}?t=${Date.now()}`;
+
+        // Delete old image if replacing an existing member's image
+        if (item?.image_url) {
+          try {
+            const oldUrlParts = item.image_url.split("/");
+            const oldFileName = oldUrlParts[oldUrlParts.length - 1].split("?")[0];
+            
+            if (oldFileName) {
+              const { error: deleteError } = await supabase.storage
+                .from("member_images")
+                .remove([oldFileName]);
+              
+              if (deleteError) {
+                console.warn("Failed to delete old image:", deleteError);
+              }
+            }
+          } catch (err) {
+            console.warn("Error deleting old image:", err);
+          }
+        }
       }
 
       // Filter out empty achievements and skills
