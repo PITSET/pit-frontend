@@ -33,6 +33,35 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
   const [programs, setPrograms] = useState([]);
   const [programsLoading, setProgramsLoading] = useState(false);
   const [showProgramDropdown, setShowProgramDropdown] = useState(false);
+  const [urlError, setUrlError] = useState("");
+
+  // Validate URL (GitHub or other valid websites)
+  const validateUrl = (url) => {
+    if (!url) return true; // Empty is handled separately
+    
+    let urlToCheck = url.trim();
+    
+    // Must not contain spaces
+    if (urlToCheck.includes(' ')) {
+      return false;
+    }
+    
+    // Add https:// if no protocol provided
+    if (!urlToCheck.match(/^https?:\/\//i)) {
+      urlToCheck = 'https://' + urlToCheck;
+    }
+    
+    try {
+      const urlObj = new URL(urlToCheck);
+      // Must have valid protocol and hostname with a dot (domain format)
+      return (urlObj.protocol === 'http:' || urlObj.protocol === 'https:') && 
+             urlObj.hostname && 
+             urlObj.hostname.length > 0 &&
+             urlObj.hostname.includes('.');
+    } catch {
+      return false;
+    }
+  };
 
   // Multiple images state
   const [existingImages, setExistingImages] = useState([]);
@@ -287,6 +316,18 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
           return;
         }
 
+        if (!githubUrl || !githubUrl.trim()) {
+          toast.error("Please enter a website URL", { id: toastId });
+          setLoading(false);
+          return;
+        }
+
+        if (githubUrl && !validateUrl(githubUrl)) {
+          toast.error("Please enter a valid URL (e.g., https://github.com/... or website.com)", { id: toastId });
+          setLoading(false);
+          return;
+        }
+
         if (programIds.length === 0) {
           toast.error("Please select at least one program", { id: toastId });
           setLoading(false);
@@ -307,6 +348,18 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
 
         if (!leader || !leader.trim()) {
           toast.error("Please enter a project leader", { id: toastId });
+          setLoading(false);
+          return;
+        }
+
+        if (!githubUrl || !githubUrl.trim()) {
+          toast.error("Please enter a website URL", { id: toastId });
+          setLoading(false);
+          return;
+        }
+
+        if (githubUrl && !validateUrl(githubUrl)) {
+          toast.error("Please enter a valid URL (e.g., https://github.com/... or website.com)", { id: toastId });
           setLoading(false);
           return;
         }
@@ -674,25 +727,40 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
                   <input
                     type="text"
                     value={githubUrl}
-                    placeholder="https://github.com/username/repo"
-                    onChange={(e) => setGithubUrl(e.target.value)}
+                    placeholder="https://github.com/username/repo or website.com"
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setGithubUrl(value);
+                      // Validate URL format
+                      if (value && !validateUrl(value)) {
+                        setUrlError("Please enter a valid URL");
+                      } else {
+                        setUrlError("");
+                      }
+                    }}
                     onKeyDown={(e) => {
                       if (e.key === "Enter") {
                         e.target.blur();
                       }
                     }}
-                    className="flex-1 px-3 sm:px-4 py-2 sm:py-2.5 text-sm shadow-sm outline-none transition min-w-0"
+                    className={`flex-1 px-3 sm:px-4 py-2 sm:py-2.5 text-sm shadow-sm outline-none transition min-w-0 ${urlError ? 'border-red-500' : ''}`}
                   />
                   <button
                     type="button"
-                    onClick={() => window.open(githubUrl, "_blank", "noopener,noreferrer")}
-                    disabled={!githubUrl}
+                    onClick={() => {
+                      const urlToOpen = githubUrl.startsWith('http') ? githubUrl : 'https://' + githubUrl;
+                      window.open(urlToOpen, "_blank", "noopener,noreferrer");
+                    }}
+                    disabled={!githubUrl || !!urlError}
                     className="flex items-center justify-center px-3 sm:px-4 bg-gray-50 border-l border-gray-300 text-gray-600 hover:bg-gray-100 transition disabled:opacity-50"
                     title="Open URL"
                   >
                     <ArrowTopRightOnSquareIcon className="w-4 h-5 sm:w-5 sm:h-5" />
                   </button>
                 </div>
+                {urlError && (
+                  <p className="text-xs text-red-500">{urlError}</p>
+                )}
               </div>
 
               {/* Active/Inactive toggle */}
