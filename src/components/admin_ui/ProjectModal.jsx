@@ -252,8 +252,12 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
         result: result?.trim() || null,
         is_featured: isActive,
         program_ids: programIds,
-        student_ids: [1], // Backend requires at least one student_id
       };
+
+      // Add student_ids only for create (backend requires it)
+      if (isCreate) {
+        projectData.student_ids = [1]; // Backend requires at least one student_id
+      }
 
       if (isCreate) {
         // Validate required fields
