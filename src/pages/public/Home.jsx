@@ -170,7 +170,6 @@ export default function Home() {
 {/* HERO */}
 <section className="relative h-[90vh] w-full flex items-center">
 
-<<<<<<< HEAD
   {/* Background Image */}
   <div
     className="absolute inset-0 bg-cover bg-center"
@@ -500,7 +499,7 @@ alt={founder2Section?.title || "LeyKler"}
 className="w-[580px] h-[720px] object-cover"
 />
 </div>
->>>>>>> home
+
 
 </div>
 
