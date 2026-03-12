@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import api from "../../lib/api";
+import resolveAssetUrl from "../../lib/resolveAssetUrl";
 
 const defaultInstructors = [
   {
@@ -165,7 +166,7 @@ export default function About() {
 
           <div className="flex justify-center md:justify-end">
             <img
-              src={whoWeAre.image_url}
+              src={resolveAssetUrl(whoWeAre.image_url)}
               alt="who we are"
               className="w-[633px] h-[686px] object-cover"
             />
@@ -178,7 +179,7 @@ export default function About() {
   {/* IMAGE */}
   <div className="flex justify-center md:justify-start">
     <img
-      src={history.image_url}
+      src={resolveAssetUrl(history.image_url)}
       alt="history"
       className="w-[400px] h-[400px] object-cover rounded-xl"
     />
@@ -203,7 +204,7 @@ export default function About() {
 
           <div className="flex justify-center md:justify-end">
             <img
-              src={mission.image_url}
+              src={resolveAssetUrl(mission.image_url)}
               alt="mission"
               className="w-[400px] h-[400px] object-cover rounded-[16px]"
             />
@@ -256,7 +257,7 @@ export default function About() {
 {/* IMAGE SECTION */}
 <div className="flex justify-center md:justify-start">
   <img
-    src={vision.image_url}
+    src={resolveAssetUrl(vision.image_url)}
     alt="vision"
     className="w-[400px] h-[400px] object-cover rounded-[16px]"
   />
