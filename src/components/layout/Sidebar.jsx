@@ -219,7 +219,7 @@ export default function Sidebar({ isOpen = false, onClose }) {
           icon={UserGroupIcon}
           label="Team"
         >
-          <SubNavItem to="/admin/team/instructors">Instructors</SubNavItem>
+          <SubNavItem to="/admin/team/members">Members</SubNavItem>
         </Section>
 
         <NavItem to="/admin/contact" icon={EnvelopeIcon}>
