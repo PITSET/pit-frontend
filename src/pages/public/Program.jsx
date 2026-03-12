@@ -7,14 +7,19 @@ export default function Programs() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const resolveImageUrl = (url) => {
+    if (!url) return "";
+    if (/^https?:\/\//i.test(url)) return url;
+    return `http://localhost:3000/${url.replace(/^\/+/, "")}`;
+  };
+
   useEffect(() => {
     const fetchPrograms = async () => {
       try {
         const res = await axios.get("http://localhost:3000/api/programs");
 
-        console.log("API Response:", res.data); // Debug
+        console.log("API Response:", res.data);
 
-        // handle different backend response structures
         const data = Array.isArray(res.data)
           ? res.data
           : res.data.data || [];
@@ -33,7 +38,7 @@ export default function Programs() {
 
   if (loading) {
     return (
-      <div className="text-center py-20 font-[Roboto] text-lg">
+      <div className="text-center py-20 text-lg font-[Roboto]">
         Loading programs...
       </div>
     );
@@ -48,11 +53,12 @@ export default function Programs() {
   }
 
   return (
-    <div className="bg-gray-100 py-10">
+    <div className="bg-gray-100 py-12">
       <div className="max-w-[1280px] mx-auto px-6">
+
         {/* Breadcrumb */}
-        <div className="flex items-center gap-3 mb-3 font-[Roboto] text-[16px]">
-          <Link to="/" className="text-gray-800 hover:text-red-600 transition">
+        <div className="flex items-center gap-3 mb-4 text-[16px] font-[Roboto]">
+          <Link to="/" className="text-gray-700 hover:text-red-600">
             Home
           </Link>
 
@@ -63,15 +69,18 @@ export default function Programs() {
           </Link>
         </div>
 
-        {/* Title */}
+        {/* Page Title */}
         <h1 className="text-[50px] font-bold text-red-600 mb-10 font-[Roboto_Condensed]">
           Programs
         </h1>
 
-        {/* Cards */}
+        {/* Programs Grid */}
         <div className="grid grid-cols-3 gap-8 justify-items-center">
+
           {programs.length === 0 ? (
-            <p className="col-span-3 text-gray-500">No programs found.</p>
+            <p className="col-span-3 text-gray-500">
+              No programs found.
+            </p>
           ) : (
             programs.map((program) => (
               <div
@@ -79,16 +88,18 @@ export default function Programs() {
                 className="bg-white rounded-xl shadow-md flex flex-col overflow-hidden"
                 style={{ width: "400px", height: "510px" }}
               >
-                {/* Image */}
+
+                {/* Program Image */}
                 <img
-                  src={program.image_url}
-                  alt={program.title}
+                  src={resolveImageUrl(program.image_url)}
+                  alt={program.program_name}
                   className="object-cover"
                   style={{ width: "400px", height: "260px" }}
                 />
 
                 {/* Content */}
                 <div className="p-6 flex flex-col flex-grow">
+
                   {/* Title */}
                   <h3
                     className="mb-3"
@@ -106,19 +117,21 @@ export default function Programs() {
                     {program.description}
                   </p>
 
-                  {/* Button */}
+                  {/* Read More Button */}
                   <div className="mt-auto flex justify-end pt-4">
-                    <button
-                      className="bg-[#E73F0F] hover:bg-[#cf360b] text-white text-sm rounded-md transition"
-                      style={{ width: "108px", height: "38px" }}
+                    <Link
+                      to={`/programs/${program.id}`}
+                      className="bg-[#E73F0F] hover:bg-[#cf360b] text-white w-[108px] h-[38px] rounded flex items-center justify-center transition"
                     >
                       Read More
-                    </button>
+                    </Link>
                   </div>
+
                 </div>
               </div>
             ))
           )}
+
         </div>
       </div>
     </div>
