@@ -339,7 +339,7 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
         team_size: teamSize && teamSize.trim() ? parseInt(teamSize) : null,
         github_url: githubUrl?.trim() || null,
         images: imageUrls.length > 0 ? imageUrls : [],
-        result: result?.trim() || null,
+        video_url: result?.trim() || null,
         is_featured: isActive,
         program_ids: programIds,
       };
