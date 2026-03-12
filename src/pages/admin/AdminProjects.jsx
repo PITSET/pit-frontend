@@ -1,5 +1,6 @@
 import { useEffect, useState, useMemo } from "react";
 import { getAllProjects, deleteProject } from "../../lib/services/projectService";
+import { getAllPrograms } from "../../lib/services/programService";
 import {
   PencilSquareIcon,
   ChevronLeftIcon,
@@ -7,7 +8,7 @@ import {
   PlusIcon,
   TrashIcon,
   MagnifyingGlassIcon,
-  FunnelIcon,
+  FolderIcon,
 } from "@heroicons/react/24/outline";
 
 import ProjectModal from "../../components/admin_ui/ProjectModal";
@@ -27,7 +28,11 @@ export default function AdminProjects() {
 
   // Search and filter state
   const [searchQuery, setSearchQuery] = useState("");
+  const [programFilter, setProgramFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [programs, setPrograms] = useState([]);
+  const [showProgramDropdown, setShowProgramDropdown] = useState(false);
+  const [showStatusDropdown, setShowStatusDropdown] = useState(false);
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -35,8 +40,12 @@ export default function AdminProjects() {
 
   const fetchProjects = async () => {
     try {
-      const response = await getAllProjects();
-      setData(response.data);
+      const [projectsRes, programsRes] = await Promise.all([
+        getAllProjects(),
+        getAllPrograms()
+      ]);
+      setData(projectsRes.data);
+      setPrograms(programsRes.data || []);
     } catch (err) {
       console.error("Failed to fetch projects:", err);
       setError("Failed to fetch projects");
@@ -49,9 +58,28 @@ export default function AdminProjects() {
     fetchProjects();
   }, []);
 
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showProgramDropdown && !event.target.closest('.program-dropdown-container')) {
+        setShowProgramDropdown(false);
+      }
+      if (showStatusDropdown && !event.target.closest('.status-dropdown-container')) {
+        setShowStatusDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showProgramDropdown, showStatusDropdown]);
+
   // Filter and search data
   const filteredData = useMemo(() => {
     let result = data;
+
+    // Filter by program
+    if (programFilter !== "all") {
+      result = result.filter(item => item.programs?.includes(programFilter));
+    }
 
     // Filter by status
     if (statusFilter !== "all") {
@@ -63,19 +91,17 @@ export default function AdminProjects() {
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase().trim();
       result = result.filter(item => 
-        item.name?.toLowerCase().includes(query) ||
-        item.overview?.toLowerCase().includes(query) ||
-        item.leader?.toLowerCase().includes(query)
+        item.name?.toLowerCase().includes(query)
       );
     }
 
     return result;
-  }, [data, searchQuery, statusFilter]);
+  }, [data, searchQuery, statusFilter, programFilter]);
 
   // Reset page when search/filter changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, statusFilter]);
+  }, [searchQuery, statusFilter, programFilter]);
 
   // Calculate pagination
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
@@ -190,6 +216,115 @@ export default function AdminProjects() {
 
       {/* Search and Filter */}
       <div className="flex flex-col sm:flex-row gap-3 mb-4">
+        {/* Program Filter */}
+        <div className="relative program-dropdown-container">
+          <button
+            type="button"
+            onClick={() => setShowProgramDropdown(!showProgramDropdown)}
+            className="flex items-center gap-2 px-4 py-2.5 border border-gray-300 rounded-lg bg-white text-sm text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-orange-400 transition min-w-[140px]"
+          >
+            <FolderIcon className="h-5 w-5 text-gray-400 flex-shrink-0" />
+            <span className="truncate flex-1 text-left">
+              {programFilter === "all" ? "All Programs" : programs.find(p => p.id === programFilter)?.program_name || "Program"}
+            </span>
+            <svg className={`h-4 w-4 text-gray-400 transition-transform ${showProgramDropdown ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+          
+          {showProgramDropdown && (
+            <div className="absolute left-0 mt-2 w-56 bg-white border border-gray-200 rounded-lg shadow-lg z-10 max-h-64 overflow-y-auto">
+              <div className="py-1">
+                <button
+                  onClick={() => {
+                    setProgramFilter("all");
+                    setShowProgramDropdown(false);
+                  }}
+                  className={`w-full text-left px-4 py-2.5 text-sm hover:bg-gray-100 transition ${
+                    programFilter === "all" ? "text-orange-600 font-medium bg-orange-50" : "text-gray-700"
+                  }`}
+                >
+                  All Programs
+                </button>
+                {programs.map(program => (
+                  <button
+                    key={program.id}
+                    onClick={() => {
+                      setProgramFilter(program.id);
+                      setShowProgramDropdown(false);
+                    }}
+                    className={`w-full text-left px-4 py-2.5 text-sm hover:bg-gray-100 transition ${
+                      programFilter === program.id ? "text-orange-600 font-medium bg-orange-50" : "text-gray-700"
+                    }`}
+                  >
+                    {program.program_name}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Status Filter */}
+        <div className="relative status-dropdown-container">
+          <button
+            type="button"
+            onClick={() => setShowStatusDropdown(!showStatusDropdown)}
+            className="flex items-center gap-2 px-4 py-2.5 border border-gray-300 rounded-lg bg-white text-sm text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-orange-400 transition min-w-[120px]"
+          >
+            <span className={`w-2 h-2 rounded-full flex-shrink-0 ${statusFilter === 'active' ? 'bg-green-500' : statusFilter === 'inactive' ? 'bg-gray-400' : 'bg-gray-300'}`}></span>
+            <span className="truncate flex-1 text-left">
+              {statusFilter === "all" ? "All Status" : statusFilter === "active" ? "Active" : "Inactive"}
+            </span>
+            <svg className={`h-4 w-4 text-gray-400 transition-transform flex-shrink-0 ${showStatusDropdown ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+          
+          {showStatusDropdown && (
+            <div className="absolute left-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
+              <div className="py-1">
+                <button
+                  onClick={() => {
+                    setStatusFilter("all");
+                    setShowStatusDropdown(false);
+                  }}
+                  className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-100 transition flex items-center gap-2 ${
+                    statusFilter === "all" ? "text-orange-600 font-medium bg-orange-50" : "text-gray-700"
+                  }`}
+                >
+                  <span className="w-2 h-2 rounded-full bg-gray-300"></span>
+                  All Status
+                </button>
+                <button
+                  onClick={() => {
+                    setStatusFilter("active");
+                    setShowStatusDropdown(false);
+                  }}
+                  className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-100 transition flex items-center gap-2 ${
+                    statusFilter === "active" ? "text-orange-600 font-medium bg-orange-50" : "text-gray-700"
+                  }`}
+                >
+                  <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                  Active
+                </button>
+                <button
+                  onClick={() => {
+                    setStatusFilter("inactive");
+                    setShowStatusDropdown(false);
+                  }}
+                  className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-100 transition flex items-center gap-2 ${
+                    statusFilter === "inactive" ? "text-orange-600 font-medium bg-orange-50" : "text-gray-700"
+                  }`}
+                >
+                  <span className="w-2 h-2 rounded-full bg-gray-400"></span>
+                  Inactive
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
         {/* Search Input */}
         <div className="relative flex-1">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -203,33 +338,19 @@ export default function AdminProjects() {
             className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-2 focus:ring-orange-400 focus:border-orange-400 sm:text-sm transition"
           />
         </div>
-
-        {/* Status Filter */}
-        <div className="relative w-full sm:w-40">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <FunnelIcon className="h-5 w-5 text-gray-400" />
-          </div>
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="block w-full pl-10 pr-10 py-2.5 border border-gray-300 rounded-lg leading-5 bg-white focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-400 sm:text-sm transition appearance-none cursor-pointer"
-          >
-            <option value="all">All</option>
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
-          </select>
-          <div className="absolute inset-y-0 right-0 flex items-center pointer-events-none pr-3">
-            <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
-          </div>
-        </div>
       </div>
 
       {/* Results count */}
-      {(searchQuery || statusFilter !== "all") && (
+      {(programFilter !== "all" || statusFilter !== "all") && (
         <div className="mb-4 text-sm text-gray-600">
           Showing {filteredData.length} of {data.length} projects
+        </div>
+      )}
+
+      {/* Search count */}
+      {searchQuery && programFilter === "all" && statusFilter === "all" && (
+        <div className="mb-4 text-sm text-gray-600">
+          Found {filteredData.length} projects
         </div>
       )}
 
@@ -248,6 +369,7 @@ export default function AdminProjects() {
           <button
             onClick={() => {
               setSearchQuery("");
+              setProgramFilter("all");
               setStatusFilter("all");
             }}
             className="px-4 py-2 bg-orange-500 text-white font-medium rounded-lg hover:bg-orange-600 transition"
@@ -280,17 +402,19 @@ export default function AdminProjects() {
                         <img
                           src={item.images?.[0] || "/placeholder.svg"}
                           alt={item.name}
-                          className="object-cover w-full h-full"
+                          className={`object-cover w-full h-full ${!item.is_featured ? 'grayscale' : ''}`}
                         />
                       </div>
                     </td>
 
                     <td className="px-4 lg:px-8 py-4 lg:py-6 text-center font-medium">
-                      {item.name}
+                      <span className={!item.is_featured ? 'text-gray-400' : ''}>
+                        {item.name}
+                      </span>
                     </td>
 
                     <td className="px-4 lg:px-8 py-4 lg:py-6 text-gray-600 text-left max-w-xs lg:max-w-xl">
-                      <p className="line-clamp-2 lg:line-clamp-2">
+                      <p className={`line-clamp-2 lg:line-clamp-2 ${!item.is_featured ? 'text-gray-400' : ''}`}>
                         {item.overview || "No overview available"}
                       </p>
                     </td>
@@ -379,7 +503,7 @@ export default function AdminProjects() {
             {currentItems.map((item) => (
               <div
                 key={item.id}
-                className={`bg-white rounded-xl border shadow-sm p-4 ${!item.is_featured ? 'border-gray-200 opacity-75' : 'border-gray-200'}`}
+                className="bg-white rounded-xl border shadow-sm p-4 border-gray-200"
               >
                 <div className="flex gap-4">
                   {/* Image */}
@@ -388,7 +512,7 @@ export default function AdminProjects() {
                       <img
                         src={item.images?.[0] || "/placeholder.svg"}
                         alt={item.name}
-                        className="object-cover w-full h-full"
+                        className={`object-cover w-full h-full ${!item.is_featured ? 'grayscale' : ''}`}
                       />
                     </div>
                   </div>
@@ -396,9 +520,12 @@ export default function AdminProjects() {
                   {/* Content */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between mb-1">
-                      <h3 className={`font-semibold truncate ${item.is_featured ? 'text-gray-900' : 'text-gray-500'}`}>
+                      <h3 className={`font-semibold truncate ${item.is_featured ? 'text-gray-900' : 'text-gray-400'}`}>
                         {item.name}
                       </h3>
+                      <p className={`text-sm line-clamp-2 ${item.is_featured ? 'text-gray-600' : 'text-gray-400'}`}>
+                        {item.overview || "No overview available"}
+                      </p>
                       <div className="flex gap-1 ml-2">
                         <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
                           item.is_featured 
@@ -409,7 +536,7 @@ export default function AdminProjects() {
                         </span>
                       </div>
                     </div>
-                    <p className="text-sm text-gray-600 line-clamp-2">
+                    <p className={`text-sm line-clamp-2 ${item.is_featured ? 'text-gray-600' : 'text-gray-400'}`}>
                       {item.overview || "No overview available"}
                     </p>
                   </div>
