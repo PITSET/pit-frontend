@@ -601,21 +601,24 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
 
               {/* Duration */}
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Duration</label>
+                <label className="text-sm font-medium text-gray-700">Duration (Weeks)</label>
 
-                <input
-                  type="text"
-                  value={duration}
-                  placeholder="e.g., 4 Weeks..."
-                  onChange={(e) => setDuration(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.target.blur();
-                    }
-                  }}
-                  className="w-full rounded-lg border border-gray-300 bg-white px-3 sm:px-4 py-2 sm:py-2.5 text-sm shadow-sm
-                  focus:outline-none focus:ring-2 focus:ring-orange-400 transition"
-                />
+                <div className="relative">
+                  <input
+                    type="number"
+                    min="1"
+                    value={duration}
+                    placeholder="e.g., 4"
+                    onChange={(e) => setDuration(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.target.blur();
+                      }
+                    }}
+                    className="w-full rounded-lg border border-gray-300 bg-white px-3 sm:px-4 py-2 sm:py-2.5 pr-12 text-sm shadow-sm
+                    focus:outline-none focus:ring-2 focus:ring-orange-400 transition"
+                  />
+                </div>
               </div>
 
               {/* Team Size */}
@@ -623,9 +626,10 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
                 <label className="text-sm font-medium text-gray-700">Team Size</label>
 
                 <input
-                  type="text"
+                  type="number"
+                  min="1"
                   value={teamSize}
-                  placeholder="e.g., 5 Students..."
+                  placeholder="e.g., 5"
                   onChange={(e) => setTeamSize(e.target.value)}
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
