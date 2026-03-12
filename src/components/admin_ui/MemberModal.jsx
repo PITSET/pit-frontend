@@ -465,27 +465,60 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
               </div>
 
               {/* Role Selection */}
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <label className="text-sm font-medium text-gray-700">Role *</label>
-                <div className="flex gap-4">
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={isFounder}
-                      onChange={(e) => setIsFounder(e.target.checked)}
-                      className="w-4 h-4 text-orange-500 border-gray-300 rounded focus:ring-orange-400"
-                    />
-                    <span className="text-sm text-gray-700">Founder</span>
-                  </label>
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={isInstructor}
-                      onChange={(e) => setIsInstructor(e.target.checked)}
-                      className="w-4 h-4 text-orange-500 border-gray-300 rounded focus:ring-orange-400"
-                    />
-                    <span className="text-sm text-gray-700">Instructor</span>
-                  </label>
+                <div className="space-y-3">
+                  {/* Founder Toggle */}
+                  <div className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200 shadow-sm">
+                    <div className="flex items-center gap-3">
+                      <div className={`p-2 rounded-lg ${isFounder ? 'bg-purple-100' : 'bg-gray-100'}`}>
+                        <span className={`text-sm font-medium ${isFounder ? 'text-purple-600' : 'text-gray-500'}`}>★</span>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-700">Founder</p>
+                        <p className="text-xs text-gray-500">Organization founder/co-founder</p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setIsFounder(!isFounder)}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        isFounder ? "bg-purple-500" : "bg-gray-200"
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform shadow-sm ${
+                          isFounder ? "translate-x-6" : "translate-x-1"
+                        }`}
+                      />
+                    </button>
+                  </div>
+
+                  {/* Instructor Toggle */}
+                  <div className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200 shadow-sm">
+                    <div className="flex items-center gap-3">
+                      <div className={`p-2 rounded-lg ${isInstructor ? 'bg-blue-100' : 'bg-gray-100'}`}>
+                        <span className={`text-sm font-medium ${isInstructor ? 'text-blue-600' : 'text-gray-500'}`}>📚</span>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-700">Instructor</p>
+                        <p className="text-xs text-gray-500">Teaches in programs</p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setIsInstructor(!isInstructor)}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        isInstructor ? "bg-blue-500" : "bg-gray-200"
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform shadow-sm ${
+                          isInstructor ? "translate-x-6" : "translate-x-1"
+                        }`}
+                      />
+                    </button>
+                  </div>
                 </div>
               </div>
 
