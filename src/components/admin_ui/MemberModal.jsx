@@ -36,8 +36,7 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
   const [showProgramDropdown, setShowProgramDropdown] = useState(false);
   
   // Image state
-  const [existingImage, setExistingImage] = useState("");
-  const [newImage, setNewImage] = useState(null);
+  const [image, setImage] = useState(null);
   const fileInputRef = useRef(null);
   const programDropdownRef = useRef(null);
 
@@ -90,21 +89,8 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
       return;
     }
 
-    setNewImage(file);
+    setImage(file);
     toast.success("Image selected");
-  };
-
-  // Remove new image
-  const removeNewImage = () => {
-    setNewImage(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
-  };
-
-  // Remove existing image
-  const removeExistingImage = () => {
-    setExistingImage("");
   };
 
   // Add academic achievement
@@ -184,10 +170,10 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
       setLoading(true);
 
       // Handle image upload
-      let imageUrlToSave = existingImage;
+      let imageUrlToSave = item?.image_url || "";
 
       // Upload new image if selected
-      if (newImage) {
+      if (image) {
         const safeName = (name || "new-member")
           .replace(/\s+/g, "-")
           .toLowerCase();
@@ -196,7 +182,7 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
 
         toast.loading("Compressing & uploading image...", { id: toastId });
 
-        const webpImage = await convertToWebp(newImage);
+        const webpImage = await convertToWebp(image);
 
         const { error: uploadError } = await supabase.storage
           .from("member_images")
@@ -328,12 +314,12 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
     setName(item?.name || "");
     setBio(item?.bio || "");
     setEmail(item?.email || "");
-    setExistingImage(item?.image_url || "");
+    setImage(null);
     setAcademicAchievements(Array.isArray(item?.academic_achievements) ? item.academic_achievements : []);
     setSkills(Array.isArray(item?.skills) ? item.skills : []);
     setIsFounder(item?.is_founder || false);
     setIsInstructor(item?.is_instructor || false);
-    setNewImage(null);
+    setImage(null);
     
     // Get program IDs from the nested structure
     const programIdsArray = item?.team_member_programs?.map(p => p.programs?.id) || [];
@@ -350,12 +336,12 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
         setName("");
         setBio("");
         setEmail("");
-        setExistingImage("");
+        setImage(null);
         setAcademicAchievements([]);
         setSkills([]);
         setIsFounder(false);
         setIsInstructor(false);
-        setNewImage(null);
+        setImage(null);
         setProgramIds([]);
       }
     }
@@ -415,13 +401,33 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
             <div className="space-y-4">
               <label className="text-sm font-medium text-gray-700">Member Image</label>
               
-              {/* Image upload area */}
-              <label className="block">
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-orange-400 hover:bg-orange-50 transition">
-                  <ArrowUpTrayIcon className="w-8 h-8 mx-auto text-gray-400 mb-2" />
-                  <span className="text-sm text-gray-500">Drop here to attach or upload</span>
-                  <span className="text-xs text-gray-400 block">Max size: 10MB</span>
+              {/* Image Upload */}
+              <label className="relative group block rounded-lg overflow-hidden border border-gray-300 bg-white shadow-sm cursor-pointer">
+                <img
+                  src={
+                    image
+                      ? URL.createObjectURL(image)
+                      : item?.image_url || "/placeholder.svg"
+                  }
+                  alt="Preview"
+                  className="w-full h-[160px] sm:h-[180px] md:h-[220px] object-cover bg-gray-100 transition-transform duration-300 group-hover:scale-105"
+                />
+
+                {/* Overlay */}
+                <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <div className="bg-primary-gradient rounded-full p-2 sm:p-3 mb-1 sm:mb-2 shadow">
+                    <ArrowUpTrayIcon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                  </div>
+
+                  <p className="text-xs sm:text-sm font-medium text-white">
+                    Upload Photo
+                  </p>
+
+                  <p className="text-xs text-white/80 hidden sm:block">
+                    JPG, PNG up to 10MB
+                  </p>
                 </div>
+
                 <input
                   type="file"
                   accept="image/*"
@@ -430,38 +436,6 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
                   onChange={handleImageChange}
                 />
               </label>
-
-              {/* Existing Image */}
-              {(existingImage || newImage) && (
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700">
-                    {newImage ? "New Image Preview" : "Current Image"}
-                  </label>
-                  <div className="relative group">
-                    {newImage ? (
-                      <img
-                        src={URL.createObjectURL(newImage)}
-                        alt="New image preview"
-                        className="w-full h-40 object-cover rounded-lg"
-                      />
-                    ) : (
-                      <img
-                        src={existingImage || "/placeholder.svg"}
-                        alt="Current member"
-                        className="w-full h-40 object-cover rounded-lg"
-                      />
-                    )}
-                    <button
-                      type="button"
-                      onClick={newImage ? removeNewImage : removeExistingImage}
-                      className="absolute top-2 right-2 bg-white text-red-500 rounded-full p-2 hover:bg-red-50 transition shadow-md border border-gray-100"
-                      title="Remove image"
-                    >
-                      <TrashIcon className="w-5 h-5" />
-                    </button>
-                  </div>
-                </div>
-              )}
             </div>
 
             {/* Right column - Member details */}
