@@ -23,7 +23,6 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
   // Member fields matching backend
   const [name, setName] = useState("");
   const [bio, setBio] = useState("");
-  const [positionTitle, setPositionTitle] = useState("");
   const [email, setEmail] = useState("");
   const [academicAchievements, setAcademicAchievements] = useState([]);
   const [skills, setSkills] = useState([]);
@@ -225,7 +224,6 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
       const memberData = {
         name: name?.trim() || null,
         bio: bio?.trim() || null,
-        position_title: positionTitle?.trim() || null,
         email: email?.trim() || null,
         image_url: imageUrlToSave || null,
         academic_achievements: filteredAchievements.length > 0 ? filteredAchievements : [],
@@ -329,7 +327,6 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
   const resetForm = () => {
     setName(item?.name || "");
     setBio(item?.bio || "");
-    setPositionTitle(item?.position_title || "");
     setEmail(item?.email || "");
     setExistingImage(item?.image_url || "");
     setAcademicAchievements(Array.isArray(item?.academic_achievements) ? item.academic_achievements : []);
@@ -352,7 +349,6 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
         // Reset form for create mode
         setName("");
         setBio("");
-        setPositionTitle("");
         setEmail("");
         setExistingImage("");
         setAcademicAchievements([]);
@@ -478,18 +474,6 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
                   value={name}
                   placeholder="Enter name..."
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full rounded-lg border border-gray-300 bg-white px-3 sm:px-4 py-2 sm:py-2.5 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-400 transition"
-                />
-              </div>
-
-              {/* Position Title */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Position Title</label>
-                <input
-                  type="text"
-                  value={positionTitle}
-                  placeholder="e.g., Senior Instructor"
-                  onChange={(e) => setPositionTitle(e.target.value)}
                   className="w-full rounded-lg border border-gray-300 bg-white px-3 sm:px-4 py-2 sm:py-2.5 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-400 transition"
                 />
               </div>
