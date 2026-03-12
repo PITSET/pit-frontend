@@ -148,7 +148,7 @@ export default function AdminProjects() {
     return (
       <>
         <div className="p-4 md:p-6 max-w-7xl mx-auto min-h-[60vh] flex flex-col items-center justify-center">
-          <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold text-gray-900 mb-6">
+          <h1 className:text-2xl="text-xl sm md:text-3xl font-semibold text-gray-900 mb-6">
             Projects
           </h1>
 
@@ -233,217 +233,245 @@ export default function AdminProjects() {
         </div>
       )}
 
-      {/* Desktop Table View */}
-      <div className="hidden md:block bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-        <table className="w-full">
-          <thead className="bg-gray-50 border-b border-gray-300">
-            <tr className="text-sm font-semibold text-gray-600">
-              <th className="px-4 lg:px-8 py-4 text-center">Image</th>
-              <th className="px-4 lg:px-8 py-4 text-center">Project Name</th>
-              <th className="px-4 lg:px-8 py-4 text-center">Overview</th>
-              <th className="px-4 lg:px-8 py-4 text-center">Status</th>
-              <th className="px-4 lg:px-8 py-4 text-center">Action</th>
-            </tr>
-          </thead>
-
-          <tbody className="divide-y divide-gray-200">
-            {currentItems.map((item) => (
-              <tr key={item.id} className={`hover:bg-gray-100 transition ${!item.is_featured ? 'bg-gray-50' : ''}`}>
-                <td className="px-4 lg:px-8 py-4 text-center">
-                  <div className="w-16 h-16 lg:w-20 lg:h-20 bg-gray-100 rounded-lg overflow-hidden mx-auto">
-                    <img
-                      src={item.images?.[0] || "/placeholder.svg"}
-                      alt={item.name}
-                      className="object-cover w-full h-full"
-                    />
-                  </div>
-                </td>
-
-                <td className="px-4 lg:px-8 py-4 lg:py-6 text-center font-medium">
-                  {item.name}
-                </td>
-
-                <td className="px-4 lg:px-8 py-4 lg:py-6 text-gray-600 text-left max-w-xs lg:max-w-xl">
-                  <p className="line-clamp-2 lg:line-clamp-2">
-                    {item.overview || "No overview available"}
-                  </p>
-                </td>
-
-                <td className="px-4 lg:px-8 py-4 lg:py-6 text-center">
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                    item.is_featured 
-                      ? 'bg-green-100 text-green-800' 
-                      : 'bg-gray-200 text-gray-800'
-                  }`}>
-                    {item.is_featured ? 'Active' : 'Inactive'}
-                  </span>
-                </td>
-
-                <td className="px-2 sm:px-4 lg:px-8 py-4 lg:py-6 text-center">
-                  <div className="inline-flex items-center justify-center gap-0 rounded-md sm:rounded-lg border border-gray-200 sm:border-gray-300 overflow-hidden">
-                    <button
-                      onClick={() => {
-                        setSelectedItem(item);
-                        setIsModalOpen(true);
-                      }}
-                      className="p-1.5 sm:p-2 hover:bg-gray-100 sm:hover:bg-gray-200 transition"
-                    >
-                      <PencilSquareIcon className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
-                    </button>
-
-                    <div className="h-4 w-px sm:h-6 bg-gray-200 sm:bg-gray-300"></div>
-
-                    <button
-                      onClick={() => handleDeleteClick(item)}
-                      className="p-1.5 sm:p-2 hover:bg-red-50 sm:hover:bg-red-100 transition"
-                    >
-                      <TrashIcon className="w-4 h-4 sm:w-5 sm:h-5 text-red-500" />
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="flex flex-col sm:flex-row items-center justify-between px-4 py-3 bg-gray-50 border-t border-gray-200 gap-3 sm:gap-0">
-            <div className="text-sm text-gray-600 order-2 sm:order-1">
-              Showing {indexOfFirstItem + 1} to{" "}
-              {Math.min(indexOfLastItem, filteredData.length)} of {filteredData.length} results
-            </div>
-            <div className="flex items-center gap-1 sm:gap-2 order-1 sm:order-2">
-              <button
-                onClick={() => handlePageChange(currentPage - 1)}
-                disabled={currentPage === 1}
-                className="p-2 rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition"
-              >
-                <ChevronLeftIcon className="w-4 h-4 text-gray-600" />
-              </button>
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                (page) => (
-                  <button
-                    key={page}
-                    onClick={() => handlePageChange(page)}
-                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition ${
-                      currentPage === page
-                        ? "bg-orange-500 text-white"
-                        : "border border-gray-300 text-gray-600 hover:bg-gray-100"
-                    }`}
-                  >
-                    {page}
-                  </button>
-                ),
-              )}
-              <button
-                onClick={() => handlePageChange(currentPage + 1)}
-                disabled={currentPage === totalPages}
-                className="p-2 rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition"
-              >
-                <ChevronRightIcon className="w-4 h-4 text-gray-600" />
-              </button>
-            </div>
+      {/* No results found */}
+      {filteredData.length === 0 && data.length > 0 && (
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-8 text-center">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
+            <MagnifyingGlassIcon className="w-8 h-8 text-gray-400" />
           </div>
-        )}
-      </div>
-
-      {/* Mobile Card View */}
-      <div className="md:hidden space-y-4">
-        {currentItems.map((item) => (
-          <div
-            key={item.id}
-            className={`bg-white rounded-xl border shadow-sm p-4 ${!item.is_featured ? 'border-gray-200 opacity-75' : 'border-gray-200'}`}
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            No projects found
+          </h3>
+          <p className="text-gray-600 mb-4">
+            Try adjusting your search or filter criteria
+          </p>
+          <button
+            onClick={() => {
+              setSearchQuery("");
+              setStatusFilter("all");
+            }}
+            className="px-4 py-2 bg-orange-500 text-white font-medium rounded-lg hover:bg-orange-600 transition"
           >
-            <div className="flex gap-4">
-              {/* Image */}
-              <div className="flex-shrink-0">
-                <div className="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden">
-                  <img
-                    src={item.images?.[0] || "/placeholder.svg"}
-                    alt={item.name}
-                    className="object-cover w-full h-full"
-                  />
+            Clear filters
+          </button>
+        </div>
+      )}
+
+      {filteredData.length > 0 && (
+        <>
+          {/* Desktop Table View */}
+          <div className="hidden md:block bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+            <table className="w-full">
+              <thead className="bg-gray-50 border-b border-gray-300">
+                <tr className="text-sm font-semibold text-gray-600">
+                  <th className="px-4 lg:px-8 py-4 text-center">Image</th>
+                  <th className="px-4 lg:px-8 py-4 text-center">Project Name</th>
+                  <th className="px-4 lg:px-8 py-4 text-center">Overview</th>
+                  <th className="px-4 lg:px-8 py-4 text-center">Status</th>
+                  <th className="px-4 lg:px-8 py-4 text-center">Action</th>
+                </tr>
+              </thead>
+
+              <tbody className="divide-y divide-gray-200">
+                {currentItems.map((item) => (
+                  <tr key={item.id} className={`hover:bg-gray-100 transition ${!item.is_featured ? 'bg-gray-50' : ''}`}>
+                    <td className="px-4 lg:px-8 py-4 text-center">
+                      <div className="w-16 h-16 lg:w-20 lg:h-20 bg-gray-100 rounded-lg overflow-hidden mx-auto">
+                        <img
+                          src={item.images?.[0] || "/placeholder.svg"}
+                          alt={item.name}
+                          className="object-cover w-full h-full"
+                        />
+                      </div>
+                    </td>
+
+                    <td className="px-4 lg:px-8 py-4 lg:py-6 text-center font-medium">
+                      {item.name}
+                    </td>
+
+                    <td className="px-4 lg:px-8 py-4 lg:py-6 text-gray-600 text-left max-w-xs lg:max-w-xl">
+                      <p className="line-clamp-2 lg:line-clamp-2">
+                        {item.overview || "No overview available"}
+                      </p>
+                    </td>
+
+                    <td className="px-4 lg:px-8 py-4 lg:py-6 text-center">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        item.is_featured 
+                          ? 'bg-green-100 text-green-800' 
+                          : 'bg-gray-200 text-gray-800'
+                      }`}>
+                        {item.is_featured ? 'Active' : 'Inactive'}
+                      </span>
+                    </td>
+
+                    <td className="px-2 sm:px-4 lg:px-8 py-4 lg:py-6 text-center">
+                      <div className="inline-flex items-center justify-center gap-0 rounded-md sm:rounded-lg border border-gray-200 sm:border-gray-300 overflow-hidden">
+                        <button
+                          onClick={() => {
+                            setSelectedItem(item);
+                            setIsModalOpen(true);
+                          }}
+                          className="p-1.5 sm:p-2 hover:bg-gray-100 sm:hover:bg-gray-200 transition"
+                        >
+                          <PencilSquareIcon className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
+                        </button>
+
+                        <div className="h-4 w-px sm:h-6 bg-gray-200 sm:bg-gray-300"></div>
+
+                        <button
+                          onClick={() => handleDeleteClick(item)}
+                          className="p-1.5 sm:p-2 hover:bg-red-50 sm:hover:bg-red-100 transition"
+                        >
+                          <TrashIcon className="w-4 h-4 sm:w-5 sm:h-5 text-red-500" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="flex flex-col sm:flex-row items-center justify-between px-4 py-3 bg-gray-50 border-t border-gray-200 gap-3 sm:gap-0">
+                <div className="text-sm text-gray-600 order-2 sm:order-1">
+                  Showing {indexOfFirstItem + 1} to{" "}
+                  {Math.min(indexOfLastItem, filteredData.length)} of {filteredData.length} results
+                </div>
+                <div className="flex items-center gap-1 sm:gap-2 order-1 sm:order-2">
+                  <button
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    className="p-2 rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                  >
+                    <ChevronLeftIcon className="w-4 h-4 text-gray-600" />
+                  </button>
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                    (page) => (
+                      <button
+                        key={page}
+                        onClick={() => handlePageChange(page)}
+                        className={`px-3 py-1.5 rounded-lg text-sm font-medium transition ${
+                          currentPage === page
+                            ? "bg-orange-500 text-white"
+                            : "border border-gray-300 text-gray-600 hover:bg-gray-100"
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    ),
+                  )}
+                  <button
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    className="p-2 rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                  >
+                    <ChevronRightIcon className="w-4 h-4 text-gray-600" />
+                  </button>
                 </div>
               </div>
+            )}
+          </div>
 
-              {/* Content */}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between mb-1">
-                  <h3 className={`font-semibold truncate ${item.is_featured ? 'text-gray-900' : 'text-gray-500'}`}>
-                    {item.name}
-                  </h3>
-                  <div className="flex gap-1 ml-2">
-                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                      item.is_featured 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-gray-200 text-gray-800'
-                    }`}>
-                      {item.is_featured ? 'Active' : 'Inactive'}
-                    </span>
+          {/* Mobile Card View */}
+          <div className="md:hidden space-y-4">
+            {currentItems.map((item) => (
+              <div
+                key={item.id}
+                className={`bg-white rounded-xl border shadow-sm p-4 ${!item.is_featured ? 'border-gray-200 opacity-75' : 'border-gray-200'}`}
+              >
+                <div className="flex gap-4">
+                  {/* Image */}
+                  <div className="flex-shrink-0">
+                    <div className="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden">
+                      <img
+                        src={item.images?.[0] || "/placeholder.svg"}
+                        alt={item.name}
+                        className="object-cover w-full h-full"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Content */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between mb-1">
+                      <h3 className={`font-semibold truncate ${item.is_featured ? 'text-gray-900' : 'text-gray-500'}`}>
+                        {item.name}
+                      </h3>
+                      <div className="flex gap-1 ml-2">
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                          item.is_featured 
+                            ? 'bg-green-100 text-green-800' 
+                            : 'bg-gray-200 text-gray-800'
+                        }`}>
+                          {item.is_featured ? 'Active' : 'Inactive'}
+                        </span>
+                      </div>
+                    </div>
+                    <p className="text-sm text-gray-600 line-clamp-2">
+                      {item.overview || "No overview available"}
+                    </p>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex-shrink-0">
+                    <div className="flex flex-col sm:flex-row items-center gap-0 rounded-md sm:rounded-lg border border-gray-200 sm:border-gray-300 overflow-hidden">
+                      <button
+                        onClick={() => {
+                          setSelectedItem(item);
+                          setIsModalOpen(true);
+                        }}
+                        className="p-1.5 sm:p-2 hover:bg-gray-100 sm:hover:bg-gray-200 transition"
+                      >
+                        <PencilSquareIcon className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
+                      </button>
+
+                      <div className="h-px w-4 sm:h-6 sm:w-px bg-gray-200 sm:bg-gray-300"></div>
+
+                      <button
+                        onClick={() => handleDeleteClick(item)}
+                        className="p-1.5 sm:p-2 hover:bg-red-50 sm:hover:bg-red-100 transition"
+                      >
+                        <TrashIcon className="w-4 h-4 sm:w-5 sm:h-5 text-red-500" />
+                      </button>
+                    </div>
                   </div>
                 </div>
-                <p className="text-sm text-gray-600 line-clamp-2">
-                  {item.overview || "No overview available"}
-                </p>
               </div>
+            ))}
 
-              {/* Action Buttons */}
-              <div className="flex-shrink-0">
-                <div className="flex flex-col sm:flex-row items-center gap-0 rounded-md sm:rounded-lg border border-gray-200 sm:border-gray-300 overflow-hidden">
+            {/* Mobile Pagination */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between px-2 py-3 bg-gray-50 rounded-lg border border-gray-200">
+                <div className="text-xs sm:text-sm text-gray-600">
+                  {indexOfFirstItem + 1}-{Math.min(indexOfLastItem, filteredData.length)} of{" "}
+                  {filteredData.length}
+                </div>
+                <div className="flex items-center gap-1">
                   <button
-                    onClick={() => {
-                      setSelectedItem(item);
-                      setIsModalOpen(true);
-                    }}
-                    className="p-1.5 sm:p-2 hover:bg-gray-100 sm:hover:bg-gray-200 transition"
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    className="p-1.5 sm:p-2 rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition"
                   >
-                    <PencilSquareIcon className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
+                    <ChevronLeftIcon className="w-4 h-4 text-gray-600" />
                   </button>
-
-                  <div className="h-px w-4 sm:h-6 sm:w-px bg-gray-200 sm:bg-gray-300"></div>
-
+                  <span className="px-2 text-sm font-medium text-gray-600">
+                    {currentPage}/{totalPages}
+                  </span>
                   <button
-                    onClick={() => handleDeleteClick(item)}
-                    className="p-1.5 sm:p-2 hover:bg-red-50 sm:hover:bg-red-100 transition"
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    className="p-1.5 sm:p-2 rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition"
                   >
-                    <TrashIcon className="w-4 h-4 sm:w-5 sm:h-5 text-red-500" />
+                    <ChevronRightIcon className="w-4 h-4 text-gray-600" />
                   </button>
                 </div>
               </div>
-            </div>
+            )}
           </div>
-        ))}
-
-        {/* Mobile Pagination */}
-        {totalPages > 1 && (
-          <div className="flex items-center justify-between px-2 py-3 bg-gray-50 rounded-lg border border-gray-200">
-            <div className="text-xs sm:text-sm text-gray-600">
-              {indexOfFirstItem + 1}-{Math.min(indexOfLastItem, filteredData.length)} of{" "}
-              {filteredData.length}
-            </div>
-            <div className="flex items-center gap-1">
-              <button
-                onClick={() => handlePageChange(currentPage - 1)}
-                disabled={currentPage === 1}
-                className="p-1.5 sm:p-2 rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition"
-              >
-                <ChevronLeftIcon className="w-4 h-4 text-gray-600" />
-              </button>
-              <span className="px-2 text-sm font-medium text-gray-600">
-                {currentPage}/{totalPages}
-              </span>
-              <button
-                onClick={() => handlePageChange(currentPage + 1)}
-                disabled={currentPage === totalPages}
-                className="p-1.5 sm:p-2 rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition"
-              >
-                <ChevronRightIcon className="w-4 h-4 text-gray-600" />
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
+        </>
+      )}
 
       {/* Modal */}
       <ProjectModal
