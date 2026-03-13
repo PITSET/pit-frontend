@@ -221,6 +221,10 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
           });
 
         if (uploadError) {
+          // Check for RLS policy violation
+          if (uploadError.message?.includes("row-level security") || uploadError.message?.includes("RLS")) {
+            throw new Error("Storage permission denied. Please ensure you're logged in and have upload permissions. Contact administrator if issue persists.");
+          }
           throw uploadError;
         }
 
@@ -344,7 +348,11 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
       // Provide more specific error messages based on the error type
       let errorMessage = isCreate ? "Failed to create member" : "Failed to update member";
       
-      if (error.response) {
+      // Check for RLS policy violations
+      const errorStr = JSON.stringify(error).toLowerCase();
+      if (errorStr.includes("row-level security") || errorStr.includes("rls") || errorStr.includes("row-level security policy")) {
+        errorMessage = "Permission denied. Storage upload failed due to security policy. Please ensure you're logged in and contact administrator.";
+      } else if (error.response) {
         const status = error.response.status;
         const data = error.response.data;
         
@@ -361,6 +369,8 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
         }
       } else if (error.request) {
         errorMessage = "Network error. Please check your connection.";
+      } else if (error.message) {
+        errorMessage = error.message;
       }
       
       toast.error(errorMessage, { id: toastId });
