@@ -9,6 +9,8 @@ import {
   InformationCircleIcon,
   EnvelopeIcon,
   ExclamationCircleIcon,
+  ArrowTrendingUpIcon,
+  ChartBarIcon,
 } from "@heroicons/react/24/outline";
 import {
   XAxis,
@@ -104,7 +106,7 @@ function QuickActionButton({ text, link, icon, delay = 0 }) {
   return (
     <Link
       to={link}
-      className={`relative max-w-[300px] w-full m-3 p-4 rounded-[10px] overflow-hidden z-0 font-sans bg-white border border-gray-200 shadow-sm group transition-all duration-500 hover:shadow-xl cursor-pointer flex items-center gap-3 ${
+      className={`relative max-w-[300px] m-3 p-4 rounded-[10px] overflow-hidden z-0 font-sans bg-white border border-gray-200 shadow-sm group transition-all duration-500 hover:shadow-xl cursor-pointer flex items-center gap-3 ${
         isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
       }`}
       style={{ transitionDelay: `${delay}ms` }}
@@ -124,17 +126,19 @@ function QuickActionButton({ text, link, icon, delay = 0 }) {
   );
 }
 
-// Custom Tooltip for Area Chart
+// Custom Tooltip for Area Chart - Modern dark theme
 function AreaTooltip({ active, payload, label }) {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-white border border-gray-200 rounded-lg shadow-lg p-3">
-        <p className="font-medium text-gray-900 text-sm mb-1">{label}</p>
+      <div className="bg-gray-900/95 backdrop-blur-sm text-white rounded-xl shadow-2xl p-4 border border-gray-700/50">
+        <p className="font-bold text-sm mb-3 text-gray-300 border-b border-gray-700 pb-2">{label}</p>
         {payload.map((entry, index) => (
-          <div key={index} className="flex items-center gap-2 text-xs">
-            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.color }} />
-            <span className="text-gray-600">{entry.name}:</span>
-            <span className="font-medium">{entry.value}</span>
+          <div key={index} className="flex items-center justify-between gap-6 text-sm py-1">
+            <div className="flex items-center gap-2">
+              <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: entry.color }} />
+              <span className="text-gray-400">{entry.name}:</span>
+            </div>
+            <span className="font-bold text-white">{entry.value}</span>
           </div>
         ))}
       </div>
@@ -143,22 +147,24 @@ function AreaTooltip({ active, payload, label }) {
   return null;
 }
 
-// Custom Tooltip for Bar Chart
+// Custom Tooltip for Bar Chart - Modern dark theme
 function BarTooltip({ active, payload }) {
   if (active && payload && payload.length) {
     const data = payload[0].payload;
     return (
-      <div className="bg-black/80 text-white text-xs px-3 py-2 rounded-lg">
-        {data.fullName}: {data.projects} projects
+      <div className="bg-gray-900/95 backdrop-blur-sm text-white rounded-xl shadow-2xl px-5 py-3 border border-gray-700/50">
+        <p className="font-bold text-sm">{data.fullName}</p>
+        <p className="text-sm text-gray-400">{data.projects} projects</p>
       </div>
     );
   }
   return null;
 }
 
-// Chart wrapper component with animation
-function ChartContainer({ title, children, delay = 0 }) {
+// Chart wrapper component - Modern card style
+function ChartContainer({ title, icon: Icon, children, delay = 0 }) {
   const [isVisible, setIsVisible] = useState(false);
+  const IconComponent = Icon;
 
   useEffect(() => {
     const timer = setTimeout(() => setIsVisible(true), delay);
@@ -167,12 +173,17 @@ function ChartContainer({ title, children, delay = 0 }) {
 
   return (
     <div 
-      className={`bg-white rounded-xl border border-gray-200 p-5 shadow-sm hover:shadow-xl transition-all duration-500 ${
+      className={`bg-white rounded-2xl border border-gray-100 p-6 shadow-sm hover:shadow-xl transition-all duration-500 focus:outline-none ${
         isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
       }`}
       style={{ transitionDelay: `${delay}ms` }}
     >
-      <h2 className="text-sm font-semibold text-gray-700 mb-3">{title}</h2>
+      <div className="flex items-center gap-3 mb-6">
+        <div className="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center">
+          <IconComponent className="w-5 h-5 text-red-500" />
+        </div>
+        <h2 className="text-lg font-semibold text-gray-800">{title}</h2>
+      </div>
       {children}
     </div>
   );
@@ -230,7 +241,7 @@ function processProjectsByProgram(programs, projects) {
     return [];
   }
 
-  const colors = ['#EF4444', '#F97316', '#B45309', '#92400E', '#78350F'];
+  const colors = ['#EF4444', '#F97316', '#F59E0B', '#EAB308', '#84CC16'];
   
   return programs.map((program, index) => {
     if (!program) return null;
@@ -243,8 +254,8 @@ function processProjectsByProgram(programs, projects) {
     }).length;
 
     return {
-      name: program.program_name?.length > 10 
-        ? program.program_name.substring(0, 10) + '...' 
+      name: program.program_name?.length > 12 
+        ? program.program_name.substring(0, 12) + '...' 
         : program.program_name || 'Other',
       fullName: program.program_name || 'Unnamed',
       projects: projectCount,
@@ -353,7 +364,7 @@ export default function Dashboard() {
       <div className="grid grid-cols-12 gap-6">
         {/* MAIN CONTENT */}
         <div className="col-span-12 xl:col-span-9">
-          {/* Stats - Exact transition from CSS with modal colors */}
+          {/* Stats */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-0 mb-6">
             <StatCard
               title="Programs"
@@ -385,51 +396,105 @@ export default function Dashboard() {
             />
           </div>
 
-          {/* Charts with animation */}
+          {/* Charts with modern design */}
           <div className="grid md:grid-cols-2 gap-6">
-            {/* Project Growth */}
-            <ChartContainer title="Project Growth" delay={600}>
-              <div className="h-[240px]">
+            {/* Project Growth - Modern design */}
+            <ChartContainer title="Project Growth" icon={ArrowTrendingUpIcon} delay={600}>
+              <div className="h-[300px] focus:outline-none">
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={monthlyData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
-                    <XAxis dataKey="month" fontSize={12} />
-                    <YAxis fontSize={12} />
-                    <Tooltip content={<AreaTooltip />} />
+                  <AreaChart data={monthlyData} isAnimationActive={true} animationDuration={2000} animationEasing="ease-out">
+                    <defs>
+                      <linearGradient id="colorTotal" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#EF4444" stopOpacity={0.4}/>
+                        <stop offset="100%" stopColor="#EF4444" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" vertical={false} />
+                    <XAxis 
+                      dataKey="month" 
+                      fontSize={12} 
+                      axisLine={false} 
+                      tickLine={false} 
+                      dy={10}
+                      tick={{ fill: '#9CA3AF' }}
+                    />
+                    <YAxis 
+                      fontSize={12} 
+                      axisLine={false} 
+                      tickLine={false} 
+                      dx={0}
+                      tick={{ fill: '#9CA3AF' }}
+                    />
+                    <Tooltip content={<AreaTooltip />} cursor={{ stroke: '#EF4444', strokeWidth: 2, strokeDasharray: '6 4' }} />
                     <Area
                       type="monotone"
                       dataKey="totalProjects"
-                      stroke="#111827"
-                      fill="#e5e7eb"
-                    />
-                    <Area
-                      type="monotone"
-                      dataKey="newProjects"
-                      stroke="#93c5fd"
-                      strokeDasharray="5 5"
-                      fill="transparent"
+                      name="Total Projects"
+                      stroke="#EF4444"
+                      strokeWidth={3}
+                      fill="url(#colorTotal)"
                     />
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
+              {/* Stats row */}
+              <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
+                <div>
+                  <p className="text-xs text-gray-400">Total Projects</p>
+                  <p className="text-2xl font-bold text-gray-800">{data.projects.length}</p>
+                </div>
+                <div className="flex items-center gap-1 text-green-500">
+                  <ArrowTrendingUpIcon className="w-4 h-4" />
+                  <span className="text-sm font-medium">+{monthlyData[monthlyData.length - 1]?.newProjects || 0} this month</span>
+                </div>
+              </div>
             </ChartContainer>
 
-            {/* Program Distribution */}
-            <ChartContainer title="Program Distribution" delay={700}>
-              <div className="h-[240px]">
+            {/* Program Distribution - Modern design */}
+            <ChartContainer title="Program Distribution" icon={ChartBarIcon} delay={700}>
+              <div className="h-[300px] focus:outline-none">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={projectsByProgram}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
-                    <XAxis dataKey="name" fontSize={11} />
-                    <YAxis />
-                    <Tooltip content={<BarTooltip />} />
-                    <Bar dataKey="projects" radius={[6, 6, 0, 0]}>
+                  <BarChart data={projectsByProgram} layout="vertical" isAnimationActive={true} animationDuration={2000} animationEasing="ease-out">
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" horizontal={false} />
+                    <XAxis 
+                      type="number"
+                      fontSize={12} 
+                      axisLine={false} 
+                      tickLine={false} 
+                      dx={0}
+                      tick={{ fill: '#9CA3AF' }}
+                      domain={[0, 'dataMax + 1']}
+                      tickFormatter={(value) => Math.round(value)}
+                    />
+                    <YAxis 
+                      type="category"
+                      dataKey="name" 
+                      fontSize={12} 
+                      axisLine={false} 
+                      tickLine={false} 
+                      dx={0}
+                      width={150}
+                      tick={{ fill: '#9CA3AF' }}
+                    />
+                    <Tooltip content={<BarTooltip />} cursor={{ fill: 'rgba(239, 68, 68, 0.08)' }} />
+                    <Bar dataKey="projects" radius={[0, 6, 6, 0]} layout="vertical">
                       {projectsByProgram.map((entry, index) => (
-                        <Cell key={index} fill={entry?.fill || '#F97316'} />
+                        <Cell key={index} fill={entry?.fill || '#EF4444'} />
                       ))}
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
+              </div>
+              {/* Stats row */}
+              <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
+                <div>
+                  <p className="text-xs text-gray-400">Total Programs</p>
+                  <p className="text-2xl font-bold text-gray-800">{data.programs.length}</p>
+                </div>
+                <div className="flex items-center gap-1 text-green-600">
+                  <ChartBarIcon className="w-4 h-4" />
+                  <span className="text-sm font-medium">{projectsByProgram.length} active</span>
+                </div>
               </div>
             </ChartContainer>
           </div>
