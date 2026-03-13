@@ -3,12 +3,8 @@ import { getAllContacts, deleteContact } from "../../lib/services/adminContactSe
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
-  EnvelopeIcon,
   PencilSquareIcon,
   TrashIcon,
-  PhoneIcon,
-  MapPinIcon,
-  LinkIcon,
 } from "@heroicons/react/24/outline";
 
 import ContactModal from "../../components/admin_ui/ContactModal";
@@ -89,7 +85,6 @@ export default function Contact() {
           { label: 'Email', show: true },
           { label: 'Phone', show: true },
           { label: 'Address', show: true },
-          { label: 'Map URL', show: true },
           { label: 'Action', show: true }
         ],
         showPosition: false,
@@ -174,14 +169,6 @@ export default function Contact() {
         </button>
       </div>
 
-      {/* Results count */}
-      <div className="mb-4 px-3 py-2 text-sm text-gray-600 bg-gray-50 rounded-lg border border-gray-200">
-        <span className="font-medium text-gray-900">
-          {contacts.length} {contacts.length === 1 ? 'contact' : 'contacts'}
-        </span>
-        {' '}on file
-      </div>
-
       {contacts.length > 0 && (
         <>
           {/* Desktop Table View */}
@@ -192,7 +179,6 @@ export default function Contact() {
                   <th className="px-4 lg:px-8 py-4 text-center">Email</th>
                   <th className="px-4 lg:px-8 py-4 text-center">Phone</th>
                   <th className="px-4 lg:px-8 py-4 text-center">Address</th>
-                  <th className="px-4 lg:px-8 py-4 text-center">Map URL</th>
                   <th className="px-4 lg:px-8 py-4 text-center">Action</th>
                 </tr>
               </thead>
@@ -203,44 +189,18 @@ export default function Contact() {
                     <td className="px-4 lg:px-8 py-4 lg:py-6 text-center">
                       <a 
                         href={`mailto:${contact.email}`} 
-                        className="inline-flex items-center gap-1.5 text-orange-600 hover:text-orange-700 hover:underline"
+                        className="text-orange-600 hover:text-orange-700 hover:underline"
                       >
-                        <EnvelopeIcon className="w-4 h-4" />
                         {contact.email}
                       </a>
                     </td>
 
-                    <td className="px-4 lg:px-8 py-4 lg:py-6 text-center">
-                      <a 
-                        href={`tel:${contact.phone}`}
-                        className="inline-flex items-center gap-1.5 text-gray-600 hover:text-orange-600 transition"
-                      >
-                        <PhoneIcon className="w-4 h-4" />
-                        {contact.phone}
-                      </a>
+                    <td className="px-4 lg:px-8 py-4 lg:py-6 text-center text-gray-600">
+                      {contact.phone}
                     </td>
 
                     <td className="px-4 lg:px-8 py-4 lg:py-6 text-gray-600 text-left max-w-xs">
-                      <div className="flex items-start gap-1.5">
-                        <MapPinIcon className="w-4 h-4 mt-0.5 shrink-0 text-gray-400" />
-                        <span className="line-clamp-2">{contact.address}</span>
-                      </div>
-                    </td>
-
-                    <td className="px-4 lg:px-8 py-4 lg:py-6 text-center">
-                      {contact.map_url ? (
-                        <a 
-                          href={contact.map_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1.5 text-orange-600 hover:text-orange-700 hover:underline"
-                        >
-                          <LinkIcon className="w-4 h-4" />
-                          View Map
-                        </a>
-                      ) : (
-                        <span className="text-gray-400">-</span>
-                      )}
+                      <span className="line-clamp-2">{contact.address}</span>
                     </td>
 
                     <td className="px-2 sm:px-4 lg:px-8 py-4 lg:py-6 text-center">
@@ -318,49 +278,31 @@ export default function Contact() {
               >
                 <div className="space-y-3">
                   {/* Email */}
-                  <div className="flex items-center gap-2">
-                    <EnvelopeIcon className="w-4 h-4 text-gray-400 shrink-0" />
+                  <div>
+                    <span className="text-xs font-medium text-gray-400 uppercase">Email</span>
                     <a 
                       href={`mailto:${contact.email}`}
-                      className="text-sm text-orange-600 hover:text-orange-700"
+                      className="block text-sm text-orange-600 hover:text-orange-700"
                     >
                       {contact.email}
                     </a>
                   </div>
                   
                   {/* Phone */}
-                  <div className="flex items-center gap-2">
-                    <PhoneIcon className="w-4 h-4 text-gray-400 shrink-0" />
-                    <a 
-                      href={`tel:${contact.phone}`}
-                      className="text-sm text-gray-600"
-                    >
+                  <div>
+                    <span className="text-xs font-medium text-gray-400 uppercase">Phone</span>
+                    <span className="block text-sm text-gray-600">
                       {contact.phone}
-                    </a>
-                  </div>
-                  
-                  {/* Address */}
-                  <div className="flex items-start gap-2">
-                    <MapPinIcon className="w-4 h-4 text-gray-400 shrink-0 mt-0.5" />
-                    <span className="text-sm text-gray-600">
-                      {contact.address}
                     </span>
                   </div>
                   
-                  {/* Map URL */}
-                  {contact.map_url && (
-                    <div className="flex items-center gap-2">
-                      <LinkIcon className="w-4 h-4 text-gray-400 shrink-0" />
-                      <a 
-                        href={contact.map_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-sm text-orange-600 hover:text-orange-700 truncate"
-                      >
-                        View Map
-                      </a>
-                    </div>
-                  )}
+                  {/* Address */}
+                  <div>
+                    <span className="text-xs font-medium text-gray-400 uppercase">Address</span>
+                    <span className="block text-sm text-gray-600">
+                      {contact.address}
+                    </span>
+                  </div>
                 </div>
 
                 {/* Action Buttons */}

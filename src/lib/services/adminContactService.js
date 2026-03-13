@@ -3,8 +3,8 @@
 import api from "../api";
 
 /**
- * POST create a new contact (used by the public contact form)
- * @param {Object} data - Contact data { email, phone, address }
+ * POST create a new contact
+ * @param {Object} data - Contact data { email, phone, address, map_url }
  */
 export const createContact = async (data) => {
   const res = await api.post("/admincontacts", data);
@@ -31,7 +31,7 @@ export const getContactById = async (id) => {
 /**
  * PUT update contact by ID
  * @param {number|string} id - Contact ID
- * @param {Object} data - Updated contact data { email, phone, address }
+ * @param {Object} data - Updated contact data { email, phone, address, map_url }
  */
 export const updateContact = async (id, data) => {
   const res = await api.put(`/admincontacts/${id}`, data);

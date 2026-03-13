@@ -8,6 +8,7 @@ import {
   PhoneIcon,
   MapPinIcon,
   LinkIcon,
+  ArrowTopRightOnSquareIcon,
 } from "@heroicons/react/24/outline";
 
 // api
@@ -56,8 +57,10 @@ export default function ContactModal({ isOpen, onClose, onRefresh, item }) {
       toast.error("Address is required");
       return false;
     }
-    // map_url is optional
-    return true;
+    if (!mapUrl.trim()) {
+      toast.error("Map URL is required");
+      return false;
+    }
   };
 
   // Reset form helper
@@ -201,23 +204,30 @@ export default function ContactModal({ isOpen, onClose, onRefresh, item }) {
           {/* Map URL Field */}
           <div className="space-y-2">
             <label className="text-sm font-medium text-gray-700">
-              Map URL <span className="text-gray-400">(optional)</span>
+              Map URL <span className="text-red-500">*</span>
             </label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <LinkIcon className="h-5 w-5 text-gray-400" />
-              </div>
+            
+            <div className="flex rounded-lg border border-gray-300 overflow-hidden bg-white focus-within:ring-2 focus-within:ring-orange-400">
               <input
                 type="url"
                 value={mapUrl}
                 onChange={(e) => setMapUrl(e.target.value)}
-                className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-orange-500 focus:border-orange-500 text-gray-900 bg-white"
                 placeholder="https://maps.google.com/..."
+                className="flex-1 px-3 py-2.5 text-sm shadow-sm outline-none transition min-w-0"
               />
+              <button
+                type="button"
+                onClick={() => {
+                  const urlToOpen = mapUrl.startsWith('http') ? mapUrl : 'https://' + mapUrl;
+                  window.open(urlToOpen, "_blank", "noopener,noreferrer");
+                }}
+                disabled={!mapUrl}
+                className="flex items-center justify-center px-3 sm:px-4 bg-primary-gradient border-l border-gray-300 text-white hover:bg-primary-gradient-hover transition disabled:opacity-50"
+                title="Open Map"
+              >
+                <ArrowTopRightOnSquareIcon className="w-4 h-5 sm:w-5 sm:h-5" />
+              </button>
             </div>
-            <p className="text-xs text-gray-500">
-              Paste a Google Maps or other map service URL
-            </p>
           </div>
         </div>
 
