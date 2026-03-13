@@ -186,13 +186,8 @@ export default function Contact() {
               <tbody className="divide-y divide-gray-200">
                 {currentItems.map((contact) => (
                   <tr key={contact.id} className="hover:bg-gray-100 transition">
-                    <td className="px-4 lg:px-8 py-4 lg:py-6 text-center">
-                      <a 
-                        href={`mailto:${contact.email}`} 
-                        className="text-orange-600 hover:text-orange-700 hover:underline"
-                      >
-                        {contact.email}
-                      </a>
+                    <td className="px-4 lg:px-8 py-4 lg:py-6 text-center text-gray-600">
+                      {contact.email}
                     </td>
 
                     <td className="px-4 lg:px-8 py-4 lg:py-6 text-center text-gray-600">
@@ -280,12 +275,9 @@ export default function Contact() {
                   {/* Email */}
                   <div>
                     <span className="text-xs font-medium text-gray-400 uppercase">Email</span>
-                    <a 
-                      href={`mailto:${contact.email}`}
-                      className="block text-sm text-orange-600 hover:text-orange-700"
-                    >
+                    <span className="block text-sm text-gray-600">
                       {contact.email}
-                    </a>
+                    </span>
                   </div>
                   
                   {/* Phone */}

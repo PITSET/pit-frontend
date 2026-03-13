@@ -112,11 +112,11 @@ export default function ContactModal({ isOpen, onClose, onRefresh, item }) {
       {/* Modal */}
       <div className="bg-[#FEF2F3] w-full max-w-[720px] max-h-[90vh] rounded-2xl shadow-xl animate-[fadeIn_0.2s_ease-out] overflow-hidden flex flex-col my-4">
         {/* Header - Fixed */}
-        <div className="flex-shrink-0 bg-white rounded-t-2xl px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200">
+        <div className="flex-shrink-0 bg-white rounded-t-2xl px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200 sticky top-0 z-10">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 sm:gap-3">
-              <div className="bg-orange-200 p-2 sm:p-3 rounded-xl">
-                <EnvelopeIcon className="w-5 h-5 sm:w-6 sm:h-6 text-orange-500" />
+              <div className="bg-red-200 p-2 sm:p-3 rounded-xl">
+                <EnvelopeIcon className="w-5 h-5 sm:w-6 sm:h-6 text-red-500" />
               </div>
 
               <div>
@@ -232,7 +232,7 @@ export default function ContactModal({ isOpen, onClose, onRefresh, item }) {
         </div>
 
         {/* Footer */}
-        <div className="bg-[#FEF2F3] rounded-b-2xl px-4 sm:px-6 py-4 border-t border-gray-200 mt-auto">
+        <div className="bg-[#FEF2F3] rounded-b-2xl px-4 sm:px-6 py-4 border-t border-gray-200">
           <div className="flex justify-end gap-2 sm:gap-3">
             <button
               onClick={() => {
