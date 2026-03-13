@@ -6,8 +6,17 @@ import {
   UserGroupIcon,
   UsersIcon,
   ExclamationCircleIcon,
-  ArrowRightIcon,
 } from "@heroicons/react/24/outline";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  Legend,
+} from "recharts";
 
 import { getAllMembers } from "../../lib/services/memberService";
 import { getAllPrograms } from "../../lib/services/programService";
@@ -15,28 +24,67 @@ import { getAllProjects } from "../../lib/services/projectService";
 import { getAllStudents } from "../../lib/services/studentService";
 import Loading from "../../components/ui/Loading";
 
-// Modern stat card component with consistent orange branding
+// Modern stat card component
 function StatCard({ count, label, icon: IconProp, link }) {
   const Icon = IconProp;
 
   return (
     <Link
       to={link}
-      className="bg-white rounded-2xl border border-gray-200 p-6 hover:shadow-xl hover:border-orange-300 hover:-translate-y-1 transition-all duration-300 group"
+      className="bg-white rounded-2xl border border-gray-200 p-5 hover:shadow-xl hover:border-orange-300 hover:-translate-y-1 transition-all duration-300 group"
     >
-      <div className="flex items-start justify-between mb-4">
+      <div className="flex items-center gap-4">
         <div className="p-3 bg-orange-100 text-orange-600 rounded-xl group-hover:bg-orange-600 group-hover:text-white transition-colors duration-300">
-          <Icon className="w-6 h-6" />
+          <Icon className="w-5 h-5" />
         </div>
-        <ArrowRightIcon className="w-5 h-5 text-gray-300 group-hover:text-orange-500 group-hover:translate-x-1 transition-all duration-300" />
-      </div>
-
+        <div>
       <div>
         <p className="text-3xl font-bold text-gray-900">{count}</p>
         <p className="text-sm font-medium text-gray-500 mt-1">{label}</p>
       </div>
     </Link>
   );
+}
+
+// Process projects data to get monthly growth data
+function processMonthlyData(projects) {
+  const months = [];
+  const now = new Date();
+
+  // Get last 12 months
+  for (let i = 11; i >= 0; i--) {
+    const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+    const monthName = date.toLocaleDateString('en-US', { month: 'short' });
+    
+    months.push({
+      month: monthName,
+      fullMonth: monthKey,
+      projects: 0,
+    });
+  }
+
+  // Count projects by month
+  projects.forEach((project) => {
+    if (project.created_at) {
+      const createdDate = new Date(project.created_at);
+      const monthKey = `${createdDate.getFullYear()}-${String(createdDate.getMonth() + 1).padStart(2, '0')}`;
+      
+      const monthIndex = months.findIndex((m) => m.fullMonth === monthKey);
+      if (monthIndex !== -1) {
+        months[monthIndex].projects += 1;
+      }
+    }
+  });
+
+  // Calculate cumulative total
+  let cumulative = 0;
+  months.forEach((m) => {
+    cumulative += m.projects;
+    m.total = cumulative;
+  });
+
+  return months;
 }
 
 export default function Dashboard() {
@@ -92,6 +140,11 @@ export default function Dashboard() {
     return data.members.filter((m) => m.is_instructor === true).length;
   }, [data.members]);
 
+  // Process monthly project data
+  const monthlyData = useMemo(() => {
+    return processMonthlyData(data.projects);
+  }, [data.projects]);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -105,7 +158,6 @@ export default function Dashboard() {
       {/* Page Header */}
       <div className="mb-8">
         <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-gray-500 mt-1">Monitor your academy metrics and quick actions</p>
       </div>
 
       {error && (
@@ -124,7 +176,7 @@ export default function Dashboard() {
       )}
 
       {/* Stats Cards Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-6 mb-8">
         <StatCard
           count={data.programs.length}
           label="Total Programs"
@@ -149,6 +201,61 @@ export default function Dashboard() {
           icon={UserGroupIcon}
           link="/admin/academics/programs"
         />
+      </div>
+
+      {/* Project Growth Chart */}
+      <div className="bg-white rounded-2xl border border-gray-200 p-6">
+        <h2 className="text-lg font-semibold text-gray-900 mb-6">Project Growth (Monthly)</h2>
+        
+        <div className="h-80">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart
+              data={monthlyData}
+              margin={{ top: 5, right: 30, left: 0, bottom: 5 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+              <XAxis 
+                dataKey="month" 
+                stroke="#6B7280" 
+                fontSize={12}
+                tickLine={false}
+              />
+              <YAxis 
+                stroke="#6B7280" 
+                fontSize={12}
+                tickLine={false}
+                axisLine={false}
+              />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: '#fff',
+                  border: '1px solid #E5E7EB',
+                  borderRadius: '8px',
+                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                }}
+                labelStyle={{ color: '#374151', fontWeight: 600 }}
+              />
+              <Line
+                type="monotone"
+                dataKey="total"
+                name="Total Projects"
+                stroke="#F97316"
+                strokeWidth={3}
+                dot={{ fill: '#F97316', strokeWidth: 2, r: 4 }}
+                activeDot={{ r: 6, fill: '#EA580C' }}
+              />
+              <Line
+                type="monotone"
+                dataKey="projects"
+                name="New Projects"
+                stroke="#FB923C"
+                strokeWidth={2}
+                strokeDasharray="5 5"
+                dot={{ fill: '#FB923C', strokeWidth: 2, r: 3 }}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
       </div>
     </div>
   );
