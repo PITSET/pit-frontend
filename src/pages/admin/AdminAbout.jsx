@@ -30,7 +30,16 @@ export default function AboutPage() {
   const fetchAbout = async () => {
     try {
       const response = await getAboutSections();
-      setData(response.data);
+      const newData = response.data;
+      setData(newData);
+
+      // Adjust current page if it becomes invalid after deletion
+      const newTotalPages = Math.ceil(newData.length / itemsPerPage);
+      if (currentPage > newTotalPages && newTotalPages > 0) {
+        setCurrentPage(newTotalPages);
+      } else if (newData.length === 0) {
+        setCurrentPage(1);
+      }
     } catch (err) {
       console.error("Failed to fetch about data:", err);
       setError("Failed to fetch about data");
