@@ -38,12 +38,29 @@ function StatCard({ count, label, icon: IconProp, link }) {
           <Icon className="w-5 h-5" />
         </div>
         <div>
-      <div>
-        <p className="text-3xl font-bold text-gray-900">{count}</p>
-        <p className="text-sm font-medium text-gray-500 mt-1">{label}</p>
+          <p className="text-2xl font-bold text-gray-900">{count}</p>
+          <p className="text-sm font-medium text-gray-500">{label}</p>
+        </div>
       </div>
     </Link>
   );
+}
+
+// Custom tooltip component
+function CustomTooltip({ active, payload, label }) {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-white border border-gray-200 rounded-lg shadow-lg p-3">
+        <p className="font-semibold text-gray-900 mb-2">{label}</p>
+        {payload.map((entry, index) => (
+          <p key={index} className="text-sm" style={{ color: entry.color }}>
+            {entry.name}: <span className="font-medium">{entry.value}</span>
+          </p>
+        ))}
+      </div>
+    );
+  }
+  return null;
 }
 
 // Process projects data to get monthly growth data
@@ -55,16 +72,18 @@ function processMonthlyData(projects) {
   for (let i = 11; i >= 0; i--) {
     const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
     const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-    const monthName = date.toLocaleDateString('en-US', { month: 'short' });
+    const monthName = date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
     
     months.push({
       month: monthName,
       fullMonth: monthKey,
-      projects: 0,
+      newProjects: 0,
+      totalProjects: 0,
     });
   }
 
   // Count projects by month
+  let cumulative = 0;
   projects.forEach((project) => {
     if (project.created_at) {
       const createdDate = new Date(project.created_at);
@@ -72,16 +91,15 @@ function processMonthlyData(projects) {
       
       const monthIndex = months.findIndex((m) => m.fullMonth === monthKey);
       if (monthIndex !== -1) {
-        months[monthIndex].projects += 1;
+        months[monthIndex].newProjects += 1;
       }
     }
   });
 
   // Calculate cumulative total
-  let cumulative = 0;
   months.forEach((m) => {
-    cumulative += m.projects;
-    m.total = cumulative;
+    cumulative += m.newProjects;
+    m.totalProjects = cumulative;
   });
 
   return months;
@@ -156,7 +174,7 @@ export default function Dashboard() {
   return (
     <div className="p-4 md:p-6 lg:p-8">
       {/* Page Header */}
-      <div className="mb-8">
+      <div className="mb-6">
         <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Dashboard</h1>
       </div>
 
@@ -175,83 +193,103 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* Stats Cards Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-6 mb-8">
+      {/* Stats Cards Grid - Responsive */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-6">
         <StatCard
           count={data.programs.length}
-          label="Total Programs"
+          label="Programs"
           icon={AcademicCapIcon}
           link="/admin/academics/programs"
         />
         <StatCard
           count={data.projects.length}
-          label="Total Projects"
+          label="Projects"
           icon={FolderIcon}
           link="/admin/academics/projects"
         />
         <StatCard
           count={instructorCount}
-          label="Total Instructors"
+          label="Instructors"
           icon={UsersIcon}
           link="/admin/team/members"
         />
         <StatCard
           count={data.students.length}
-          label="Total Students"
+          label="Students"
           icon={UserGroupIcon}
           link="/admin/academics/programs"
         />
       </div>
 
       {/* Project Growth Chart */}
-      <div className="bg-white rounded-2xl border border-gray-200 p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-6">Project Growth (Monthly)</h2>
+      <div className="bg-white rounded-2xl border border-gray-200 p-4 md:p-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+          <div>
+            <h2 className="text-lg font-semibold text-gray-900">Project Growth</h2>
+            <p className="text-sm text-gray-500">Monthly project creation over the last 12 months</p>
+          </div>
+          
+          {/* Legend */}
+          <div className="flex items-center gap-4 text-sm">
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full bg-orange-500" />
+              <span className="text-gray-600">Total Projects</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full bg-orange-300" />
+              <span className="text-gray-600">New Projects</span>
+            </div>
+          </div>
+        </div>
         
-        <div className="h-80">
+        {/* Chart */}
+        <div className="h-64 sm:h-72 lg:h-80">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart
               data={monthlyData}
-              margin={{ top: 5, right: 30, left: 0, bottom: 5 }}
+              margin={{ top: 5, right: 10, left: -10, bottom: 5 }}
             >
-              <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+              <CartesianGrid 
+                strokeDasharray="3 3" 
+                stroke="#E5E7EB" 
+                vertical={false}
+              />
               <XAxis 
                 dataKey="month" 
-                stroke="#6B7280" 
-                fontSize={12}
-                tickLine={false}
-              />
-              <YAxis 
-                stroke="#6B7280" 
-                fontSize={12}
+                stroke="#9CA3AF" 
+                fontSize={11}
                 tickLine={false}
                 axisLine={false}
+                dy={10}
               />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: '#fff',
-                  border: '1px solid #E5E7EB',
-                  borderRadius: '8px',
-                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-                }}
-                labelStyle={{ color: '#374151', fontWeight: 600 }}
+              <YAxis 
+                stroke="#9CA3AF" 
+                fontSize={11}
+                tickLine={false}
+                axisLine={false}
+                dx={-10}
+                tickFormatter={(value) => value}
               />
+              <Tooltip content={<CustomTooltip />} />
               <Line
                 type="monotone"
-                dataKey="total"
+                dataKey="totalProjects"
                 name="Total Projects"
                 stroke="#F97316"
                 strokeWidth={3}
-                dot={{ fill: '#F97316', strokeWidth: 2, r: 4 }}
-                activeDot={{ r: 6, fill: '#EA580C' }}
+                dot={{ fill: '#F97316', strokeWidth: 0, r: 4, cx: 0, cy: 0 }}
+                activeDot={{ r: 6, fill: '#EA580C', stroke: '#fff', strokeWidth: 2 }}
+                connectNulls
               />
               <Line
                 type="monotone"
-                dataKey="projects"
+                dataKey="newProjects"
                 name="New Projects"
-                stroke="#FB923C"
+                stroke="#FDBA74"
                 strokeWidth={2}
-                strokeDasharray="5 5"
-                dot={{ fill: '#FB923C', strokeWidth: 2, r: 3 }}
+                dot={{ fill: '#FDBA74', strokeWidth: 0, r: 3 }}
+                activeDot={{ r: 5, fill: '#F97316', stroke: '#fff', strokeWidth: 2 }}
+                connectNulls
               />
             </LineChart>
           </ResponsiveContainer>
