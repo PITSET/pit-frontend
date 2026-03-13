@@ -369,8 +369,10 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
         video_url: result?.trim() || null,
         is_featured: isActive,
         program_ids: programIds,
-        student_ids: studentIds,
+        // student_ids is sent separately in the create flow only
       };
+
+      // Note: student_ids is handled separately - for create it's required, for update it's optional
 
       if (isCreate) {
         // Validate required fields for create
@@ -408,8 +410,14 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
           return;
         }
 
+        // Add student_ids to projectData for create (backend handles junction table)
+        const createData = {
+          ...projectData,
+          student_ids: studentIds,
+        };
+
         // Create new project
-        await createProject(projectData);
+        await createProject(createData);
 
         toast.success("Project created successfully!");
       } else {
@@ -437,7 +445,12 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
         }
 
         // Update existing project
-        await updateProject(item.id, projectData);
+        // Now backend handles student_ids properly - create update data with student_ids
+        const updateData = {
+          ...projectData,
+          student_ids: studentIds,
+        };
+        await updateProject(item.id, updateData);
         toast.success("Project updated successfully!", { id: toastId });
       }
 
@@ -480,6 +493,8 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
 
   // Reset form
   const resetForm = () => {
+    console.log("ResetForm - item data:", JSON.stringify(item, null, 2));
+    
     setName(item?.name || "");
     setOverview(item?.overview || "");
     setObjectives(Array.isArray(item?.objectives) ? item.objectives : []);
@@ -493,11 +508,36 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
     setNewImages([]);
     setIsActive(item?.is_featured || false); // Use is_featured field from backend
     
-    // Load program_ids from item (backend returns programs as array of IDs)
-    setProgramIds(Array.isArray(item?.programs) ? item.programs : []);
+    // Load program_ids from item - backend returns nested structure
+    // Format: project_programs: [{ programs: { id: 1 } }]
+    let programIdsArray = [];
+    if (item?.project_programs) {
+      console.log("project_programs data:", JSON.stringify(item.project_programs, null, 2));
+      programIdsArray = item.project_programs
+        .map(pp => pp.programs?.id)
+        .filter(id => id != null);
+    } else if (Array.isArray(item?.programs)) {
+      // Fallback: already flat array of IDs
+      programIdsArray = item.programs;
+    }
+    console.log("Extracted programIds:", programIdsArray);
+    setProgramIds(programIdsArray);
     
-    // Load student_ids from item (backend returns students as array of IDs)
-    setStudentIds(Array.isArray(item?.students) ? item.students : []);
+    // Load student_ids from item - backend returns nested structure
+    // Format: project_students: [{ students: { id: 1 } }]
+    let studentIdsArray = [];
+    if (item?.project_students) {
+      console.log("project_students data:", JSON.stringify(item.project_students, null, 2));
+      studentIdsArray = item.project_students
+        .map(ps => ps.students?.id)
+        .filter(id => id != null);
+    } else if (Array.isArray(item?.students)) {
+      // Fallback: already flat array of IDs
+      console.log("students data (flat):", JSON.stringify(item.students, null, 2));
+      studentIdsArray = item.students;
+    }
+    console.log("Extracted studentIds:", studentIdsArray);
+    setStudentIds(studentIdsArray);
   };
 
   // Load initial data when modal opens
@@ -521,6 +561,8 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
         setIsActive(true); // Default to active (is_featured = true)
         setProgramIds([]);
         setStudentIds([]);
+        setShowProgramDropdown(false);
+        setShowStudentDropdown(false);
       }
     }
   }, [isOpen, item]);
