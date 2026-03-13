@@ -34,7 +34,25 @@ export default function AdminMembers() {
   const fetchMembers = async () => {
     try {
       const response = await getAllMembers();
-      setData(response.data);
+      const newData = response.data;
+      setData(newData);
+
+      // Adjust current page if it becomes invalid after deletion
+      // Need to recalculate filtered data to get correct pagination
+      let newFilteredData = newData;
+      if (roleFilter !== 'all') {
+        newFilteredData = newData.filter(item => {
+          if (roleFilter === 'founder') return item.is_founder === true;
+          if (roleFilter === 'instructor') return item.is_instructor === true;
+          return true;
+        });
+      }
+      const newTotalPages = Math.ceil(newFilteredData.length / itemsPerPage);
+      if (currentPage > newTotalPages && newTotalPages > 0) {
+        setCurrentPage(newTotalPages);
+      } else if (newFilteredData.length === 0) {
+        setCurrentPage(1);
+      }
     } catch (err) {
       console.error("Failed to fetch members:", err);
       setError("Failed to fetch members");

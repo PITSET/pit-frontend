@@ -31,8 +31,17 @@ export default function Contact() {
     try {
       setLoading(true);
       const response = await getAllContacts();
-      setContacts(response.data || []);
+      const newData = response.data || [];
+      setContacts(newData);
       setError("");
+
+      // Adjust current page if it becomes invalid after deletion
+      const newTotalPages = Math.ceil(newData.length / itemsPerPage);
+      if (currentPage > newTotalPages && newTotalPages > 0) {
+        setCurrentPage(newTotalPages);
+      } else if (newData.length === 0) {
+        setCurrentPage(1);
+      }
     } catch (err) {
       console.error("Error fetching contacts:", err);
       setError("Failed to fetch contacts");
@@ -50,11 +59,6 @@ export default function Contact() {
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = contacts.slice(indexOfFirstItem, indexOfLastItem);
-
-  // Reset page when contacts change
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [contacts.length]);
 
   const handlePageChange = (page) => {
     setCurrentPage(page);

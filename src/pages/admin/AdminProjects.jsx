@@ -44,8 +44,17 @@ export default function AdminProjects() {
         getAllProjects(),
         getAllPrograms()
       ]);
-      setData(projectsRes.data);
+      const newData = projectsRes.data;
+      setData(newData);
       setPrograms(programsRes.data || []);
+
+      // Adjust current page if it becomes invalid after deletion
+      const newTotalPages = Math.ceil(newData.length / itemsPerPage);
+      if (currentPage > newTotalPages && newTotalPages > 0) {
+        setCurrentPage(newTotalPages);
+      } else if (newData.length === 0) {
+        setCurrentPage(1);
+      }
     } catch (err) {
       console.error("Failed to fetch projects:", err);
       setError("Failed to fetch projects");
