@@ -25,6 +25,7 @@ export default function ContactModal({ isOpen, onClose, onRefresh, item }) {
   
   const [loading, setLoading] = useState(false);
   const [emailError, setEmailError] = useState("");
+  const [phoneError, setPhoneError] = useState("");
 
   // Validate email format
   const validateEmail = (emailValue) => {
@@ -35,6 +36,24 @@ export default function ContactModal({ isOpen, onClose, onRefresh, item }) {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(emailValue.trim())) {
       return { valid: false, message: "Please enter a valid email address" };
+    }
+    
+    return { valid: true, message: "" };
+  };
+
+  // Validate phone format
+  const validatePhone = (phoneValue) => {
+    if (!phoneValue || !phoneValue.trim()) {
+      return { valid: true, message: "" };
+    }
+    
+    // Remove all spaces and special characters for validation
+    const cleanPhone = phoneValue.replace(/[\s\-()+]/g, '');
+    
+    // Check if it's at least 7 digits and contains only digits and optional + at start
+    const phoneRegex = /^\+?\d{7,15}$/;
+    if (!phoneRegex.test(cleanPhone)) {
+      return { valid: false, message: "Please enter a valid phone number" };
     }
     
     return { valid: true, message: "" };
@@ -72,6 +91,11 @@ export default function ContactModal({ isOpen, onClose, onRefresh, item }) {
       toast.error(emailValidation.message);
       return false;
     }
+    const phoneValidation = validatePhone(phone);
+    if (!phoneValidation.valid) {
+      toast.error(phoneValidation.message);
+      return false;
+    }
     if (!phone.trim()) {
       toast.error("Phone is required");
       return false;
@@ -93,6 +117,7 @@ export default function ContactModal({ isOpen, onClose, onRefresh, item }) {
     setAddress(item?.address || "");
     setMapUrl(item?.map_url || "");
     setEmailError("");
+    setPhoneError("");
   };
 
   // Save changes
@@ -210,13 +235,28 @@ export default function ContactModal({ isOpen, onClose, onRefresh, item }) {
                 <PhoneIcon className="h-5 w-5 text-gray-400" />
               </div>
               <input
-                type="tel"
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9+\s\-()]*"
                 value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-orange-500 focus:border-orange-500 text-gray-900 bg-white"
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setPhone(value);
+                  // Validate phone format
+                  if (value) {
+                    const validation = validatePhone(value);
+                    setPhoneError(validation.message);
+                  } else {
+                    setPhoneError("");
+                  }
+                }}
+                className={`block w-full pl-10 pr-3 py-2.5 border rounded-lg focus:ring-orange-500 text-gray-900 bg-white ${phoneError ? 'border-red-500' : 'border-gray-300'}`}
                 placeholder="Enter phone number"
               />
             </div>
+            {phoneError && (
+              <p className="text-xs text-red-500">{phoneError}</p>
+            )}
           </div>
 
           {/* Address Field */}
