@@ -44,35 +44,34 @@ export default function AcceptInvite() {
   useEffect(() => {
     const processInvitation = async () => {
       try {
-        // Method 1: Check URL hash for tokens (Supabase puts tokens in hash after redirect)
+        // First, check if there's a hash with access token (Supabase puts session in hash)
         const hashParams = new URLSearchParams(window.location.hash.substring(1));
         const accessToken = hashParams.get("access_token");
         const refreshToken = hashParams.get("refresh_token");
         
-        if (accessToken) {
-          // Set the session from hash params
+        if (accessToken && refreshToken) {
+          // Set session from hash params
           const { error: setSessionError } = await supabase.auth.setSession({
             access_token: accessToken,
             refresh_token: refreshToken,
           });
           
           if (!setSessionError) {
-            setToken("session_active");
-            setIsValidToken(true);
-            
-            // Get user email
+            // Get user info
             const { data: userData } = await supabase.auth.getUser();
             if (userData?.user?.email) {
               setEmail(userData.user.email);
+              setToken("session_active");
+              setIsValidToken(true);
+              return;
             }
-            return;
           }
         }
         
-        // Method 2: Check query parameters for tokens
+        // Check query parameters
         const params = new URLSearchParams(window.location.search);
-        let tokenFromUrl = params.get("token") || params.get("token_hash") || params.get("access_token");
-        let emailFromUrl = params.get("email");
+        const tokenFromUrl = params.get("token");
+        const emailFromUrl = params.get("email");
         
         // Check for error in URL
         const errorParam = params.get("error");
@@ -83,46 +82,12 @@ export default function AcceptInvite() {
           return;
         }
 
-        // If we have a token in query params, try to verify it
+        // Store token and email for later use
         if (tokenFromUrl && emailFromUrl) {
-          try {
-            // Try to verify the invitation token
-            const { data, error } = await supabase.auth.verifyOtp({
-              email: emailFromUrl,
-              token: tokenFromUrl,
-              type: "invite",
-            });
-            
-            if (data?.session) {
-              // Token verified, set session
-              setToken("session_active");
-              setIsValidToken(true);
-              setEmail(emailFromUrl);
-              return;
-            }
-            
-            // If verification failed, still allow setting password
-            // (Supabase might accept the token in different ways)
-            if (!error) {
-              setToken(tokenFromUrl);
-              setIsValidToken(true);
-              setEmail(emailFromUrl);
-              return;
-            }
-          } catch (verifyErr) {
-            console.log("Token verification result:", verifyErr);
-          }
-        }
-
-        if (tokenFromUrl) {
           setToken(tokenFromUrl);
+          setEmail(emailFromUrl);
           setIsValidToken(true);
         }
-
-        if (emailFromUrl && !emailFromUrl.includes("http")) {
-          setEmail(emailFromUrl);
-        }
-        
       } catch (err) {
         console.error("Error processing invitation:", err);
       }
@@ -180,17 +145,16 @@ export default function AcceptInvite() {
     setLoading(true);
 
     try {
-      // If we have both token and email, try to verify the invitation first
-      if (token && email) {
-        // Try to verify the OTP with the token
-        const { data: otpData } = await supabase.auth.verifyOtp({
+      // Try Method 1: Use verifyOtp with the token (for invitation type)
+      if (token && email && token !== "session_active") {
+        const { data, error } = await supabase.auth.verifyOtp({
           email: email,
           token: token,
           type: "invite",
         });
         
-        if (otpData?.session) {
-          // Session created, now set the password
+        if (data?.session && !error) {
+          // Got session - now set password
           const { error: updateError } = await supabase.auth.updateUser({
             password: password,
           });
@@ -211,7 +175,7 @@ export default function AcceptInvite() {
         }
       }
 
-      // Also try to set session from URL hash if present
+      // Method 2: Check for session from URL hash
       const hashParams = new URLSearchParams(window.location.hash.substring(1));
       const accessToken = hashParams.get("access_token");
       const refreshToken = hashParams.get("refresh_token");
@@ -223,7 +187,7 @@ export default function AcceptInvite() {
         });
         
         if (!setSessionError) {
-          // Session set successfully - now set password
+          // Get current user and set password
           const { error: updateError } = await supabase.auth.updateUser({
             password: password,
           });
@@ -244,55 +208,37 @@ export default function AcceptInvite() {
         }
       }
 
-      // Method 2: Try to use verifyOtp with token_hash if we have token
-      if (token) {
-        // Try using verifyOtp with the token hash
-        const { data: otpData, error } = await supabase.auth.verifyOtp({
-          token_hash: token,
-          type: "invite",
+      // Method 3: If we have a session already, just update password
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (sessionData?.session) {
+        const { error: updateError } = await supabase.auth.updateUser({
+          password: password,
         });
 
-        if (otpData?.session) {
-          // Got session from OTP verification - set password
-          const { error: updateError } = await supabase.auth.updateUser({
-            password: password,
-          });
-
-          if (updateError) {
-            throw updateError;
-          }
-
-          toast.success("Password set successfully! Redirecting to login...");
-          setIsCompleted(true);
-          
-          setTimeout(() => {
-            window.location.href = "/admin/login";
-          }, 2000);
-          
-          setLoading(false);
-          return;
+        if (updateError) {
+          throw updateError;
         }
 
-        // If verifyOtp failed, log the error
-        if (error) {
-          console.log("verifyOtp error:", error.message);
-        }
-      }
-
-      // Method 3: Try exchangeCodeForSession (for some Supabase configurations)
-      if (token) {
-        const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(token);
+        toast.success("Password set successfully! Redirecting to login...");
+        setIsCompleted(true);
         
-        if (!exchangeError) {
-          // Success - set password
-          const { error: updateError } = await supabase.auth.updateUser({
-            password: password,
-          });
+        setTimeout(() => {
+          window.location.href = "/admin/login";
+        }, 2000);
+        
+        setLoading(false);
+        return;
+      }
 
-          if (updateError) {
-            throw updateError;
-          }
+      // If we get here, none of the methods worked
+      // Try one more approach - direct update with the token
+      if (token && token !== "session_active") {
+        // This is a fallback that might work
+        const { error: finalError } = await supabase.auth.updateUser({
+          password: password,
+        });
 
+        if (!finalError) {
           toast.success("Password set successfully! Redirecting to login...");
           setIsCompleted(true);
           
@@ -305,18 +251,12 @@ export default function AcceptInvite() {
         }
       }
 
-      // If we get here, show success and redirect
-      // This handles edge cases where Supabase auto-creates the user
-      toast.success("Invitation accepted! Please login with your password.");
-      setIsCompleted(true);
-      
-      setTimeout(() => {
-        window.location.href = "/admin/login";
-      }, 2000);
+      // If nothing worked, show error
+      toast.error("Unable to set password. Please try the forgot password option on the login page.");
 
     } catch (err) {
       console.error("Accept invite error:", err);
-      toast.error(err.message || "Failed to accept invitation. Please try again.");
+      toast.error(err.message || "Failed to accept invitation");
     }
 
     setLoading(false);
@@ -441,13 +381,7 @@ export default function AcceptInvite() {
      =============================== */
 
   return (
-    // ===============================
-    // PAGE CONTAINER
-    // ===============================
     <div className="relative flex items-center justify-center min-h-screen bg-gray-200 p-6 overflow-hidden">
-      {/* ===============================
-    MAIN CARD
-    =============================== */}
       <div className="relative flex w-full max-w-[840px] sm:min-h-[440px] md:min-h-[524px] rounded-3xl overflow-hidden shadow-2xl bg-white">
         {/* Desktop Shape */}
         <img
@@ -455,11 +389,9 @@ export default function AcceptInvite() {
           alt=""
           className="hidden sm:block absolute top-0 left-0 h-full w-auto pointer-events-none"
         />
-        {/* ===============================
-      LEFT SIDE (DESKTOP ONLY)
-      =============================== */}
+        
+        {/* LEFT SIDE (DESKTOP ONLY) */}
         <div className="hidden sm:flex w-1/2 relative text-white flex-col items-center justify-center text-center overflow-hidden">
-          {/* Content */}
           <div className="relative z-10 flex flex-col items-center">
             <div className="bg-white p-5 rounded-full mb-6">
               <img src={logo_image} alt="logo" className="w-14 h-14" />
@@ -473,9 +405,7 @@ export default function AcceptInvite() {
           </div>
         </div>
 
-        {/* ===============================
-      RIGHT SIDE (SET PASSWORD FORM)
-      =============================== */}
+        {/* RIGHT SIDE (SET PASSWORD FORM) */}
         <div className="relative w-full sm:w-1/2 p-6 sm:pl-12 flex flex-col justify-center items-center">
           {/* Desktop Shape */}
           <img
@@ -499,9 +429,7 @@ export default function AcceptInvite() {
             {email ? `Invitation for ${email}` : "Set your password to continue"}
           </p>
 
-          {/* ===============================
-        SET PASSWORD FORM
-        =============================== */}
+          {/* SET PASSWORD FORM */}
           <form onSubmit={handleSubmit} className="space-y-6 w-full">
             {/* PASSWORD */}
             <div className="relative">
