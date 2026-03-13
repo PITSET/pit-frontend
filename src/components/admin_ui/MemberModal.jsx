@@ -512,7 +512,7 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
             <div className="space-y-4">
               {/* Name */}
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Name (required)</label>
+                <label className="text-sm font-medium text-gray-700">Name <span className="text-red-500">*</span></label>
                 <input
                   type="text"
                   value={name}
@@ -558,7 +558,7 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
 
               {/* Role Selection */}
               <div className="space-y-3">
-                <label className="text-sm font-medium text-gray-700">Role (required)</label>
+                <label className="text-sm font-medium text-gray-700">Role <span className="text-red-500">*</span></label>
                 <div className="space-y-3">
                   {/* Founder Toggle */}
                   <div className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200 shadow-sm">
@@ -617,7 +617,7 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
               {/* Programs - Only show if instructor is selected */}
               {isInstructor && (
                 <div className="space-y-2" ref={programDropdownRef}>
-                  <label className="text-sm font-medium text-gray-700">Programs (required)</label>
+                  <label className="text-sm font-medium text-gray-700">Programs <span className="text-red-500">*</span></label>
                   
                   {programsLoading ? (
                     <div className="flex items-center gap-2 text-gray-500">
@@ -673,7 +673,7 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
 
           {/* Bio */}
           <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700">Biography (required)</label>
+            <label className="text-sm font-medium text-gray-700">Biography <span className="text-red-500">*</span></label>
             <textarea
               value={bio}
               placeholder="Enter biography..."
