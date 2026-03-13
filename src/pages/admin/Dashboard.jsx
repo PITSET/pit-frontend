@@ -3,19 +3,24 @@ import { Link } from "react-router-dom";
 import {
   AcademicCapIcon,
   FolderIcon,
-  UserGroupIcon,
   UsersIcon,
+  UserGroupIcon,
+  HomeIcon,
+  InformationCircleIcon,
+  EnvelopeIcon,
   ExclamationCircleIcon,
 } from "@heroicons/react/24/outline";
 import {
-  LineChart,
-  Line,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  Legend,
+  Area,
+  AreaChart,
+  BarChart,
+  Bar,
+  Cell,
 } from "recharts";
 
 import { getAllMembers } from "../../lib/services/memberService";
@@ -24,38 +29,113 @@ import { getAllProjects } from "../../lib/services/projectService";
 import { getAllStudents } from "../../lib/services/studentService";
 import Loading from "../../components/ui/Loading";
 
-// Modern stat card component
-function StatCard({ count, label, icon: IconProp, link }) {
-  const Icon = IconProp;
+// Animated Number Counter
+function AnimatedCounter({ value, duration = 1000 }) {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    let startTime;
+    const step = (timestamp) => {
+      if (!startTime) startTime = timestamp;
+      const progress = Math.min((timestamp - startTime) / duration, 1);
+      setCount(Math.floor(progress * value));
+      if (progress < 1) {
+        requestAnimationFrame(step);
+      }
+    };
+    requestAnimationFrame(step);
+  }, [value, duration]);
+
+  return <span>{count}</span>;
+}
+
+// Stat Card - Exact transition pattern from CSS with modal colors
+function StatCard({ title, count, subtitle, icon: Icon, delay = 0 }) {
+  const [isVisible, setIsVisible] = useState(false);
+  const IconComponent = Icon;
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsVisible(true), delay);
+    return () => clearTimeout(timer);
+  }, [delay]);
+
+  return (
+    <div 
+      className={`relative max-w-[300px] max-h-[320px] m-3 p-8 rounded-[10px] overflow-hidden z-0 font-sans bg-white border border-gray-200 shadow-sm group transition-all duration-500 hover:shadow-xl cursor-pointer ${
+        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+      }`}
+      style={{ transitionDelay: `${delay}ms` }}
+    >
+      {/* animated circle - red-200 on hover */}
+      <div className="absolute -top-4 -right-4 w-8 h-8 rounded-full bg-red-200 transition-transform duration-500 ease-out group-hover:scale-[28] -z-10"></div>
+
+      {/* corner - red-200 */}
+      <div className="absolute top-0 right-0 w-10 h-10 flex items-center justify-center overflow-hidden bg-red-200 rounded-bl-[32px]">
+        <IconComponent className="w-5 h-5 text-red-500 -mt-1 -mr-1" />
+      </div>
+
+      <p className="text-[1.5em] font-bold text-gray-800 mb-2 transition-colors duration-500 group-hover:text-gray-800">
+        <AnimatedCounter value={count} />
+      </p>
+
+      <p className="text-base leading-6 text-gray-600 transition-colors duration-500 group-hover:text-gray-600">
+        {title}
+      </p>
+      
+      {subtitle && (
+        <p className="text-sm text-gray-500 transition-colors duration-500 group-hover:text-gray-500 mt-1">
+          {subtitle}
+        </p>
+      )}
+    </div>
+  );
+}
+
+// Quick Action Button - Exact transition pattern from CSS with modal colors
+function QuickActionButton({ text, link, icon, delay = 0 }) {
+  const [isVisible, setIsVisible] = useState(false);
+  const Icon = icon;
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsVisible(true), delay);
+    return () => clearTimeout(timer);
+  }, [delay]);
 
   return (
     <Link
       to={link}
-      className="bg-white rounded-2xl border border-gray-200 p-5 hover:shadow-xl hover:border-orange-300 hover:-translate-y-1 transition-all duration-300 group"
+      className={`relative max-w-[300px] w-full m-3 p-4 rounded-[10px] overflow-hidden z-0 font-sans bg-white border border-gray-200 shadow-sm group transition-all duration-500 hover:shadow-xl cursor-pointer flex items-center gap-3 ${
+        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+      }`}
+      style={{ transitionDelay: `${delay}ms` }}
     >
-      <div className="flex items-center gap-4">
-        <div className="p-3 bg-orange-100 text-orange-600 rounded-xl group-hover:bg-orange-600 group-hover:text-white transition-colors duration-300">
-          <Icon className="w-5 h-5" />
-        </div>
-        <div>
-          <p className="text-2xl font-bold text-gray-900">{count}</p>
-          <p className="text-sm font-medium text-gray-500">{label}</p>
-        </div>
+      {/* animated circle - red-200 on hover */}
+      <div className="absolute -top-4 -right-4 w-8 h-8 rounded-full bg-red-200 transition-transform duration-500 ease-out group-hover:scale-[28] -z-10"></div>
+
+      {/* corner - red-200 */}
+      <div className="absolute top-0 right-0 w-10 h-10 flex items-center justify-center overflow-hidden bg-red-200 rounded-bl-[32px]">
+        <Icon className="w-5 h-5 text-red-500 -mt-1 -mr-1" />
       </div>
+
+      <p className="text-base font-bold text-gray-800 transition-colors duration-500 group-hover:text-gray-800">
+        {text}
+      </p>
     </Link>
   );
 }
 
-// Custom tooltip component
-function CustomTooltip({ active, payload, label }) {
+// Custom Tooltip for Area Chart
+function AreaTooltip({ active, payload, label }) {
   if (active && payload && payload.length) {
     return (
       <div className="bg-white border border-gray-200 rounded-lg shadow-lg p-3">
-        <p className="font-semibold text-gray-900 mb-2">{label}</p>
+        <p className="font-medium text-gray-900 text-sm mb-1">{label}</p>
         {payload.map((entry, index) => (
-          <p key={index} className="text-sm" style={{ color: entry.color }}>
-            {entry.name}: <span className="font-medium">{entry.value}</span>
-          </p>
+          <div key={index} className="flex items-center gap-2 text-xs">
+            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.color }} />
+            <span className="text-gray-600">{entry.name}:</span>
+            <span className="font-medium">{entry.value}</span>
+          </div>
         ))}
       </div>
     );
@@ -63,46 +143,114 @@ function CustomTooltip({ active, payload, label }) {
   return null;
 }
 
+// Custom Tooltip for Bar Chart
+function BarTooltip({ active, payload }) {
+  if (active && payload && payload.length) {
+    const data = payload[0].payload;
+    return (
+      <div className="bg-black/80 text-white text-xs px-3 py-2 rounded-lg">
+        {data.fullName}: {data.projects} projects
+      </div>
+    );
+  }
+  return null;
+}
+
+// Chart wrapper component with animation
+function ChartContainer({ title, children, delay = 0 }) {
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsVisible(true), delay);
+    return () => clearTimeout(timer);
+  }, [delay]);
+
+  return (
+    <div 
+      className={`bg-white rounded-xl border border-gray-200 p-5 shadow-sm hover:shadow-xl transition-all duration-500 ${
+        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+      }`}
+      style={{ transitionDelay: `${delay}ms` }}
+    >
+      <h2 className="text-sm font-semibold text-gray-700 mb-3">{title}</h2>
+      {children}
+    </div>
+  );
+}
+
 // Process projects data to get monthly growth data
 function processMonthlyData(projects) {
+  if (!Array.isArray(projects) || projects.length === 0) {
+    return [];
+  }
+
   const months = [];
   const now = new Date();
 
   // Get last 12 months
   for (let i = 11; i >= 0; i--) {
     const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const monthName = date.toLocaleDateString('en-US', { month: 'short' });
     const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-    const monthName = date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
     
     months.push({
       month: monthName,
-      fullMonth: monthKey,
+      monthKey: monthKey,
       newProjects: 0,
       totalProjects: 0,
     });
   }
 
-  // Count projects by month
+  // Count projects by month using created_at
   let cumulative = 0;
   projects.forEach((project) => {
-    if (project.created_at) {
+    if (project && project.created_at) {
       const createdDate = new Date(project.created_at);
-      const monthKey = `${createdDate.getFullYear()}-${String(createdDate.getMonth() + 1).padStart(2, '0')}`;
+      const projectMonthKey = `${createdDate.getFullYear()}-${String(createdDate.getMonth() + 1).padStart(2, '0')}`;
       
-      const monthIndex = months.findIndex((m) => m.fullMonth === monthKey);
+      const monthIndex = months.findIndex((m) => m.monthKey === projectMonthKey);
       if (monthIndex !== -1) {
         months[monthIndex].newProjects += 1;
       }
     }
   });
 
-  // Calculate cumulative total
+  // Calculate cumulative
   months.forEach((m) => {
     cumulative += m.newProjects;
     m.totalProjects = cumulative;
   });
 
   return months;
+}
+
+// Process projects by program
+function processProjectsByProgram(programs, projects) {
+  if (!Array.isArray(programs) || !Array.isArray(projects)) {
+    return [];
+  }
+
+  const colors = ['#EF4444', '#F97316', '#B45309', '#92400E', '#78350F'];
+  
+  return programs.map((program, index) => {
+    if (!program) return null;
+    
+    // Count projects linked to this program
+    const projectCount = projects.filter((project) => {
+      if (!project) return false;
+      const programIds = project.project_programs?.map(pp => pp.programs?.id) || [];
+      return programIds.includes(program.id);
+    }).length;
+
+    return {
+      name: program.program_name?.length > 10 
+        ? program.program_name.substring(0, 10) + '...' 
+        : program.program_name || 'Other',
+      fullName: program.program_name || 'Unnamed',
+      projects: projectCount,
+      fill: colors[index % colors.length],
+    };
+  }).filter(p => p && p.projects > 0).sort((a, b) => b.projects - a.projects).slice(0, 5);
 }
 
 export default function Dashboard() {
@@ -114,6 +262,7 @@ export default function Dashboard() {
     members: [],
     students: [],
   });
+  const [isPageVisible, setIsPageVisible] = useState(false);
 
   const fetchDashboardData = async () => {
     try {
@@ -128,18 +277,17 @@ export default function Dashboard() {
         getAllStudents(),
       ]);
 
-      // Services may return { data: [...] } or the array directly
-      const getData = (res) => {
-        if (Array.isArray(res)) return res;
-        if (res && Array.isArray(res.data)) return res.data;
-        return [];
-      };
+      // Extract data from response - services return res.data
+      const membersData = membersRes?.data || membersRes || [];
+      const programsData = programsRes?.data || programsRes || [];
+      const projectsData = projectsRes?.data || projectsRes || [];
+      const studentsData = studentsRes?.data || studentsRes || [];
 
       setData({
-        members: getData(membersRes),
-        programs: getData(programsRes),
-        projects: getData(projectsRes),
-        students: getData(studentsRes),
+        members: Array.isArray(membersData) ? membersData : [],
+        programs: Array.isArray(programsData) ? programsData : [],
+        projects: Array.isArray(projectsData) ? projectsData : [],
+        students: Array.isArray(studentsData) ? studentsData : [],
       });
     } catch (err) {
       console.error("Failed to fetch dashboard data:", err);
@@ -151,17 +299,26 @@ export default function Dashboard() {
 
   useEffect(() => {
     fetchDashboardData();
+    // Page load animation
+    const timer = setTimeout(() => setIsPageVisible(true), 100);
+    return () => clearTimeout(timer);
   }, []);
 
-  // Calculate instructor count from members
+  // Calculate instructor count
   const instructorCount = useMemo(() => {
-    return data.members.filter((m) => m.is_instructor === true).length;
+    if (!Array.isArray(data.members)) return 0;
+    return data.members.filter((m) => m && m.is_instructor === true).length;
   }, [data.members]);
 
-  // Process monthly project data
+  // Process monthly data
   const monthlyData = useMemo(() => {
     return processMonthlyData(data.projects);
   }, [data.projects]);
+
+  // Process program distribution
+  const projectsByProgram = useMemo(() => {
+    return processProjectsByProgram(data.programs, data.projects);
+  }, [data.programs, data.projects]);
 
   if (loading) {
     return (
@@ -172,19 +329,19 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="p-4 md:p-6 lg:p-8">
-      {/* Page Header */}
-      <div className="mb-6">
-        <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Dashboard</h1>
-      </div>
+    <div className={`min-h-screen bg-gray-100 p-6 transition-opacity duration-700 ${isPageVisible ? 'opacity-100' : 'opacity-0'}`}>
+      {/* Page Title with animation */}
+      <h1 className={`text-2xl font-semibold text-gray-800 mb-6 transform transition-all duration-500 ${isPageVisible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'}`}>
+        Dashboard
+      </h1>
 
       {error && (
-        <div className="mb-6 bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3">
+        <div className="mb-6 bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3 animate-pulse">
           <ExclamationCircleIcon className="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" />
           <div>
             <p className="text-sm font-medium text-red-800">{error}</p>
-            <button
-              onClick={fetchDashboardData}
+            <button 
+              onClick={fetchDashboardData} 
               className="mt-2 text-sm text-red-600 hover:text-red-700 underline"
             >
               Try again
@@ -193,106 +350,106 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* Stats Cards Grid - Responsive */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-6">
-        <StatCard
-          count={data.programs.length}
-          label="Programs"
-          icon={AcademicCapIcon}
-          link="/admin/academics/programs"
-        />
-        <StatCard
-          count={data.projects.length}
-          label="Projects"
-          icon={FolderIcon}
-          link="/admin/academics/projects"
-        />
-        <StatCard
-          count={instructorCount}
-          label="Instructors"
-          icon={UsersIcon}
-          link="/admin/team/members"
-        />
-        <StatCard
-          count={data.students.length}
-          label="Students"
-          icon={UserGroupIcon}
-          link="/admin/academics/programs"
-        />
-      </div>
-
-      {/* Project Growth Chart */}
-      <div className="bg-white rounded-2xl border border-gray-200 p-4 md:p-6">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
-          <div>
-            <h2 className="text-lg font-semibold text-gray-900">Project Growth</h2>
-            <p className="text-sm text-gray-500">Monthly project creation over the last 12 months</p>
+      <div className="grid grid-cols-12 gap-6">
+        {/* MAIN CONTENT */}
+        <div className="col-span-12 xl:col-span-9">
+          {/* Stats - Exact transition from CSS with modal colors */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-0 mb-6">
+            <StatCard
+              title="Programs"
+              count={data.programs.length}
+              subtitle="Academic programs"
+              icon={AcademicCapIcon}
+              delay={200}
+            />
+            <StatCard
+              title="Projects"
+              count={data.projects.length}
+              subtitle="Student projects"
+              icon={FolderIcon}
+              delay={300}
+            />
+            <StatCard
+              title="Instructors"
+              count={instructorCount}
+              subtitle="Team members"
+              icon={UsersIcon}
+              delay={400}
+            />
+            <StatCard
+              title="Students"
+              count={data.students.length}
+              subtitle="Enrolled students"
+              icon={UserGroupIcon}
+              delay={500}
+            />
           </div>
-          
-          {/* Legend */}
-          <div className="flex items-center gap-4 text-sm">
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-orange-500" />
-              <span className="text-gray-600">Total Projects</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-orange-300" />
-              <span className="text-gray-600">New Projects</span>
-            </div>
+
+          {/* Charts with animation */}
+          <div className="grid md:grid-cols-2 gap-6">
+            {/* Project Growth */}
+            <ChartContainer title="Project Growth" delay={600}>
+              <div className="h-[240px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={monthlyData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
+                    <XAxis dataKey="month" fontSize={12} />
+                    <YAxis fontSize={12} />
+                    <Tooltip content={<AreaTooltip />} />
+                    <Area
+                      type="monotone"
+                      dataKey="totalProjects"
+                      stroke="#111827"
+                      fill="#e5e7eb"
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="newProjects"
+                      stroke="#93c5fd"
+                      strokeDasharray="5 5"
+                      fill="transparent"
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </ChartContainer>
+
+            {/* Program Distribution */}
+            <ChartContainer title="Program Distribution" delay={700}>
+              <div className="h-[240px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={projectsByProgram}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
+                    <XAxis dataKey="name" fontSize={11} />
+                    <YAxis />
+                    <Tooltip content={<BarTooltip />} />
+                    <Bar dataKey="projects" radius={[6, 6, 0, 0]}>
+                      {projectsByProgram.map((entry, index) => (
+                        <Cell key={index} fill={entry?.fill || '#F97316'} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </ChartContainer>
           </div>
         </div>
-        
-        {/* Chart */}
-        <div className="h-64 sm:h-72 lg:h-80">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart
-              data={monthlyData}
-              margin={{ top: 5, right: 10, left: -10, bottom: 5 }}
-            >
-              <CartesianGrid 
-                strokeDasharray="3 3" 
-                stroke="#E5E7EB" 
-                vertical={false}
-              />
-              <XAxis 
-                dataKey="month" 
-                stroke="#9CA3AF" 
-                fontSize={11}
-                tickLine={false}
-                axisLine={false}
-                dy={10}
-              />
-              <YAxis 
-                stroke="#9CA3AF" 
-                fontSize={11}
-                tickLine={false}
-                axisLine={false}
-                dx={-10}
-                tickFormatter={(value) => value}
-              />
-              <Tooltip content={<CustomTooltip />} />
-              <Line
-                type="monotone"
-                dataKey="totalProjects"
-                name="Total Projects"
-                stroke="#F97316"
-                strokeWidth={3}
-                dot={{ fill: '#F97316', strokeWidth: 0, r: 4, cx: 0, cy: 0 }}
-                activeDot={{ r: 6, fill: '#EA580C', stroke: '#fff', strokeWidth: 2 }}
-                connectNulls
-              />
-              <Line
-                type="monotone"
-                dataKey="newProjects"
-                name="New Projects"
-                stroke="#FDBA74"
-                strokeWidth={2}
-                dot={{ fill: '#FDBA74', strokeWidth: 0, r: 3 }}
-                activeDot={{ r: 5, fill: '#F97316', stroke: '#fff', strokeWidth: 2 }}
-                connectNulls
-              />
-            </LineChart>
-          </ResponsiveContainer>
+
+        {/* RIGHT SIDEBAR - Quick Actions */}
+        <div className="col-span-12 xl:col-span-3">
+          <div className={`bg-white rounded-xl border border-gray-200 p-4 shadow-sm hover:shadow-xl transition-shadow duration-500 ${isPageVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'}`} style={{ transitionDelay: '400ms' }}>
+            <h3 className="text-sm font-semibold text-gray-700 mb-4">
+              Quick Actions
+            </h3>
+            <div className="space-y-0">
+              <QuickActionButton text="Manage Home" link="/admin/content/home" icon={HomeIcon} delay={500} />
+              <QuickActionButton text="Manage About" link="/admin/content/about" icon={InformationCircleIcon} delay={550} />
+              <QuickActionButton text="Manage Programs" link="/admin/academics/programs" icon={AcademicCapIcon} delay={600} />
+              <QuickActionButton text="Manage Projects" link="/admin/academics/projects" icon={FolderIcon} delay={650} />
+              <QuickActionButton text="Manage Members" link="/admin/team/members" icon={UsersIcon} delay={700} />
+              <QuickActionButton text="Manage Contact" link="/admin/contact" icon={EnvelopeIcon} delay={750} />
+            </div>
+          </div>
         </div>
       </div>
     </div>
