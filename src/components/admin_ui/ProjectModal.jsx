@@ -27,7 +27,6 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
   const [tasks, setTasks] = useState([]);
   const [leader, setLeader] = useState("");
   const [duration, setDuration] = useState("");
-  const [teamSize, setTeamSize] = useState("");
   const [githubUrl, setGithubUrl] = useState("");
   const [result, setResult] = useState("");
   const [loading, setLoading] = useState(false);
@@ -363,7 +362,6 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
         tasks: filteredTasks.length > 0 ? filteredTasks : [],
         leader: leader?.trim() || null,
         duration: duration?.trim() || null,
-        team_size: teamSize && teamSize.trim() ? parseInt(teamSize) : null,
         github_url: githubUrl?.trim() || null,
         images: imageUrls.length > 0 ? imageUrls : [],
         video_url: result?.trim() || null,
@@ -501,7 +499,6 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
     setTasks(Array.isArray(item?.tasks) ? item.tasks : []);
     setLeader(item?.leader || "");
     setDuration(item?.duration?.toString() || "");
-    setTeamSize(item?.team_size?.toString() || "");
     setGithubUrl(item?.github_url || "");
     setResult(item?.video_url || ""); // Use video_url from backend
     setExistingImages(item?.images || []);
@@ -553,7 +550,6 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
         setTasks([]);
         setLeader("");
         setDuration("");
-        setTeamSize("");
         setGithubUrl("");
         setResult("");
         setExistingImages([]);
@@ -875,27 +871,6 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
                     focus:outline-none focus:ring-2 focus:ring-orange-400 transition"
                   />
                 </div>
-              </div>
-
-              {/* Team Size */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Team Size</label>
-
-                <input
-                  type="number"
-                  min="1"
-                  value={teamSize}
-                  placeholder="e.g., 5"
-                  onChange={(e) => setTeamSize(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.target.blur();
-                    }
-                  }}
-                  onWheel={(e) => e.target.blur()}
-                  className="w-full rounded-lg border border-gray-300 bg-white px-3 sm:px-4 py-2 sm:py-2.5 text-sm shadow-sm
-                  focus:outline-none focus:ring-2 focus:ring-orange-400 transition"
-                />
               </div>
 
               {/* GitHub Repository URL */}
