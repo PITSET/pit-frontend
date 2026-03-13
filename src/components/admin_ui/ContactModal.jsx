@@ -108,6 +108,8 @@ export default function ContactModal({ isOpen, onClose, onRefresh, item }) {
       toast.error("Map URL is required");
       return false;
     }
+    
+    return true;
   };
 
   // Reset form helper
