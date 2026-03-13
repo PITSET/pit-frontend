@@ -61,7 +61,7 @@ export default function Home() {
     const load = async () => {
       setIsLoadingProjects(true);
       try {
-        const [homeRes, projectsRes] = await Promise.all([
+        const [homeRes, projectsRes, programsRes] = await Promise.all([
           api.get("/home").catch((e) => {
             console.error("Failed to load /api/home:", e);
             return { data: [] };
@@ -70,7 +70,15 @@ export default function Home() {
             console.error("Failed to load /api/projects:", e);
             return { data: [] };
           }),
+          api.get("/programs").catch((e) => {
+            console.error("Failed to load /api/programs:", e);
+            return { data: [] };
+          }),
         ]);
+
+        const allPrograms = Array.isArray(programsRes.data)
+          ? programsRes.data
+          : programsRes.data?.data || programsRes.data?.programs || [];
 
         const raw = Array.isArray(homeRes.data) ? homeRes.data : homeRes.data?.data || homeRes.data?.home || [];
         const activeItems = (Array.isArray(raw) ? raw : []).filter((item) => item?.is_active === true);
@@ -135,6 +143,18 @@ export default function Home() {
               }
             }
 
+            // Resolve program IDs -> program names
+            const projectProgramIds = Array.isArray(item.programs) ? item.programs : [];
+            const programNames = projectProgramIds
+              .map((pid) => {
+                const found = allPrograms.find((p) => p.id === pid || p.id === Number(pid));
+                return found?.program_name || found?.name || null;
+              })
+              .filter(Boolean);
+
+            // Resolve student count
+            const studentCount = Array.isArray(item.students) ? item.students.length : (item.team_size || 0);
+
             return {
               ...item,
               image: resolveAssetUrl(imgVal || ""),
@@ -143,6 +163,8 @@ export default function Home() {
               ),
               title: item?.name || item?.title || "",
               desc: item?.overview || item?.desc || item?.description || item?.content || "",
+              programNames,
+              studentCount,
             };
         })
         .filter((item) => item.title || item.desc || item.image);

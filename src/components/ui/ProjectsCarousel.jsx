@@ -53,9 +53,23 @@ export default function ProjectsCarousel({ projects = [], isLoadingProjects = fa
                 {isLoadingProjects ? "" : projects[index]?.title || "Project Title"}
               </h3>
 
-              <p className="text-gray-600 text-[15px] md:text-base leading-relaxed mb-6">
+              <p className="text-gray-600 text-[15px] md:text-base leading-relaxed mb-4">
                 {isLoadingProjects ? "" : projects[index]?.overview || projects[index]?.desc || "No overview available"}
               </p>
+
+              {/* Program tags */}
+              {!isLoadingProjects && projects[index]?.programNames?.length > 0 && (
+                <div className="flex flex-wrap gap-2 mb-5">
+                  {projects[index].programNames.map((name, i) => (
+                    <span
+                      key={i}
+                      className="bg-red-50 text-red-700 text-xs font-semibold px-3 py-1 rounded-full border border-red-200"
+                    >
+                      {name}
+                    </span>
+                  ))}
+                </div>
+              )}
 
               <Link
                 to={`/projects/${projects[index]?.id}`}

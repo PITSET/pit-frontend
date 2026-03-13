@@ -22,6 +22,7 @@ export default function ProjectDetail() {
   const [loading, setLoading] = useState(true);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [totalImages, setTotalImages] = useState(0);
+  const [programNames, setProgramNames] = useState([]);
 
   // Auto-slide: advance every 5 seconds when there are multiple images
   useEffect(() => {
@@ -43,11 +44,33 @@ export default function ProjectDetail() {
     const fetchProject = async () => {
       setLoading(true);
       try {
-        const res = await api.get(`/projects/${id}`);
+        const [projectRes, programsRes] = await Promise.all([
+          api.get(`/projects/${id}`),
+          api.get("/programs").catch(() => ({ data: [] })),
+        ]);
+
         // Support either standard project array return with single object or object wrapper
-        const data = Array.isArray(res.data) ? res.data[0] : res.data?.data || res.data?.project || res.data;
+        const data = Array.isArray(projectRes.data)
+          ? projectRes.data[0]
+          : projectRes.data?.data || projectRes.data?.project || projectRes.data;
+
         if (isActive && data) {
           setProject(data);
+
+          // Resolve program IDs -> names
+          const allPrograms = Array.isArray(programsRes.data)
+            ? programsRes.data
+            : programsRes.data?.data || programsRes.data?.programs || [];
+
+          const projectProgramIds = Array.isArray(data.programs) ? data.programs : [];
+          const names = projectProgramIds
+            .map((pid) => {
+              const found = allPrograms.find((p) => p.id === pid || p.id === Number(pid));
+              return found?.program_name || found?.name || null;
+            })
+            .filter(Boolean);
+
+          setProgramNames(names);
         }
       } catch (err) {
         console.error("Failed to fetch project detail:", err);
@@ -178,10 +201,12 @@ export default function ProjectDetail() {
                 </div>
               )}
 
-              <div className="flex">
-                <span className="w-28 text-white font-bold">Program :</span>
-                <span className="text-gray-300">Mechatronics Engineering</span>
-              </div>
+              {programNames.length > 0 && (
+                <div className="flex">
+                  <span className="w-28 text-white font-bold">Program :</span>
+                  <span className="text-gray-300">{programNames.join(", ")}</span>
+                </div>
+              )}
 
               {project.duration && (
                 <div className="flex">
@@ -195,10 +220,15 @@ export default function ProjectDetail() {
                 <span className="text-gray-300">{formatProjectDate(project.created_at || project.date || project.updated_at)}</span>
               </div>
 
-              {project.team_size && (
+              {(project.team_size || (Array.isArray(project.students) && project.students.length > 0)) && (
                 <div className="flex">
                   <span className="w-28 text-white font-bold">Team Size :</span>
-                  <span className="text-gray-300">{project.team_size} Students</span>
+                  <span className="text-gray-300">
+                    {Array.isArray(project.students) && project.students.length > 0
+                      ? project.students.length
+                      : project.team_size}{" "}
+                    Students
+                  </span>
                 </div>
               )}
             </div>
