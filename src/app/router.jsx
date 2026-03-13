@@ -9,6 +9,7 @@ import Contact from "../pages/public/Contact";
 import Program from "../pages/public/Program";
 import ProgramDetail from "../pages/public/ProgramDetail";
 import Instructor from "../pages/public/Instructor";
+import InstructorDetail from "../pages/public/InstructorDetail";
 
 
 
@@ -36,6 +37,8 @@ const router = createBrowserRouter([
       { path: "/program", element: <Navigate to="/programs" replace /> },
       
       { path: "/instructor", element: <Instructor /> },
+      { path: "/instructor/:id", element: <InstructorDetail /> },
+
     ],
   },
 
