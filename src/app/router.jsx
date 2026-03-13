@@ -26,6 +26,8 @@ import AdminContact from "../pages/admin/AdminContact";
 import AdminPrograms from "../pages/admin/AdminPrograms";
 import AdminProjects from "../pages/admin/AdminProjects";
 import AdminMembers from "../pages/admin/AdminMembers";
+import AcceptInvite from "../pages/admin/AcceptInvite";
+import ResetPassword from "../pages/admin/ResetPassword";
 
 const router = createBrowserRouter([
   {
@@ -49,6 +51,16 @@ const router = createBrowserRouter([
   {
     path: "/admin/login",
     element: <Login />,
+  },
+
+  {
+    path: "/admin/accept-invite",
+    element: <AcceptInvite />,
+  },
+
+  {
+    path: "/admin/reset-password",
+    element: <ResetPassword />,
   },
 
   {
