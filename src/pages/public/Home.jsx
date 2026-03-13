@@ -143,17 +143,22 @@ export default function Home() {
               }
             }
 
-            // Resolve program IDs -> program names
-            const projectProgramIds = Array.isArray(item.programs) ? item.programs : [];
-            const programNames = projectProgramIds
-              .map((pid) => {
-                const found = allPrograms.find((p) => p.id === pid || p.id === Number(pid));
+            // Resolve program names (handle IDs or Objects)
+            const projectPrograms = Array.isArray(item.programs) ? item.programs : [];
+            const programNames = projectPrograms
+              .map((pOrId) => {
+                if (typeof pOrId === "object" && pOrId !== null) {
+                  return pOrId.program_name || pOrId.name;
+                }
+                const found = allPrograms.find((p) => String(p.id) === String(pOrId));
                 return found?.program_name || found?.name || null;
               })
               .filter(Boolean);
-
-            // Resolve student count
-            const studentCount = Array.isArray(item.students) ? item.students.length : (item.team_size || 0);
+  
+            // Resolve student count (calculate from linked students only)
+            const studentCount = Array.isArray(item.students) 
+              ? item.students.length 
+              : 0; // Don't use team_size per user instruction
 
             return {
               ...item,

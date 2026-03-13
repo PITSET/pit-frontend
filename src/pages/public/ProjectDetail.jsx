@@ -23,6 +23,8 @@ export default function ProjectDetail() {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [totalImages, setTotalImages] = useState(0);
   const [programNames, setProgramNames] = useState([]);
+  const [studentNames, setStudentNames] = useState([]);
+  const [studentCount, setStudentCount] = useState(0);
 
   // Auto-slide: advance every 5 seconds when there are multiple images
   useEffect(() => {
@@ -57,20 +59,38 @@ export default function ProjectDetail() {
         if (isActive && data) {
           setProject(data);
 
-          // Resolve program IDs -> names
+          // Resolve program names (handle IDs or Objects)
           const allPrograms = Array.isArray(programsRes.data)
             ? programsRes.data
             : programsRes.data?.data || programsRes.data?.programs || [];
 
-          const projectProgramIds = Array.isArray(data.programs) ? data.programs : [];
-          const names = projectProgramIds
-            .map((pid) => {
-              const found = allPrograms.find((p) => p.id === pid || p.id === Number(pid));
+          const projectPrograms = Array.isArray(data.programs) ? data.programs : [];
+          const pNames = projectPrograms
+            .map((pOrId) => {
+              if (typeof pOrId === "object" && pOrId !== null) {
+                return pOrId.program_name || pOrId.name;
+              }
+              const found = allPrograms.find((p) => String(p.id) === String(pOrId));
               return found?.program_name || found?.name || null;
             })
             .filter(Boolean);
+          setProgramNames(pNames);
 
-          setProgramNames(names);
+          // Resolve student names from project data (no separate fetch needed)
+          const studentsData = Array.isArray(data.students) ? data.students : [];
+          
+          setStudentCount(studentsData.length);
+
+          const sNames = studentsData
+            .map(s => {
+              if (typeof s === 'object' && s !== null) {
+                return s.full_name || s.name;
+              }
+              return null;
+            })
+            .filter(Boolean);
+          
+          setStudentNames(sNames);
         }
       } catch (err) {
         console.error("Failed to fetch project detail:", err);
@@ -195,42 +215,63 @@ export default function ProjectDetail() {
 
             <div className="space-y-5 text-sm md:text-[15px] font-medium tracking-wide">
               {project.leader && (
-                <div className="flex">
-                  <span className="w-28 text-white font-bold">Leader :</span>
+                <div className="flex items-center">
+                  <span className="w-28 text-white font-bold shrink-0">Leader :</span>
                   <span className="text-gray-300">{project.leader}</span>
                 </div>
               )}
 
-              {programNames.length > 0 && (
-                <div className="flex">
-                  <span className="w-28 text-white font-bold">Program :</span>
-                  <span className="text-gray-300">{programNames.join(", ")}</span>
-                </div>
-              )}
+              <div className="flex items-start">
+                <span className="w-28 text-white font-bold shrink-0">Program :</span>
+                {programNames.length > 0 ? (
+                  <div className="flex flex-wrap gap-2">
+                    {programNames.map((name, i) => (
+                      <span
+                        key={i}
+                        className="bg-red-600/20 text-red-300 border border-red-500/40 text-xs font-semibold px-3 py-1 rounded-full shadow-sm"
+                      >
+                        {name}
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  <span className="text-gray-500">—</span>
+                )}
+              </div>
 
               {project.duration && (
-                <div className="flex">
-                  <span className="w-28 text-white font-bold">Duration :</span>
+                <div className="flex items-center">
+                  <span className="w-28 text-white font-bold shrink-0">Duration :</span>
                   <span className="text-gray-300">{project.duration} Weeks</span>
                 </div>
               )}
 
-              <div className="flex">
-                <span className="w-28 text-white font-bold">Created at :</span>
-                <span className="text-gray-300">{formatProjectDate(project.created_at || project.date || project.updated_at)}</span>
+              <div className="flex items-center">
+                <span className="w-28 text-white font-bold shrink-0">Released :</span>
+                <span className="text-gray-300">
+                  {formatProjectDate(project.created_at || project.date || project.updated_at)}
+                </span>
               </div>
 
-              {(project.team_size || (Array.isArray(project.students) && project.students.length > 0)) && (
-                <div className="flex">
-                  <span className="w-28 text-white font-bold">Team Size :</span>
+              <div className="flex items-start">
+                <span className="w-28 text-white font-bold shrink-0">Contributors :</span>
+                {studentNames.length > 0 ? (
+                  <div className="flex flex-wrap gap-2">
+                    {studentNames.map((name, i) => (
+                      <span
+                        key={i}
+                        className="bg-orange-600/20 text-orange-200 border border-orange-500/40 text-xs font-semibold px-3 py-1 rounded-full shadow-sm"
+                      >
+                        {name}
+                      </span>
+                    ))}
+                  </div>
+                ) : (
                   <span className="text-gray-300">
-                    {Array.isArray(project.students) && project.students.length > 0
-                      ? project.students.length
-                      : project.team_size}{" "}
-                    Students
+                    {studentCount} Students
                   </span>
-                </div>
-              )}
+                )}
+              </div>
             </div>
 
             {/* Source Code Section */}
