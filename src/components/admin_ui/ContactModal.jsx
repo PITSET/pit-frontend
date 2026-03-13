@@ -24,6 +24,21 @@ export default function ContactModal({ isOpen, onClose, onRefresh, item }) {
   const [mapUrl, setMapUrl] = useState("");
   
   const [loading, setLoading] = useState(false);
+  const [emailError, setEmailError] = useState("");
+
+  // Validate email format
+  const validateEmail = (emailValue) => {
+    if (!emailValue || !emailValue.trim()) {
+      return { valid: true, message: "" };
+    }
+    
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(emailValue.trim())) {
+      return { valid: false, message: "Please enter a valid email address" };
+    }
+    
+    return { valid: true, message: "" };
+  };
 
   // Reset form when modal opens
   useEffect(() => {
@@ -33,12 +48,14 @@ export default function ContactModal({ isOpen, onClose, onRefresh, item }) {
         setPhone(item.phone || "");
         setAddress(item.address || "");
         setMapUrl(item.map_url || "");
+        setEmailError("");
       } else {
         // Reset for create mode
         setEmail("");
         setPhone("");
         setAddress("");
         setMapUrl("");
+        setEmailError("");
       }
     }
   }, [isOpen, item]);
@@ -47,6 +64,12 @@ export default function ContactModal({ isOpen, onClose, onRefresh, item }) {
   const validateForm = () => {
     if (!email.trim()) {
       toast.error("Email is required");
+      return false;
+    }
+    
+    const emailValidation = validateEmail(email);
+    if (!emailValidation.valid) {
+      toast.error(emailValidation.message);
       return false;
     }
     if (!phone.trim()) {
@@ -69,6 +92,7 @@ export default function ContactModal({ isOpen, onClose, onRefresh, item }) {
     setPhone(item?.phone || "");
     setAddress(item?.address || "");
     setMapUrl(item?.map_url || "");
+    setEmailError("");
   };
 
   // Save changes
@@ -156,11 +180,24 @@ export default function ContactModal({ isOpen, onClose, onRefresh, item }) {
               <input
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-orange-500 focus:border-orange-500 text-gray-900 bg-white"
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setEmail(value);
+                  // Validate email format
+                  if (value) {
+                    const validation = validateEmail(value);
+                    setEmailError(validation.message);
+                  } else {
+                    setEmailError("");
+                  }
+                }}
+                className={`block w-full pl-10 pr-3 py-2.5 border rounded-lg focus:ring-orange-500 text-gray-900 bg-white ${emailError ? 'border-red-500' : 'border-gray-300'}`}
                 placeholder="Enter email address"
               />
             </div>
+            {emailError && (
+              <p className="text-xs text-red-500">{emailError}</p>
+            )}
           </div>
 
           {/* Phone Field */}
