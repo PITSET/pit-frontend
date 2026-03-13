@@ -76,9 +76,13 @@ export default function AdminProjects() {
   const filteredData = useMemo(() => {
     let result = data;
 
-    // Filter by program
+    // Filter by program - backend returns nested structure: project_programs: [{ programs: { id: 1 } }]
     if (programFilter !== "all") {
-      result = result.filter(item => item.programs?.includes(programFilter));
+      result = result.filter(item => {
+        // Extract program IDs from nested structure
+        const programIds = item.project_programs?.map(pp => pp.programs?.id) || [];
+        return programIds.includes(programFilter);
+      });
     }
 
     // Filter by status
