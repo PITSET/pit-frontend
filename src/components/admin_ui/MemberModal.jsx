@@ -229,6 +229,26 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
           .getPublicUrl(fileName);
 
         imageUrlToSave = `${data.publicUrl}?t=${Date.now()}`;
+
+        // Delete old image if replacing an existing member's image
+        if (item?.image_url) {
+          try {
+            const oldUrlParts = item.image_url.split("/");
+            const oldFileName = oldUrlParts[oldUrlParts.length - 1].split("?")[0];
+            
+            if (oldFileName) {
+              const { error: deleteError } = await supabase.storage
+                .from("member_images")
+                .remove([oldFileName]);
+              
+              if (deleteError) {
+                console.warn("Failed to delete old image:", deleteError);
+              }
+            }
+          } catch (err) {
+            console.warn("Error deleting old image:", err);
+          }
+        }
       }
 
       // Filter out empty achievements and skills
@@ -255,6 +275,12 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
           return;
         }
 
+        if (!bio || !bio.trim()) {
+          toast.error("Please enter a biography", { id: toastId });
+          setLoading(false);
+          return;
+        }
+
         // At least one role must be selected
         if (!isFounder && !isInstructor) {
           toast.error("Please select at least one role: Founder or Instructor", { id: toastId });
@@ -277,6 +303,12 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
         // Validate required fields for update
         if (!name || !name.trim()) {
           toast.error("Please enter a name", { id: toastId });
+          setLoading(false);
+          return;
+        }
+
+        if (!bio || !bio.trim()) {
+          toast.error("Please enter a biography", { id: toastId });
           setLoading(false);
           return;
         }
@@ -631,7 +663,7 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
 
           {/* Bio */}
           <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700">Biography</label>
+            <label className="text-sm font-medium text-gray-700">Biography (required)</label>
             <textarea
               value={bio}
               placeholder="Enter biography..."
