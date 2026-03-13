@@ -22,18 +22,35 @@ export default function ProjectsCollection({ projects = [], isLoading = false })
   const filteredProjects = useMemo(() => {
     return projects.filter((project) => {
       // Filter by tab (program)
-      const matchesTab =
-        activeTab === "All" ||
-        (project.program || "Mechatronics Engineering") === activeTab;
+      let matchesTab = activeTab === "All";
+      
+      if (!matchesTab) {
+        // Support programs as an array of objects or strings
+        const programList = Array.isArray(project.programs) ? project.programs : [];
+        const targetTab = activeTab.toLowerCase().trim();
+
+        matchesTab = programList.some(p => {
+          if (typeof p === 'object' && p !== null) {
+            const name = (p.program_name || p.name || "").toLowerCase().trim();
+            return name === targetTab;
+          }
+          return typeof p === "string" && p.toLowerCase().trim() === targetTab;
+        });
+
+        // Fallback to legacy single program field
+        if (!matchesTab && project.program) {
+          matchesTab = project.program.toLowerCase().trim() === targetTab;
+        }
+      }
 
       // Filter by search query (name or keyword/overview)
       const query = searchQuery.toLowerCase().trim();
       const matchesSearch =
         !query ||
         project.title?.toLowerCase().includes(query) ||
-        project.desc?.toLowerCase().includes(query) ||
         project.name?.toLowerCase().includes(query) ||
-        project.overview?.toLowerCase().includes(query);
+        project.overview?.toLowerCase().includes(query) ||
+        project.desc?.toLowerCase().includes(query);
 
       return matchesTab && matchesSearch;
     });

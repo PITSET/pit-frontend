@@ -52,7 +52,7 @@ export default function Projects() {
               title: item.name || item.title || "",
               desc: item.overview || item.desc || item.description || "",
               image: resolveAssetUrl(imgVal || ""),
-              program: item.program || "Mechatronics Engineering", // Default mapping for categorization
+              programs: item.programs || [],
               date: formatProjectDate(item.created_at || item.date),
             };
           });
