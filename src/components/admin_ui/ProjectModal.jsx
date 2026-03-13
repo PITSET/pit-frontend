@@ -700,7 +700,9 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
             <div className="space-y-4">
               {/* Project Name */}
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Project Name</label>
+                <label className="text-sm font-medium text-gray-700">
+                  Project Name <span className="text-red-500">*</span>
+                </label>
 
                 <input
                   type="text"
@@ -719,7 +721,9 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
 
               {/* Project Leader */}
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Leader</label>
+                <label className="text-sm font-medium text-gray-700">
+                  Leader <span className="text-red-500">*</span>
+                </label>
 
                 <input
                   type="text"
@@ -738,7 +742,9 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
 
               {/* Programs */}
               <div className="space-y-2" ref={programDropdownRef}>
-                <label className="text-sm font-medium text-gray-700">Programs</label>
+                <label className="text-sm font-medium text-gray-700">
+                  Programs <span className="text-red-500">*</span>
+                </label>
                 
                 {programsLoading ? (
                   <div className="flex items-center gap-2 text-gray-500">
@@ -792,7 +798,9 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
 
               {/* Students */}
               <div className="space-y-2" ref={studentDropdownRef}>
-                <label className="text-sm font-medium text-gray-700">Students</label>
+                <label className="text-sm font-medium text-gray-700">
+                  Students <span className="text-red-500">*</span>
+                </label>
                 
                 {studentsLoading ? (
                   <div className="flex items-center gap-2 text-gray-500">
