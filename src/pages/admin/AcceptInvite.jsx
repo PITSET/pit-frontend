@@ -163,11 +163,18 @@ export default function AcceptInvite() {
             throw updateError;
           }
 
-          toast.success("Password set successfully! Redirecting to login...");
+          // Store session tokens for login
+          const session = data.session;
+          localStorage.setItem("token", session.access_token);
+          localStorage.setItem("refreshToken", session.refresh_token);
+          const expiryTime = Date.now() + (session.expires_in * 1000);
+          localStorage.setItem("sessionExpiry", expiryTime.toString());
+
+          toast.success("Account created! Redirecting to dashboard...");
           setIsCompleted(true);
           
           setTimeout(() => {
-            window.location.href = "/admin/login";
+            window.location.href = "/admin/dashboard";
           }, 2000);
           
           setLoading(false);
@@ -196,11 +203,20 @@ export default function AcceptInvite() {
             throw updateError;
           }
 
-          toast.success("Password set successfully! Redirecting to login...");
+          // Get and store session
+          const { data: sessionData } = await supabase.auth.getSession();
+          if (sessionData?.session) {
+            localStorage.setItem("token", sessionData.session.access_token);
+            localStorage.setItem("refreshToken", sessionData.session.refresh_token);
+            const expiryTime = Date.now() + (sessionData.session.expires_in * 1000);
+            localStorage.setItem("sessionExpiry", expiryTime.toString());
+          }
+
+          toast.success("Account created! Redirecting to dashboard...");
           setIsCompleted(true);
           
           setTimeout(() => {
-            window.location.href = "/admin/login";
+            window.location.href = "/admin/dashboard";
           }, 2000);
           
           setLoading(false);
@@ -219,11 +235,17 @@ export default function AcceptInvite() {
           throw updateError;
         }
 
-        toast.success("Password set successfully! Redirecting to login...");
+        // Store session tokens
+        localStorage.setItem("token", sessionData.session.access_token);
+        localStorage.setItem("refreshToken", sessionData.session.refresh_token);
+        const expiryTime = Date.now() + (sessionData.session.expires_in * 1000);
+        localStorage.setItem("sessionExpiry", expiryTime.toString());
+
+        toast.success("Account created! Redirecting to dashboard...");
         setIsCompleted(true);
         
         setTimeout(() => {
-          window.location.href = "/admin/login";
+          window.location.href = "/admin/dashboard";
         }, 2000);
         
         setLoading(false);
@@ -239,11 +261,20 @@ export default function AcceptInvite() {
         });
 
         if (!finalError) {
-          toast.success("Password set successfully! Redirecting to login...");
+          // Try to get session
+          const { data: newSession } = await supabase.auth.getSession();
+          if (newSession?.session) {
+            localStorage.setItem("token", newSession.session.access_token);
+            localStorage.setItem("refreshToken", newSession.session.refresh_token);
+            const expiryTime = Date.now() + (newSession.session.expires_in * 1000);
+            localStorage.setItem("sessionExpiry", expiryTime.toString());
+          }
+
+          toast.success("Account created! Redirecting to dashboard...");
           setIsCompleted(true);
           
           setTimeout(() => {
-            window.location.href = "/admin/login";
+            window.location.href = "/admin/dashboard";
           }, 2000);
           
           setLoading(false);
