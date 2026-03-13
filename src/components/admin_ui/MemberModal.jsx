@@ -279,6 +279,12 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
           return;
         }
 
+        if (!email || !email.trim()) {
+          toast.error("Please enter an email", { id: toastId });
+          setLoading(false);
+          return;
+        }
+
         if (!bio || !bio.trim()) {
           toast.error("Please enter a biography", { id: toastId });
           setLoading(false);
@@ -307,6 +313,12 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
         // Validate required fields for update
         if (!name || !name.trim()) {
           toast.error("Please enter a name", { id: toastId });
+          setLoading(false);
+          return;
+        }
+
+        if (!email || !email.trim()) {
+          toast.error("Please enter an email", { id: toastId });
           setLoading(false);
           return;
         }
@@ -525,7 +537,7 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
               {/* Email */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <label className="text-sm font-medium text-gray-700">Email</label>
+                  <label className="text-sm font-medium text-gray-700">Email <span className="text-red-500">*</span></label>
                   {emailError && (
                     <span className="text-xs text-red-500">{emailError}</span>
                   )}
