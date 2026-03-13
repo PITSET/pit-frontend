@@ -16,6 +16,7 @@ import {
 // api
 import { createProject, updateProject } from "../../lib/services/projectService";
 import { getAllPrograms } from "../../lib/services/programService";
+import { getAllStudents } from "../../lib/services/studentService";
 import { supabase } from "../../lib/supabaseClient";
 
 export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
@@ -36,6 +37,13 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
   const [programsLoading, setProgramsLoading] = useState(false);
   const [showProgramDropdown, setShowProgramDropdown] = useState(false);
   const [urlError, setUrlError] = useState("");
+
+  // Student selection state
+  const [studentIds, setStudentIds] = useState([]);
+  const [students, setStudents] = useState([]);
+  const [studentsLoading, setStudentsLoading] = useState(false);
+  const [showStudentDropdown, setShowStudentDropdown] = useState(false);
+  const studentDropdownRef = useRef(null);
 
   // Refs for auto-focus on newly added objectives and tasks
   const objectiveRefs = useRef([]);
@@ -119,7 +127,23 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
       }
     };
 
+    const fetchStudents = async () => {
+      if (isOpen) {
+        setStudentsLoading(true);
+        try {
+          const response = await getAllStudents();
+          setStudents(response.data || []);
+        } catch (error) {
+          console.error("Failed to fetch students:", error);
+          // Don't show error toast - students are optional
+        } finally {
+          setStudentsLoading(false);
+        }
+      }
+    };
+
     fetchPrograms();
+    fetchStudents();
   }, [isOpen]);
 
   // Close dropdown when clicking outside
@@ -127,6 +151,9 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
     const handleClickOutside = (event) => {
       if (programDropdownRef.current && !programDropdownRef.current.contains(event.target)) {
         setShowProgramDropdown(false);
+      }
+      if (studentDropdownRef.current && !studentDropdownRef.current.contains(event.target)) {
+        setShowStudentDropdown(false);
       }
     };
 
@@ -342,9 +369,8 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
         video_url: result?.trim() || null,
         is_featured: isActive,
         program_ids: programIds,
+        student_ids: studentIds,
       };
-
-      // Note: student_ids is optional - currently not sent as there's no student selection UI
 
       if (isCreate) {
         // Validate required fields for create
@@ -372,6 +398,12 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
 
         if (programIds.length === 0) {
           toast.error("Please select at least one program", { id: toastId });
+          setLoading(false);
+          return;
+        }
+
+        if (studentIds.length === 0) {
+          toast.error("Please select at least one student", { id: toastId });
           setLoading(false);
           return;
         }
@@ -463,6 +495,9 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
     
     // Load program_ids from item (backend returns programs as array of IDs)
     setProgramIds(Array.isArray(item?.programs) ? item.programs : []);
+    
+    // Load student_ids from item (backend returns students as array of IDs)
+    setStudentIds(Array.isArray(item?.students) ? item.students : []);
   };
 
   // Load initial data when modal opens
@@ -485,6 +520,7 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
         setNewImages([]);
         setIsActive(true); // Default to active (is_featured = true)
         setProgramIds([]);
+        setStudentIds([]);
       }
     }
   }, [isOpen, item]);
@@ -495,6 +531,15 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
       setProgramIds(programIds.filter(id => id !== programId));
     } else {
       setProgramIds([...programIds, programId]);
+    }
+  };
+
+  // Toggle student selection
+  const toggleStudent = (studentId) => {
+    if (studentIds.includes(studentId)) {
+      setStudentIds(studentIds.filter(id => id !== studentId));
+    } else {
+      setStudentIds([...studentIds, studentId]);
     }
   };
 
@@ -701,6 +746,66 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
                             )}
                           </button>
                         ))}
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+
+              {/* Students */}
+              <div className="space-y-2" ref={studentDropdownRef}>
+                <label className="text-sm font-medium text-gray-700">Students</label>
+                
+                {studentsLoading ? (
+                  <div className="flex items-center gap-2 text-gray-500">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-orange-500"></div>
+                    <span>Loading students...</span>
+                  </div>
+                ) : (
+                  <>
+                    {/* Custom dropdown button */}
+                    <button
+                      type="button"
+                      onClick={() => setShowStudentDropdown(!showStudentDropdown)}
+                      className="w-full flex items-center justify-between rounded-lg border border-gray-300 bg-white px-3 sm:px-4 py-2 sm:py-2.5 text-sm shadow-sm
+                      focus:outline-none focus:ring-2 focus:ring-orange-400 transition"
+                    >
+                      <span className={studentIds.length > 0 ? "text-gray-900" : "text-gray-500"}>
+                        {studentIds.length > 0 
+                          ? `${studentIds.length} student(s) selected`
+                          : "Select student(s)..."}
+                      </span>
+                      <ChevronDownIcon 
+                        className={`w-4 h-4 text-gray-500 transition-transform ${showStudentDropdown ? "rotate-180" : ""}`} 
+                      />
+                    </button>
+
+                    {/* Dropdown options */}
+                    {showStudentDropdown && (
+                      <div className="mt-1 rounded-lg border border-gray-300 bg-white shadow-sm max-h-40 overflow-y-auto">
+                        {students.length === 0 ? (
+                          <div className="px-3 sm:px-4 py-2 text-sm text-gray-500">
+                            No students available
+                          </div>
+                        ) : (
+                          students.map(student => (
+                            <button
+                              key={student.id}
+                              type="button"
+                              onClick={() => toggleStudent(student.id)}
+                              className={`w-full px-3 sm:px-4 py-2 text-left text-sm transition flex items-center justify-between ${
+                                studentIds.includes(student.id)
+                                  ? "bg-orange-50 text-orange-600"
+                                  : "text-gray-700 bg-white hover:bg-gray-100"
+                              }`}
+                            >
+                              <span>{student.name}</span>
+                              {studentIds.includes(student.id) && (
+                                <CheckIcon className="w-4 h-4 text-orange-500" />
+                              )}
+                            </button>
+                          ))
+                        )}
                       </div>
                     )}
                   </>
