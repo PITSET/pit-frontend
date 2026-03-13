@@ -259,7 +259,7 @@ export default function ContactModal({ isOpen, onClose, onRefresh, item }) {
                     setEmailError("");
                   }
                 }}
-                className={`block w-full pl-10 pr-3 py-2.5 border rounded-lg focus:ring-orange-500 text-gray-900 bg-white ${emailError ? 'border-red-500' : 'border-gray-300'}`}
+                className={`block w-full pl-10 pr-3 py-2.5 border rounded-lg outline-none text-gray-900 bg-white focus-within:ring-2 focus-within:ring-orange-400 ${emailError ? 'border-red-500' : 'border-gray-300'}`}
                 placeholder="Enter email address"
               />
             </div>
@@ -293,7 +293,7 @@ export default function ContactModal({ isOpen, onClose, onRefresh, item }) {
                     setPhoneError("");
                   }
                 }}
-                className={`block w-full pl-10 pr-3 py-2.5 border rounded-lg focus:ring-orange-500 text-gray-900 bg-white ${phoneError ? 'border-red-500' : 'border-gray-300'}`}
+                className={`block w-full pl-10 pr-3 py-2.5 border rounded-lg outline-none text-gray-900 bg-white focus-within:ring-2 focus-within:ring-orange-400 ${phoneError ? 'border-red-500' : 'border-gray-300'}`}
                 placeholder="Enter phone number"
               />
             </div>
@@ -315,7 +315,7 @@ export default function ContactModal({ isOpen, onClose, onRefresh, item }) {
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
                 rows={3}
-                className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-orange-500 focus:border-orange-500 text-gray-900 bg-white resize-none"
+                className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg outline-none text-gray-900 bg-white resize-none focus-within:ring-2 focus-within:ring-orange-400"
                 placeholder="Enter company address"
               />
             </div>
