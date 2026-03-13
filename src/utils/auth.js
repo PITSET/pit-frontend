@@ -1,49 +1,58 @@
-import { supabase } from "../lib/supabaseClient";
+import api from "../lib/api";
 import { toast } from "react-hot-toast";
 
 export const login = async (email, password) => {
   try {
-    // Authenticate with Supabase directly
-    const { data, error } = await supabase.auth.signInWithPassword({
+    // Call backend API for admin login
+    const response = await api.post("/auth/login", {
       email,
       password,
     });
 
-    if (error) {
-      throw error;
+    if (!response.data.success) {
+      throw new Error(response.data.error || "Login failed");
     }
 
-    const { session, user } = data;
-    const token = session.access_token;
-    const expiresIn = session.expires_in * 1000; // Convert to milliseconds
+    const { token, refresh_token, admin } = response.data.data;
+    const expiresIn = 3600000; // Default 1 hour (backend should provide this)
 
     // Store token
     localStorage.setItem("token", token);
     
-    // Store session expiry time (from Supabase)
+    // Store session expiry time
     const expiryTime = Date.now() + expiresIn;
     localStorage.setItem("sessionExpiry", expiryTime.toString());
 
     // Store refresh token for session persistence
-    if (session.refresh_token) {
-      localStorage.setItem("refreshToken", session.refresh_token);
+    if (refresh_token) {
+      localStorage.setItem("refreshToken", refresh_token);
     }
 
-    return { token, user, expiresIn };
+    // Store admin info
+    localStorage.setItem("admin", JSON.stringify(admin));
+
+    return { token, admin, expiresIn };
   } catch (error) {
     console.error("Login error:", error);
+    // Re-throw to let the caller handle it
     throw error;
   }
 };
 
 export const logout = async (showNotification = false) => {
-  // Sign out from Supabase
-  await supabase.auth.signOut();
+  try {
+    // Call backend API for logout
+    await api.post("/auth/logout");
+  } catch (error) {
+    // Continue with local logout even if API fails
+    console.error("Logout API error:", error);
+  }
   
   // Clear local storage
   localStorage.removeItem("token");
   localStorage.removeItem("sessionExpiry");
   localStorage.removeItem("refreshToken");
+  localStorage.removeItem("admin");
   
   if (showNotification) {
     toast.error("Your session has expired. Please login again.");
@@ -64,6 +73,17 @@ export const getToken = () => {
   return localStorage.getItem("token");
 };
 
+// Get stored admin info
+export const getAdmin = () => {
+  const adminStr = localStorage.getItem("admin");
+  if (!adminStr) return null;
+  try {
+    return JSON.parse(adminStr);
+  } catch {
+    return null;
+  }
+};
+
 // Restore session using refresh token
 export const restoreSession = async () => {
   const refreshToken = localStorage.getItem("refreshToken");
@@ -73,33 +93,30 @@ export const restoreSession = async () => {
   }
   
   try {
-    const { data, error } = await supabase.auth.refreshSession({
+    // Call backend API to refresh token
+    const response = await api.post("/auth/refresh", {
       refresh_token: refreshToken,
     });
     
-    if (error) {
-      console.error("Session refresh error:", error);
+    if (!response.data.success) {
       return null;
     }
     
-    const { session } = data;
+    const { token, refresh_token } = response.data.data;
+    const expiresIn = 3600000; // Default 1 hour
     
-    if (session) {
-      // Update stored token and expiry (from Supabase)
-      localStorage.setItem("token", session.access_token);
-      const expiryTime = Date.now() + (session.expires_in * 1000);
-      localStorage.setItem("sessionExpiry", expiryTime.toString());
-      
-      if (session.refresh_token) {
-        localStorage.setItem("refreshToken", session.refresh_token);
-      }
-      
-      return session;
+    // Update stored token and expiry
+    localStorage.setItem("token", token);
+    const expiryTime = Date.now() + expiresIn;
+    localStorage.setItem("sessionExpiry", expiryTime.toString());
+    
+    if (refresh_token) {
+      localStorage.setItem("refreshToken", refresh_token);
     }
     
-    return null;
+    return { access_token: token };
   } catch (error) {
-    console.error("Restore session error:", error);
+    console.error("Session refresh error:", error);
     return null;
   }
 };
