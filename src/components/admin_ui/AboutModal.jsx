@@ -359,7 +359,9 @@ export default function AboutModal({ isOpen, onClose, onRefresh, item, existingS
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 sm:space-y-5">
           {/* Title */}
           <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700">Title</label>
+            <label className="text-sm font-medium text-gray-700">
+                Title <span className="text-red-500">*</span>
+              </label>
 
             <input
               type="text"
@@ -378,7 +380,9 @@ export default function AboutModal({ isOpen, onClose, onRefresh, item, existingS
 
           {/* Section Type */}
           <div className="space-y-2" ref={sectionTypeDropdownRef}>
-            <label className="text-sm font-medium text-gray-700">Section Type</label>
+            <label className="text-sm font-medium text-gray-700">
+              Section Type <span className="text-red-500">*</span>
+            </label>
 
             {/* Input field with dropdown button */}
             <div className="flex rounded-lg border border-gray-300 overflow-hidden bg-white focus-within:ring-2 focus-within:ring-orange-400">
@@ -458,7 +462,7 @@ export default function AboutModal({ isOpen, onClose, onRefresh, item, existingS
           <div className="grid grid-cols-2 gap-4">
             {/* Order Position */}
             <div className="space-y-2" ref={positionDropdownRef}>
-              <label className="text-sm font-medium text-gray-700">Order Position</label>
+              <label className="text-sm font-medium text-gray-700">Order Position <span className="text-red-500">*</span></label>
               
               {/* Custom dropdown for position */}
               <div className="relative">
@@ -592,7 +596,7 @@ export default function AboutModal({ isOpen, onClose, onRefresh, item, existingS
             {/* Right: Description */}
             <div className="flex flex-col space-y-2">
               <label className="text-sm font-medium text-gray-700">
-                Description
+                Description <span className="text-red-500">*</span>
               </label>
 
               <textarea
