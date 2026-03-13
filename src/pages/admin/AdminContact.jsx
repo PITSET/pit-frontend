@@ -1,12 +1,14 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 import { getAllContacts, deleteContact } from "../../lib/services/adminContactService";
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
-  FunnelIcon,
   EnvelopeIcon,
   PencilSquareIcon,
   TrashIcon,
+  PhoneIcon,
+  MapPinIcon,
+  LinkIcon,
 } from "@heroicons/react/24/outline";
 
 import ContactModal from "../../components/admin_ui/ContactModal";
@@ -18,9 +20,6 @@ export default function Contact() {
   const [contacts, setContacts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-
-  // Status filter state
-  const [statusFilter, setStatusFilter] = useState("all");
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -34,8 +33,10 @@ export default function Contact() {
 
   const fetchContacts = async () => {
     try {
+      setLoading(true);
       const response = await getAllContacts();
       setContacts(response.data || []);
+      setError("");
     } catch (err) {
       console.error("Error fetching contacts:", err);
       setError("Failed to fetch contacts");
@@ -48,27 +49,16 @@ export default function Contact() {
     fetchContacts();
   }, []);
 
-  // Filter data by status
-  const filteredData = useMemo(() => {
-    let result = contacts;
-
-    if (statusFilter !== "all") {
-      result = result.filter(item => item.status === statusFilter);
-    }
-
-    return result;
-  }, [contacts, statusFilter]);
-
-  // Reset page when filter changes
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [statusFilter]);
-
   // Calculate pagination
-  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+  const totalPages = Math.ceil(contacts.length / itemsPerPage);
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filteredData.slice(indexOfFirstItem, indexOfLastItem);
+  const currentItems = contacts.slice(indexOfFirstItem, indexOfLastItem);
+
+  // Reset page when contacts change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [contacts.length]);
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
@@ -80,31 +70,31 @@ export default function Contact() {
     setIsModalOpen(true);
   };
 
+  // Handle add new click
+  const handleAddClick = () => {
+    setSelectedItem(null);
+    setIsModalOpen(true);
+  };
+
   // Handle delete click
   const handleDeleteClick = (item) => {
     setItemToDelete(item);
     setIsDeleteModalOpen(true);
   };
 
-  // Get unique statuses for filter buttons
-  const uniqueStatuses = useMemo(() => {
-    const statuses = new Set(contacts.map(c => c.status).filter(Boolean));
-    return Array.from(statuses);
-  }, [contacts]);
-
   if (loading) return (
     <Loading 
       table={{
         columns: [
-          { label: 'Name', show: true },
           { label: 'Email', show: true },
-          { label: 'Message', show: true },
-          { label: 'Status', show: true },
+          { label: 'Phone', show: true },
+          { label: 'Address', show: true },
+          { label: 'Map URL', show: true },
           { label: 'Action', show: true }
         ],
         showPosition: false,
         showImage: false,
-        showStatus: true,
+        showStatus: false,
         rows: 4
       }}
     />
@@ -143,14 +133,24 @@ export default function Contact() {
     return (
       <div className="p-4 md:p-6 max-w-7xl mx-auto min-h-[60vh] flex flex-col items-center justify-center">
         <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold text-gray-900 mb-6">
-          Contact Messages
+          Contact Information
         </h1>
 
         <EmptyState
-          title="No Messages Yet"
-          description="When visitors contact you through the contact form, their messages will appear here."
-          buttonText="Refresh"
-          onButtonClick={fetchContacts}
+          title="No Contact Information"
+          description="Add your company contact details to display on the website."
+          buttonText="Add Contact Info"
+          onButtonClick={handleAddClick}
+        />
+
+        <ContactModal
+          isOpen={isModalOpen}
+          onClose={() => {
+            setIsModalOpen(false);
+            setSelectedItem(null);
+          }}
+          onRefresh={fetchContacts}
+          item={selectedItem}
         />
       </div>
     );
@@ -160,100 +160,39 @@ export default function Contact() {
     <div className="p-4 md:p-6 max-w-7xl mx-auto mb-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
         <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold text-gray-900">
-          Contact Messages
+          Contact Information
         </h1>
 
-        <div className="text-sm text-gray-500 bg-gray-100 px-3 py-2 rounded-lg">
-          {contacts.length} {contacts.length === 1 ? 'message' : 'messages'}
-        </div>
+        <button
+          onClick={handleAddClick}
+          className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-orange-500 text-white font-medium rounded-lg hover:bg-orange-600 transition focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2"
+        >
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+          </svg>
+          Add Contact
+        </button>
       </div>
 
-      {/* Status Filter - Button Style */}
-      {uniqueStatuses.length > 0 && (
-        <div className="flex flex-col sm:flex-row gap-3 mb-4">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-sm font-medium text-gray-600 mr-1">Filter by:</span>
-            
-            {/* All Status Button */}
-            <button
-              onClick={() => setStatusFilter("all")}
-              className={`inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg border transition-all duration-200 ${
-                statusFilter === "all"
-                  ? 'bg-orange-500 text-white border-orange-500 shadow-sm'
-                  : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50 hover:border-gray-400'
-              }`}
-            >
-              <FunnelIcon className={`w-4 h-4 ${statusFilter === "all" ? 'text-white' : 'text-gray-400'}`} />
-              All
-              <span className={`ml-1 px-1.5 py-0.5 text-xs rounded-full ${
-                statusFilter === "all"
-                  ? 'bg-orange-200 text-orange-800'
-                  : 'bg-gray-100 text-gray-600'
-              }`}>
-                {contacts.length}
-              </span>
-            </button>
-
-            {/* Status-specific buttons */}
-            {uniqueStatuses.map((status) => (
-              <button
-                key={status}
-                onClick={() => setStatusFilter(status)}
-                className={`inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg border transition-all duration-200 ${
-                  statusFilter === status
-                    ? 'bg-orange-500 text-white border-orange-500 shadow-sm'
-                    : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50 hover:border-gray-400'
-                }`}
-              >
-                <span className={`w-2 h-2 rounded-full ${statusFilter === status ? 'bg-white' : 'bg-orange-400'}`}></span>
-                {status}
-                <span className={`ml-1 px-1.5 py-0.5 text-xs rounded-full ${
-                  statusFilter === status
-                    ? 'bg-orange-200 text-orange-800'
-                    : 'bg-gray-100 text-gray-600'
-                }`}>
-                  {contacts.filter(item => item.status === status).length}
-                </span>
-              </button>
-            ))}
-
-            {/* Clear Filter (only show when filter is active) */}
-            {statusFilter !== "all" && (
-              <button
-                onClick={() => setStatusFilter("all")}
-                className="inline-flex items-center p-2 text-sm font-medium text-gray-500 hover:text-gray-700 transition-colors"
-                title="Clear filter"
-              >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            )}
-          </div>
-        </div>
-      )}
-
       {/* Results count */}
-      {statusFilter !== "all" && (
-        <div className="mb-4 px-3 py-2 text-sm text-gray-600 bg-gray-50 rounded-lg border border-gray-200">
-          <span className="font-medium text-gray-900">
-            {filteredData.length} {filteredData.length === 1 ? 'message' : 'messages'}
-          </span>
-          {' '}found
-        </div>
-      )}
+      <div className="mb-4 px-3 py-2 text-sm text-gray-600 bg-gray-50 rounded-lg border border-gray-200">
+        <span className="font-medium text-gray-900">
+          {contacts.length} {contacts.length === 1 ? 'contact' : 'contacts'}
+        </span>
+        {' '}on file
+      </div>
 
-      {filteredData.length > 0 && (
+      {contacts.length > 0 && (
         <>
           {/* Desktop Table View */}
           <div className="hidden md:block bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
             <table className="w-full">
               <thead className="bg-gray-50 border-b border-gray-300">
                 <tr className="text-sm font-semibold text-gray-600">
-                  <th className="px-4 lg:px-8 py-4 text-center">Name</th>
                   <th className="px-4 lg:px-8 py-4 text-center">Email</th>
-                  <th className="px-4 lg:px-8 py-4 text-center">Message</th>
-                  <th className="px-4 lg:px-8 py-4 text-center">Status</th>
+                  <th className="px-4 lg:px-8 py-4 text-center">Phone</th>
+                  <th className="px-4 lg:px-8 py-4 text-center">Address</th>
+                  <th className="px-4 lg:px-8 py-4 text-center">Map URL</th>
                   <th className="px-4 lg:px-8 py-4 text-center">Action</th>
                 </tr>
               </thead>
@@ -261,10 +200,6 @@ export default function Contact() {
               <tbody className="divide-y divide-gray-200">
                 {currentItems.map((contact) => (
                   <tr key={contact.id} className="hover:bg-gray-100 transition">
-                    <td className="px-4 lg:px-8 py-4 lg:py-6 text-center font-medium text-gray-900">
-                      {contact.name}
-                    </td>
-
                     <td className="px-4 lg:px-8 py-4 lg:py-6 text-center">
                       <a 
                         href={`mailto:${contact.email}`} 
@@ -275,24 +210,37 @@ export default function Contact() {
                       </a>
                     </td>
 
-                    <td className="px-4 lg:px-8 py-4 lg:py-6 text-gray-600 text-left max-w-xs lg:max-w-xl">
-                      <p className="line-clamp-2 lg:line-clamp-2">
-                        {contact.message || "No message"}
-                      </p>
+                    <td className="px-4 lg:px-8 py-4 lg:py-6 text-center">
+                      <a 
+                        href={`tel:${contact.phone}`}
+                        className="inline-flex items-center gap-1.5 text-gray-600 hover:text-orange-600 transition"
+                      >
+                        <PhoneIcon className="w-4 h-4" />
+                        {contact.phone}
+                      </a>
+                    </td>
+
+                    <td className="px-4 lg:px-8 py-4 lg:py-6 text-gray-600 text-left max-w-xs">
+                      <div className="flex items-start gap-1.5">
+                        <MapPinIcon className="w-4 h-4 mt-0.5 shrink-0 text-gray-400" />
+                        <span className="line-clamp-2">{contact.address}</span>
+                      </div>
                     </td>
 
                     <td className="px-4 lg:px-8 py-4 lg:py-6 text-center">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        contact.status === 'new' || contact.status === 'unread'
-                          ? 'bg-orange-100 text-orange-800'
-                          : contact.status === 'read'
-                          ? 'bg-blue-100 text-blue-800'
-                          : contact.status === 'replied'
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-gray-200 text-gray-800'
-                      }`}>
-                        {contact.status || 'Unknown'}
-                      </span>
+                      {contact.map_url ? (
+                        <a 
+                          href={contact.map_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 text-orange-600 hover:text-orange-700 hover:underline"
+                        >
+                          <LinkIcon className="w-4 h-4" />
+                          View Map
+                        </a>
+                      ) : (
+                        <span className="text-gray-400">-</span>
+                      )}
                     </td>
 
                     <td className="px-2 sm:px-4 lg:px-8 py-4 lg:py-6 text-center">
@@ -324,7 +272,7 @@ export default function Contact() {
               <div className="flex flex-col sm:flex-row items-center justify-between px-4 py-3 bg-gray-50 border-t border-gray-200 gap-3 sm:gap-0">
                 <div className="text-sm text-gray-600 order-2 sm:order-1">
                   Showing {indexOfFirstItem + 1} to{" "}
-                  {Math.min(indexOfLastItem, filteredData.length)} of {filteredData.length} results
+                  {Math.min(indexOfLastItem, contacts.length)} of {contacts.length} results
                 </div>
                 <div className="flex items-center gap-1 sm:gap-2 order-1 sm:order-2">
                   <button
@@ -368,11 +316,10 @@ export default function Contact() {
                 key={contact.id}
                 className="bg-white rounded-xl border border-gray-200 shadow-sm p-4"
               >
-                <div className="flex items-start justify-between gap-3 mb-3">
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-gray-900 truncate">
-                      {contact.name}
-                    </h3>
+                <div className="space-y-3">
+                  {/* Email */}
+                  <div className="flex items-center gap-2">
+                    <EnvelopeIcon className="w-4 h-4 text-gray-400 shrink-0" />
                     <a 
                       href={`mailto:${contact.email}`}
                       className="text-sm text-orange-600 hover:text-orange-700"
@@ -380,23 +327,40 @@ export default function Contact() {
                       {contact.email}
                     </a>
                   </div>
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium shrink-0 ${
-                    contact.status === 'new' || contact.status === 'unread'
-                      ? 'bg-orange-100 text-orange-800'
-                      : contact.status === 'read'
-                      ? 'bg-blue-100 text-blue-800'
-                      : contact.status === 'replied'
-                      ? 'bg-green-100 text-green-800'
-                      : 'bg-gray-200 text-gray-800'
-                  }`}>
-                    {contact.status || 'Unknown'}
-                  </span>
-                </div>
-                
-                <div className="text-sm text-gray-600">
-                  <p className="line-clamp-3">
-                    {contact.message || "No message"}
-                  </p>
+                  
+                  {/* Phone */}
+                  <div className="flex items-center gap-2">
+                    <PhoneIcon className="w-4 h-4 text-gray-400 shrink-0" />
+                    <a 
+                      href={`tel:${contact.phone}`}
+                      className="text-sm text-gray-600"
+                    >
+                      {contact.phone}
+                    </a>
+                  </div>
+                  
+                  {/* Address */}
+                  <div className="flex items-start gap-2">
+                    <MapPinIcon className="w-4 h-4 text-gray-400 shrink-0 mt-0.5" />
+                    <span className="text-sm text-gray-600">
+                      {contact.address}
+                    </span>
+                  </div>
+                  
+                  {/* Map URL */}
+                  {contact.map_url && (
+                    <div className="flex items-center gap-2">
+                      <LinkIcon className="w-4 h-4 text-gray-400 shrink-0" />
+                      <a 
+                        href={contact.map_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm text-orange-600 hover:text-orange-700 truncate"
+                      >
+                        View Map
+                      </a>
+                    </div>
+                  )}
                 </div>
 
                 {/* Action Buttons */}
