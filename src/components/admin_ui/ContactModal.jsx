@@ -26,6 +26,7 @@ export default function ContactModal({ isOpen, onClose, onRefresh, item }) {
   const [loading, setLoading] = useState(false);
   const [emailError, setEmailError] = useState("");
   const [phoneError, setPhoneError] = useState("");
+  const [mapUrlError, setMapUrlError] = useState("");
 
   // Validate email format
   const validateEmail = (emailValue) => {
@@ -59,6 +60,35 @@ export default function ContactModal({ isOpen, onClose, onRefresh, item }) {
     return { valid: true, message: "" };
   };
 
+  // Validate map URL format
+  const validateMapUrl = (mapUrlValue) => {
+    if (!mapUrlValue || !mapUrlValue.trim()) {
+      return { valid: true, message: "" };
+    }
+    
+    try {
+      const url = mapUrlValue.trim();
+      // Check if it's a valid URL
+      const urlPattern = /^(https?:\/\/)?(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)$/;
+      if (!urlPattern.test(url)) {
+        return { valid: false, message: "Please enter a valid URL" };
+      }
+      
+      // Check if it looks like a maps URL
+      const mapsIndicators = ['maps.google', 'maps.app.goo.gl', 'goo.gl/maps', 'maps.google.com', 'google.com/maps'];
+      const isMapUrl = mapsIndicators.some(indicator => url.toLowerCase().includes(indicator));
+      
+      // Allow any valid URL, but warn if it doesn't look like a map URL
+      if (!isMapUrl && !url.startsWith('http')) {
+        return { valid: false, message: "Please enter a valid map URL (e.g., https://maps.google.com/...)" };
+      }
+      
+      return { valid: true, message: "" };
+    } catch {
+      return { valid: false, message: "Please enter a valid URL" };
+    }
+  };
+
   // Reset form when modal opens
   useEffect(() => {
     if (isOpen) {
@@ -68,6 +98,8 @@ export default function ContactModal({ isOpen, onClose, onRefresh, item }) {
         setAddress(item.address || "");
         setMapUrl(item.map_url || "");
         setEmailError("");
+        setPhoneError("");
+        setMapUrlError("");
       } else {
         // Reset for create mode
         setEmail("");
@@ -75,6 +107,8 @@ export default function ContactModal({ isOpen, onClose, onRefresh, item }) {
         setAddress("");
         setMapUrl("");
         setEmailError("");
+        setPhoneError("");
+        setMapUrlError("");
       }
     }
   }, [isOpen, item]);
@@ -109,6 +143,12 @@ export default function ContactModal({ isOpen, onClose, onRefresh, item }) {
       return false;
     }
     
+    const mapUrlValidation = validateMapUrl(mapUrl);
+    if (!mapUrlValidation.valid) {
+      toast.error(mapUrlValidation.message);
+      return false;
+    }
+    
     return true;
   };
 
@@ -120,6 +160,7 @@ export default function ContactModal({ isOpen, onClose, onRefresh, item }) {
     setMapUrl(item?.map_url || "");
     setEmailError("");
     setPhoneError("");
+    setMapUrlError("");
   };
 
   // Save changes
@@ -290,9 +331,19 @@ export default function ContactModal({ isOpen, onClose, onRefresh, item }) {
               <input
                 type="url"
                 value={mapUrl}
-                onChange={(e) => setMapUrl(e.target.value)}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setMapUrl(value);
+                  // Validate map URL format
+                  if (value) {
+                    const validation = validateMapUrl(value);
+                    setMapUrlError(validation.message);
+                  } else {
+                    setMapUrlError("");
+                  }
+                }}
                 placeholder="https://maps.google.com/..."
-                className="flex-1 px-3 py-2.5 text-sm shadow-sm outline-none transition min-w-0"
+                className={`flex-1 px-3 py-2.5 text-sm shadow-sm outline-none transition min-w-0 ${mapUrlError ? 'border-red-500' : ''}`}
               />
               <button
                 type="button"
@@ -300,13 +351,16 @@ export default function ContactModal({ isOpen, onClose, onRefresh, item }) {
                   const urlToOpen = mapUrl.startsWith('http') ? mapUrl : 'https://' + mapUrl;
                   window.open(urlToOpen, "_blank", "noopener,noreferrer");
                 }}
-                disabled={!mapUrl}
+                disabled={!mapUrl || !!mapUrlError}
                 className="flex items-center justify-center px-3 sm:px-4 bg-primary-gradient border-l border-gray-300 text-white hover:bg-primary-gradient-hover transition disabled:opacity-50"
                 title="Open Map"
               >
                 <ArrowTopRightOnSquareIcon className="w-4 h-5 sm:w-5 sm:h-5" />
               </button>
             </div>
+            {mapUrlError && (
+              <p className="text-xs text-red-500">{mapUrlError}</p>
+            )}
           </div>
         </div>
 
