@@ -8,6 +8,7 @@ import About from "../pages/public/About";
 import Contact from "../pages/public/Contact";
 import Program from "../pages/public/Program";
 import ProgramDetail from "../pages/public/ProgramDetail";
+import Instructor from "../pages/public/Instructor";
 
 
 
@@ -33,6 +34,8 @@ const router = createBrowserRouter([
       { path: "/programs", element: <Program /> },
       { path: "/programs/:id", element: <ProgramDetail /> },
       { path: "/program", element: <Navigate to="/programs" replace /> },
+      
+      { path: "/instructor", element: <Instructor /> },
     ],
   },
 

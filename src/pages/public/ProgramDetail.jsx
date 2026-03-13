@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import axios from "axios";
+import api from "../../lib/api";
+import resolveAssetUrl from "../../lib/resolveAssetUrl";
 
 export default function ProgramDetail() {
   const { id } = useParams();
@@ -13,9 +14,7 @@ export default function ProgramDetail() {
   useEffect(() => {
     const fetchProgram = async () => {
       try {
-        const res = await axios.get(
-          `http://localhost:3000/api/programs/${id}`
-        );
+        const res = await api.get(`/programs/${id}`);
 
         const programData = res.data?.data;
 
@@ -63,7 +62,7 @@ export default function ProgramDetail() {
 
   {/* Background Image */}
   <img
-    src={program.image_url}
+    src={resolveAssetUrl(program.image_url)}
     alt={program.program_name}
     className="absolute inset-0 w-full h-full object-cover object-center"
   />
@@ -138,7 +137,7 @@ export default function ProgramDetail() {
                 className="bg-white rounded-lg shadow-md overflow-hidden flex flex-col"
               >
                 <img
-                  src={project.image}
+                  src={resolveAssetUrl(project.image)}
                   alt={project.title}
                   className="h-[180px] w-full object-cover"
                 />

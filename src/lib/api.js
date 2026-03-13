@@ -5,7 +5,7 @@ const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/a
 
 const api = axios.create({
   baseURL: apiBaseUrl,
-  withCredentials: true,
+  withCredentials: false,
 });
 
 // Attach token automatically to every request
