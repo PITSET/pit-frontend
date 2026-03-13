@@ -223,7 +223,7 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
         if (uploadError) {
           // Check for RLS policy violation
           if (uploadError.message?.includes("row-level security") || uploadError.message?.includes("RLS")) {
-            throw new Error("Storage permission denied. Please ensure you're logged in and have upload permissions. Contact administrator if issue persists.");
+            throw new Error("Storage permission denied. Please login again or contact administrator.");
           }
           throw uploadError;
         }
@@ -351,7 +351,7 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
       // Check for RLS policy violations
       const errorStr = JSON.stringify(error).toLowerCase();
       if (errorStr.includes("row-level security") || errorStr.includes("rls") || errorStr.includes("row-level security policy")) {
-        errorMessage = "Permission denied. Storage upload failed due to security policy. Please ensure you're logged in and contact administrator.";
+        errorMessage = "Permission denied. Storage upload failed. Please login again or contact administrator.";
       } else if (error.response) {
         const status = error.response.status;
         const data = error.response.data;
