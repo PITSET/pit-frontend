@@ -14,6 +14,11 @@ export default function ContactPage() {
   const [status, setStatus] = useState("");
   const [statusType, setStatusType] = useState(""); // success | error
 
+  // Scroll to top on mount
+  React.useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "instant" });
+  }, []);
+
   const handleChange = (e) => {
     setFormData({
       ...formData,

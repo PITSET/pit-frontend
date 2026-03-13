@@ -107,6 +107,10 @@ export default function Navbar() {
           </li>
 
           <li className="hover:text-red-600 transition cursor-pointer">
+            <a href="/projects">Projects</a>
+          </li>
+
+          <li className="hover:text-red-600 transition cursor-pointer">
             Contact
           </li>
         </ul>
@@ -180,6 +184,10 @@ export default function Navbar() {
                 ))}
               </div>
             )}
+          </div>
+
+          <div className="hover:text-red-600 cursor-pointer transition">
+            <a href="/projects">Projects</a>
           </div>
 
           <div className="hover:text-red-600 cursor-pointer transition">

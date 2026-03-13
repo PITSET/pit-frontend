@@ -6,10 +6,13 @@ import AdminLayout from "../components/layout/AdminLayout";
 import Home from "../pages/public/Home";
 import About from "../pages/public/About";
 import Contact from "../pages/public/Contact";
+
+import ProjectDetail from "../pages/public/ProjectDetail";
+import Projects from "../pages/public/Projects";
+
 import Program from "../pages/public/Program";
 import ProgramDetail from "../pages/public/ProgramDetail";
 import Instructor from "../pages/public/Instructor";
-
 
 
 
@@ -31,6 +34,10 @@ const router = createBrowserRouter([
       { path: "/", element: <Home /> },
       { path: "/about", element: <About /> },
       { path: "/contact", element: <Contact /> },
+
+      { path: "/projects", element: <Projects /> },
+      { path: "/projects/:id", element: <ProjectDetail /> },
+
       { path: "/programs", element: <Program /> },
       { path: "/programs/:id", element: <ProgramDetail /> },
       { path: "/program", element: <Navigate to="/programs" replace /> },
