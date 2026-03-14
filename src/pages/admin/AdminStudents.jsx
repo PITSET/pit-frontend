@@ -8,6 +8,8 @@ import {
   PlusIcon,
   TrashIcon,
   FunnelIcon,
+  ChevronDownIcon,
+  CheckIcon,
 } from "@heroicons/react/24/outline";
 
 import StudentModal from "../../components/admin_ui/StudentModal";
@@ -19,7 +21,6 @@ export default function AdminStudents() {
   const [data, setData] = useState([]);
   const [programs, setPrograms] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [programsLoading, setProgramsLoading] = useState(true);
   const [error, setError] = useState("");
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -29,13 +30,26 @@ export default function AdminStudents() {
 
   // Program filter state
   const [programFilter, setProgramFilter] = useState("all");
+  const [showProgramDropdown, setShowProgramDropdown] = useState(false);
 
   // Helper function to get program name by ID
   const getProgramName = (programId) => {
     if (!programId) return "N/A";
-    const program = programs.find(p => p.id === programId);
+    const program = programs.find(p => p.id === programId || String(p.id) === String(programId));
     return program?.program_name || program?.name || programId;
   };
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = () => {
+      setShowProgramDropdown(false);
+    };
+
+    if (showProgramDropdown) {
+      document.addEventListener("click", handleClickOutside);
+      return () => document.removeEventListener("click", handleClickOutside);
+    }
+  }, [showProgramDropdown]);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 4;
 
@@ -48,7 +62,7 @@ export default function AdminStudents() {
       // Adjust current page if it becomes invalid after deletion
       let newFilteredData = newData;
       if (programFilter !== 'all') {
-        newFilteredData = newData.filter(item => item.program_id === programFilter);
+        newFilteredData = newData.filter(item => String(item.program_id) === String(programFilter));
       }
       const newTotalPages = Math.ceil(newFilteredData.length / itemsPerPage);
       if (currentPage > newTotalPages && newTotalPages > 0) {
@@ -70,8 +84,6 @@ export default function AdminStudents() {
       setPrograms(response.data || []);
     } catch (err) {
       console.error("Failed to fetch programs:", err);
-    } finally {
-      setProgramsLoading(false);
     }
   };
 
@@ -85,7 +97,7 @@ export default function AdminStudents() {
     if (programFilter === "all") {
       return data;
     }
-    return data.filter(item => item.program_id === programFilter);
+    return data.filter(item => String(item.program_id) === String(programFilter));
   }, [data, programFilter]);
 
   // Reset page when filter changes
@@ -227,64 +239,94 @@ export default function AdminStudents() {
         </button>
       </div>
 
-      {/* Program Filter - Button Style */}
+      {/* Program Filter - Custom Dropdown Style */}
       <div className="flex flex-col sm:flex-row gap-3 mb-4">
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="text-sm font-medium text-gray-600 mr-1">Filter by:</span>
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium text-gray-700">Filter:</span>
           
-          {/* All Programs Button */}
-          <button
-            onClick={() => setProgramFilter("all")}
-            className={`inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg border transition-all duration-200 ${
-              programFilter === "all"
-                ? 'bg-orange-500 text-white border-orange-500 shadow-sm'
-                : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50 hover:border-gray-400'
-            }`}
-          >
-            <FunnelIcon className={`w-4 h-4 ${programFilter === "all" ? 'text-white' : 'text-gray-400'}`} />
-            All
-            <span className={`ml-1 px-1.5 py-0.5 text-xs rounded-full ${
-              programFilter === "all"
-                ? 'bg-orange-200 text-orange-800'
-                : 'bg-gray-100 text-gray-600'
-            }`}>
-              {data.length}
-            </span>
-          </button>
-
-          {/* Program Buttons */}
-          {!programsLoading && programs.map((program) => (
+          <div className="relative" onClick={(e) => e.stopPropagation()}>
+            {/* Custom dropdown button */}
             <button
-              key={program.id}
-              onClick={() => setProgramFilter(program.id)}
-              className={`inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg border transition-all duration-200 ${
-                programFilter === program.id
-                  ? 'bg-orange-500 text-white border-orange-500 shadow-sm'
-                  : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50 hover:border-gray-400'
-              }`}
+              type="button"
+              onClick={() => setShowProgramDropdown(!showProgramDropdown)}
+              className="w-full sm:w-auto flex items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 hover:border-orange-300 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-300 transition-all duration-200 min-w-[180px]"
             >
-              <span className={`w-2 h-2 rounded-full ${programFilter === program.id ? 'bg-white' : 'bg-orange-400'}`}></span>
-              {program.program_name || program.name}
-              <span className={`ml-1 px-1.5 py-0.5 text-xs rounded-full ${
-                programFilter === program.id
-                  ? 'bg-orange-200 text-orange-800'
-                  : 'bg-gray-100 text-gray-600'
-              }`}>
-                {data.filter(item => item.program_id === program.id).length}
+              <span className={programFilter !== "all" ? "text-orange-600" : "text-slate-600"}>
+                {programFilter === "all" 
+                  ? `All (${data.length})` 
+                  : getProgramName(programFilter)}
               </span>
+              <ChevronDownIcon 
+                className={`w-5 h-5 text-slate-400 ml-2 transition-transform ${showProgramDropdown ? "rotate-180" : ""}`} 
+              />
             </button>
-          ))}
+
+            {/* Dropdown options */}
+            {showProgramDropdown && (
+              <div className="absolute z-20 mt-2 w-full min-w-[220px] rounded-xl border border-slate-200 bg-white shadow-xl max-h-60 overflow-y-auto animate-fadeIn">
+                {/* All option */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setProgramFilter("all");
+                    setShowProgramDropdown(false);
+                  }}
+                  className={`w-full px-4 py-3 text-left text-sm transition flex items-center justify-between border-b border-slate-100 ${
+                    programFilter === "all"
+                      ? "bg-orange-50 text-orange-700"
+                      : "text-slate-700 hover:bg-slate-50"
+                  }`}
+                >
+                  <span className="font-medium">All Programs</span>
+                  <span className={`text-xs px-2 py-0.5 rounded-full ${
+                    programFilter === "all"
+                      ? "bg-orange-200 text-orange-800"
+                      : "bg-slate-100 text-slate-600"
+                  }`}>
+                    {data.length}
+                  </span>
+                </button>
+                
+                {/* Program options */}
+                {programs.map((program) => (
+                  <button
+                    key={program.id}
+                    type="button"
+                    onClick={() => {
+                      setProgramFilter(program.id);
+                      setShowProgramDropdown(false);
+                    }}
+                    className={`w-full px-4 py-3 text-left text-sm transition flex items-center justify-between ${
+                      String(programFilter) === String(program.id)
+                        ? "bg-orange-50 text-orange-700"
+                        : "text-slate-700 hover:bg-slate-50"
+                    }`}
+                  >
+                    <span>{program.program_name || program.name}</span>
+                    <span className={`text-xs px-2 py-0.5 rounded-full ${
+                      String(programFilter) === String(program.id)
+                        ? "bg-orange-200 text-orange-800"
+                        : "bg-slate-100 text-slate-600"
+                    }`}>
+                      {data.filter(item => String(item.program_id) === String(program.id)).length}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
 
           {/* Clear Filter (only show when filter is active) */}
           {programFilter !== "all" && (
             <button
               onClick={() => setProgramFilter("all")}
-              className="inline-flex items-center p-2 text-sm font-medium text-gray-500 hover:text-gray-700 transition-colors"
+              className="inline-flex items-center px-3 py-2 text-sm font-medium text-orange-600 bg-orange-50 hover:bg-orange-100 rounded-lg transition-colors"
               title="Clear filter"
             >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
+              Clear
             </button>
           )}
         </div>
