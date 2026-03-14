@@ -88,7 +88,7 @@ export default function StudentModal({ isOpen, onClose, onRefresh, item }) {
 
   // Validate email format
   const validateEmail = (emailValue) => {
-    if (!emailValue) return true; // Empty is allowed (optional field)
+    if (!emailValue) return false; // Required field - empty is invalid
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(emailValue);
   };
@@ -220,6 +220,18 @@ export default function StudentModal({ isOpen, onClose, onRefresh, item }) {
           return;
         }
 
+        if (!email || !email.trim()) {
+          toast.error("Please enter an email address", { id: toastId });
+          setLoading(false);
+          return;
+        }
+
+        if (!validateEmail(email)) {
+          toast.error("Please enter a valid email address", { id: toastId });
+          setLoading(false);
+          return;
+        }
+
         if (!programId) {
           toast.error("Please select a program", { id: toastId });
           setLoading(false);
@@ -234,6 +246,18 @@ export default function StudentModal({ isOpen, onClose, onRefresh, item }) {
         // Validate required fields for update
         if (!name || !name.trim()) {
           toast.error("Please enter a name", { id: toastId });
+          setLoading(false);
+          return;
+        }
+
+        if (!email || !email.trim()) {
+          toast.error("Please enter an email address", { id: toastId });
+          setLoading(false);
+          return;
+        }
+
+        if (!validateEmail(email)) {
+          toast.error("Please enter a valid email address", { id: toastId });
           setLoading(false);
           return;
         }
@@ -426,7 +450,7 @@ export default function StudentModal({ isOpen, onClose, onRefresh, item }) {
               {/* Email */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                  Email
+                  Email <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="email"
