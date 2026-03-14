@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from "react";
+import { Helmet } from "react-helmet-async";
+import logoImage from "../../assets/logo/logo_image.svg";
 import api from "../../lib/api";
 import resolveAssetUrl from "../../lib/resolveAssetUrl";
 import ProjectsCarousel from "../../components/ui/ProjectsCarousel";
@@ -205,7 +207,10 @@ export default function Home() {
   return (
     <main className="w-full">
 
-
+      <Helmet>
+        <title>Home - Prometheus Institute</title>
+        <link rel="icon" type="image/svg+xml" href={logoImage} />
+      </Helmet>
 
       {/* HERO */}
       <section className="relative min-h-[90vh] md:min-h-[95vh] w-full flex items-center">

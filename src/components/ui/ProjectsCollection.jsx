@@ -104,7 +104,7 @@ export default function ProjectsCollection({ projects = [], isLoading = false })
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-6 py-16">
+    <div className="max-w-7xl mx-auto px-6 py-16 transition-colors duration-300">
       <div className="mb-12 text-center md:text-left">
         <h2 className="text-4xl md:text-[44px] font-bold text-[#c92a2a] mb-4 tracking-tight">
           Projects Collection
