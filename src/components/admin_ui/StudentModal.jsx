@@ -6,10 +6,7 @@ import {
   XMarkIcon,
   UserIcon,
   ArrowUpTrayIcon,
-  PlusIcon,
-  TrashIcon,
   CheckIcon,
-  CalendarIcon,
 } from "@heroicons/react/24/outline";
 
 // api
@@ -25,7 +22,6 @@ export default function StudentModal({ isOpen, onClose, onRefresh, item }) {
   const [email, setEmail] = useState("");
   const [emailError, setEmailError] = useState("");
   const [programId, setProgramId] = useState("");
-  const [enrollmentDate, setEnrollmentDate] = useState("");
   
   const [loading, setLoading] = useState(false);
   const [programs, setPrograms] = useState([]);
@@ -200,7 +196,6 @@ export default function StudentModal({ isOpen, onClose, onRefresh, item }) {
         email: email?.trim() || null,
         image_url: imageUrlToSave || null,
         program_id: programId || null,
-        enrollment_date: enrollmentDate || null,
       };
 
       if (isCreate) {
@@ -285,7 +280,6 @@ export default function StudentModal({ isOpen, onClose, onRefresh, item }) {
     setEmail(item?.email || "");
     setImage(null);
     setProgramId(item?.program_id || "");
-    setEnrollmentDate(item?.enrollment_date || "");
   };
 
   // Load initial data when modal opens
@@ -299,7 +293,6 @@ export default function StudentModal({ isOpen, onClose, onRefresh, item }) {
         setEmail("");
         setImage(null);
         setProgramId("");
-        setEnrollmentDate("");
       }
     }
   }, [isOpen, item]);
@@ -441,22 +434,6 @@ export default function StudentModal({ isOpen, onClose, onRefresh, item }) {
                     </option>
                   ))}
                 </select>
-              </div>
-
-              {/* Enrollment Date */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                  Enrollment Date
-                </label>
-                <div className="relative">
-                  <input
-                    type="date"
-                    value={enrollmentDate}
-                    onChange={(e) => setEnrollmentDate(e.target.value)}
-                    className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-shadow"
-                  />
-                  <CalendarIcon className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
-                </div>
               </div>
             </div>
           </div>

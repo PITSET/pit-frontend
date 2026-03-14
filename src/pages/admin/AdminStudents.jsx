@@ -1,12 +1,13 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { getAllStudents, deleteStudent } from "../../lib/services/studentService";
+import { getAllPrograms } from "../../lib/services/programService";
 import {
   PencilSquareIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
   PlusIcon,
   TrashIcon,
-  CalendarIcon,
+  FunnelIcon,
 } from "@heroicons/react/24/outline";
 
 import StudentModal from "../../components/admin_ui/StudentModal";
@@ -16,13 +17,18 @@ import Loading from "../../components/ui/Loading";
 
 export default function AdminStudents() {
   const [data, setData] = useState([]);
+  const [programs, setPrograms] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [programsLoading, setProgramsLoading] = useState(true);
   const [error, setError] = useState("");
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
+
+  // Program filter state
+  const [programFilter, setProgramFilter] = useState("all");
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -35,10 +41,14 @@ export default function AdminStudents() {
       setData(newData);
 
       // Adjust current page if it becomes invalid after deletion
-      const newTotalPages = Math.ceil(newData.length / itemsPerPage);
+      let newFilteredData = newData;
+      if (programFilter !== 'all') {
+        newFilteredData = newData.filter(item => item.program_id === programFilter);
+      }
+      const newTotalPages = Math.ceil(newFilteredData.length / itemsPerPage);
       if (currentPage > newTotalPages && newTotalPages > 0) {
         setCurrentPage(newTotalPages);
-      } else if (newData.length === 0) {
+      } else if (newFilteredData.length === 0) {
         setCurrentPage(1);
       }
     } catch (err) {
@@ -49,15 +59,40 @@ export default function AdminStudents() {
     }
   };
 
+  const fetchPrograms = async () => {
+    try {
+      const response = await getAllPrograms();
+      setPrograms(response.data || []);
+    } catch (err) {
+      console.error("Failed to fetch programs:", err);
+    } finally {
+      setProgramsLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchStudents();
+    fetchPrograms();
   }, []);
 
+  // Filter data by program
+  const filteredData = useMemo(() => {
+    if (programFilter === "all") {
+      return data;
+    }
+    return data.filter(item => item.program_id === programFilter);
+  }, [data, programFilter]);
+
+  // Reset page when filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [programFilter]);
+
   // Calculate pagination
-  const totalPages = Math.ceil(data.length / itemsPerPage);
+  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = data.slice(indexOfFirstItem, indexOfLastItem);
+  const currentItems = filteredData.slice(indexOfFirstItem, indexOfLastItem);
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
@@ -85,17 +120,6 @@ export default function AdminStudents() {
       console.error("Failed to delete student:", err);
       alert("Failed to delete student. Please try again.");
     }
-  };
-
-  // Format date for display
-  const formatDate = (dateString) => {
-    if (!dateString) return "N/A";
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
   };
 
   if (loading) return (
@@ -198,15 +222,80 @@ export default function AdminStudents() {
         </button>
       </div>
 
-      {/* Results count */}
-      <div className="mb-4 px-3 py-2 text-sm text-gray-600 bg-gray-50 rounded-lg border border-gray-200">
-        <span className="font-medium text-gray-900">
-          {data.length} {data.length === 1 ? 'student' : 'students'}
-        </span>
-        {' '}total
+      {/* Program Filter - Button Style */}
+      <div className="flex flex-col sm:flex-row gap-3 mb-4">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-sm font-medium text-gray-600 mr-1">Filter by:</span>
+          
+          {/* All Programs Button */}
+          <button
+            onClick={() => setProgramFilter("all")}
+            className={`inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg border transition-all duration-200 ${
+              programFilter === "all"
+                ? 'bg-orange-500 text-white border-orange-500 shadow-sm'
+                : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50 hover:border-gray-400'
+            }`}
+          >
+            <FunnelIcon className={`w-4 h-4 ${programFilter === "all" ? 'text-white' : 'text-gray-400'}`} />
+            All
+            <span className={`ml-1 px-1.5 py-0.5 text-xs rounded-full ${
+              programFilter === "all"
+                ? 'bg-orange-200 text-orange-800'
+                : 'bg-gray-100 text-gray-600'
+            }`}>
+              {data.length}
+            </span>
+          </button>
+
+          {/* Program Buttons */}
+          {!programsLoading && programs.map((program) => (
+            <button
+              key={program.id}
+              onClick={() => setProgramFilter(program.id)}
+              className={`inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg border transition-all duration-200 ${
+                programFilter === program.id
+                  ? 'bg-orange-500 text-white border-orange-500 shadow-sm'
+                  : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50 hover:border-gray-400'
+              }`}
+            >
+              <span className={`w-2 h-2 rounded-full ${programFilter === program.id ? 'bg-white' : 'bg-blue-400'}`}></span>
+              {program.name}
+              <span className={`ml-1 px-1.5 py-0.5 text-xs rounded-full ${
+                programFilter === program.id
+                  ? 'bg-orange-200 text-orange-800'
+                  : 'bg-gray-100 text-gray-600'
+              }`}>
+                {data.filter(item => item.program_id === program.id).length}
+              </span>
+            </button>
+          ))}
+
+          {/* Clear Filter (only show when filter is active) */}
+          {programFilter !== "all" && (
+            <button
+              onClick={() => setProgramFilter("all")}
+              className="inline-flex items-center p-2 text-sm font-medium text-gray-500 hover:text-gray-700 transition-colors"
+              title="Clear filter"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          )}
+        </div>
       </div>
 
-      {data.length > 0 && (
+      {/* Results count */}
+      {programFilter !== "all" && (
+        <div className="mb-4 px-3 py-2 text-sm text-gray-600 bg-gray-50 rounded-lg border border-gray-200">
+          <span className="font-medium text-gray-900">
+            {filteredData.length} {filteredData.length === 1 ? 'student' : 'students'}
+          </span>
+          {' '}found
+        </div>
+      )}
+
+      {filteredData.length > 0 && (
         <>
           {/* Desktop Table View */}
           <div className="hidden md:block bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
@@ -217,7 +306,6 @@ export default function AdminStudents() {
                   <th className="px-4 lg:px-8 py-4 text-center">Name</th>
                   <th className="px-4 lg:px-8 py-4 text-center">Email</th>
                   <th className="px-4 lg:px-8 py-4 text-center">Program</th>
-                  <th className="px-4 lg:px-8 py-4 text-center">Enrollment Date</th>
                   <th className="px-4 lg:px-8 py-4 text-center">Action</th>
                 </tr>
               </thead>
@@ -249,14 +337,7 @@ export default function AdminStudents() {
                       </span>
                     </td>
 
-                    <td className="px-4 lg:px-8 py-4 lg:py-6 text-center text-gray-600">
-                      <div className="flex items-center justify-center gap-1">
-                        <CalendarIcon className="w-4 h-4 text-gray-400" />
-                        {formatDate(item.enrollment_date)}
-                      </div>
-                    </td>
-
-                    <td className="px-2 sm:px-4 lg:px-8 py-4 lg:py-6 text-center">
+                    <td className="px-4 lg:px-8 py-4 lg:py-6 text-center">
                       <div className="inline-flex items-center justify-center gap-0 rounded-md sm:rounded-lg border border-gray-200 sm:border-gray-300 overflow-hidden">
                         <button
                           onClick={() => {
@@ -288,7 +369,7 @@ export default function AdminStudents() {
               <div className="flex flex-col sm:flex-row items-center justify-between px-4 py-3 bg-gray-50 border-t border-gray-200 gap-3 sm:gap-0">
                 <div className="text-sm text-gray-600 order-2 sm:order-1">
                   Showing {indexOfFirstItem + 1} to{" "}
-                  {Math.min(indexOfLastItem, data.length)} of {data.length} results
+                  {Math.min(indexOfLastItem, filteredData.length)} of {filteredData.length} results
                 </div>
                 <div className="flex items-center gap-1 sm:gap-2 order-1 sm:order-2">
                   <button
@@ -358,10 +439,6 @@ export default function AdminStudents() {
                       <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                         {item.programs?.name || item.program_id || "No program"}
                       </span>
-                      <span className="text-xs text-gray-500 flex items-center gap-1">
-                        <CalendarIcon className="w-3 h-3" />
-                        {formatDate(item.enrollment_date)}
-                      </span>
                     </div>
                   </div>
 
@@ -396,8 +473,8 @@ export default function AdminStudents() {
             {totalPages > 1 && (
               <div className="flex items-center justify-between px-2 py-3 bg-gray-50 rounded-lg border border-gray-200">
                 <div className="text-xs sm:text-sm text-gray-600">
-                  {indexOfFirstItem + 1}-{Math.min(indexOfLastItem, data.length)} of{" "}
-                  {data.length}
+                  {indexOfFirstItem + 1}-{Math.min(indexOfLastItem, filteredData.length)} of{" "}
+                  {filteredData.length}
                 </div>
                 <div className="flex items-center gap-1">
                   <button
