@@ -348,7 +348,7 @@ export default function AdminProjects() {
                   <span className={`text-xs px-2 py-0.5 rounded-full ${
                     statusFilter === "active" ? "bg-orange-200 text-orange-800" : "bg-slate-100 text-slate-600"
                   }`}>
-                    {data.filter(item => item.status === 'active').length}
+                    {data.filter(item => item.is_featured === true).length}
                   </span>
                 </button>
                 <button
@@ -367,7 +367,7 @@ export default function AdminProjects() {
                   <span className={`text-xs px-2 py-0.5 rounded-full ${
                     statusFilter === "inactive" ? "bg-orange-200 text-orange-800" : "bg-slate-100 text-slate-600"
                   }`}>
-                    {data.filter(item => item.status === 'inactive').length}
+                    {data.filter(item => item.is_featured === false).length}
                   </span>
                 </button>
               </div>
