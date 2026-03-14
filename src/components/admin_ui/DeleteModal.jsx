@@ -47,6 +47,8 @@ export default function DeleteModal({
         bucket = "project_images";
       } else if (lowerType.includes("member")) {
         bucket = "member_images";
+      } else if (lowerType.includes("student")) {
+        bucket = "student_images";
       }
 
       if (!bucket) return;
