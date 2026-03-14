@@ -64,12 +64,12 @@ function StatCard({ title, count, subtitle, icon: Icon, delay = 0 }) {
 
   return (
     <div 
-      className={`relative w-full p-4 sm:p-6 lg:p-8 rounded-[10px] overflow-hidden z-0 font-sans bg-white border border-gray-200 shadow-sm group transition-all duration-500 hover:shadow-xl cursor-pointer ${
+      className={`relative w-full p-4 sm:p-6 lg:p-8 rounded-[10px] overflow-hidden z-0 font-sans bg-white border border-gray-200 shadow-sm group transition-all duration-500 hover:shadow-xl active:shadow-xl cursor-pointer touch-manipulation ${
         isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
       }`}
     >
       {/* animated circle - red-200 on hover */}
-      <div className="absolute -top-4 -right-4 w-8 h-8 rounded-full bg-red-200 transition-transform duration-500 ease-out group-hover:scale-[28] -z-10"></div>
+      <div className="absolute -top-2 -right-2 sm:-top-4 sm:-right-4 w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-red-200 transition-transform duration-500 ease-out group-hover:scale-[35] sm:group-hover:scale-[50] group-active:scale-[35] sm:group-active:scale-[50] -z-10"></div>
 
       {/* corner - red-200 */}
       <div className="absolute top-0 right-0 w-10 h-10 flex items-center justify-center overflow-hidden bg-red-200 rounded-bl-[32px]">
@@ -106,20 +106,20 @@ function QuickActionButton({ text, link, icon, delay = 0 }) {
   return (
     <Link
       to={link}
-      className={`relative w-full p-3 sm:p-4 rounded-[10px] overflow-hidden z-0 font-sans bg-white border border-gray-200 shadow-sm group transition-all duration-500 hover:shadow-xl cursor-pointer flex items-center gap-3 ${
+      className={`relative w-full p-3 sm:p-4 rounded-[10px] overflow-hidden z-0 font-sans bg-white border border-gray-200 shadow-sm group transition-all duration-500 hover:shadow-xl active:shadow-xl cursor-pointer flex items-center gap-3 touch-manipulation ${
         isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
       }`}
       style={{ transitionDelay: `${delay}ms` }}
     >
       {/* animated circle - red-200 on hover */}
-      <div className="absolute -top-4 -right-4 w-8 h-8 rounded-full bg-red-200 transition-transform duration-500 ease-out group-hover:scale-[28] -z-10"></div>
+      <div className="absolute -top-2 -right-2 sm:-top-4 sm:-right-4 w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-red-200 transition-transform duration-500 ease-out group-hover:scale-[35] sm:group-hover:scale-[50] group-active:scale-[35] sm:group-active:scale-[50] -z-10"></div>
 
       {/* corner - red-200 */}
-      <div className="absolute top-0 right-0 w-10 h-10 flex items-center justify-center overflow-hidden bg-red-200 rounded-bl-[32px]">
-        <Icon className="w-5 h-5 text-red-500 -mt-1 -mr-1" />
+      <div className="absolute top-0 right-0 w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center overflow-hidden bg-red-200 rounded-bl-[24px] sm:rounded-bl-[32px]">
+        <Icon className="w-4 h-4 sm:w-5 sm:h-5 text-red-500 -mt-0.5 -mr-0.5 sm:-mt-1 sm:-mr-1" />
       </div>
 
-      <p className="text-base font-bold text-gray-800 transition-colors duration-500 group-hover:text-gray-800">
+      <p className="text-base font-bold text-gray-800 transition-colors duration-500 group-hover:text-gray-800 group-active:text-gray-800">
         {text}
       </p>
     </Link>
