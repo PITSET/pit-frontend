@@ -26,6 +26,7 @@ import AdminContact from "../pages/admin/AdminContact";
 import AdminPrograms from "../pages/admin/AdminPrograms";
 import AdminProjects from "../pages/admin/AdminProjects";
 import AdminMembers from "../pages/admin/AdminMembers";
+import AdminStudents from "../pages/admin/AdminStudents";
 import AcceptInvite from "../pages/admin/AcceptInvite";
 import ResetPassword from "../pages/admin/ResetPassword";
 
@@ -90,6 +91,7 @@ const router = createBrowserRouter([
         element: <Navigate to="/admin/team/members" replace />,
       },
       { path: "team/members", element: <AdminMembers /> },
+      { path: "team/students", element: <AdminStudents /> },
       { path: "contact", element: <AdminContact /> },
     ],
   },

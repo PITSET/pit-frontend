@@ -37,3 +37,12 @@ export const deleteStudent = async (id) => {
   const res = await api.delete(`/students/${id}`);
   return res.data;
 };
+
+/**
+ * CREATE new student
+ * @param {Object} data - Student data
+ */
+export const createStudent = async (data) => {
+  const res = await api.post("/students", data);
+  return res.data;
+};
