@@ -227,18 +227,18 @@ export default function ProjectsCollection({ projects = [], isLoading = false })
               className="bg-white rounded-[24px] overflow-hidden border border-gray-100 shadow-[8px_8px_20px_rgba(0,0,0,0.04)] flex flex-col h-full hover:shadow-[12px_12px_30px_rgba(0,0,0,0.08)] transition-all hover:-translate-y-1"
             >
               {/* Image */}
-              <div className="h-[240px] w-full overflow-hidden bg-gray-100 relative">
+              <Link to={`/projects/${project.id}`} className="block h-[240px] w-full overflow-hidden bg-gray-100 relative group">
                 <img
                   src={project.image}
                   alt={project.title}
-                  className="w-full h-full object-cover transition-transform duration-700 hover:scale-110"
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                 />
                 {project.date && (
                   <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-lg text-[11px] font-bold text-[#c92a2a] uppercase tracking-wider shadow-sm">
                     {project.date}
                   </div>
                 )}
-              </div>
+              </Link>
 
               {/* Content */}
               <div className="p-8 flex flex-col grow">
