@@ -219,6 +219,7 @@ export default function Sidebar({ isOpen = false, onClose, onLogout }) {
           label="Team"
         >
           <SubNavItem to="/admin/team/members">Members</SubNavItem>
+          <SubNavItem to="/admin/team/students">Students</SubNavItem>
         </Section>
 
         <NavItem to="/admin/contact" icon={EnvelopeIcon}>
