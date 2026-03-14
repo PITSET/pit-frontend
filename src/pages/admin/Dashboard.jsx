@@ -135,17 +135,17 @@ function AreaTooltip({ active, payload, label }) {
         <p className="font-bold text-sm mb-3 text-gray-300 border-b border-gray-700 pb-2">{label}</p>
         <div className="flex items-center justify-between gap-6 text-sm py-1">
           <div className="flex items-center gap-2">
-            <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: payload[0]?.color }} />
+            <div className="w-2.5 h-2.5 rounded-full bg-green-500" />
             <span className="text-gray-400">New Projects:</span>
           </div>
-          <span className="font-bold text-white">+{data?.newProjects || 0}</span>
+          <span className="font-bold text-green-400">+{data?.newProjects || 0}</span>
         </div>
         <div className="flex items-center justify-between gap-6 text-sm py-1">
           <div className="flex items-center gap-2">
-            <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: payload[0]?.color }} />
+            <div className="w-2.5 h-2.5 rounded-full bg-red-500" />
             <span className="text-gray-400">Total:</span>
           </div>
-          <span className="font-bold text-white">{data?.totalProjects || 0}</span>
+          <span className="font-bold text-red-400">{data?.totalProjects || 0}</span>
         </div>
       </div>
     );
@@ -219,21 +219,28 @@ function processMonthlyData(projects, year = null) {
     });
   }
 
-  // Filter projects by year and sort
+  // Filter projects by year and sort - check both created_at and createdAt
   const yearProjects = projects.filter(p => {
-    if (!p || !p.created_at) return false;
-    const projectYear = new Date(p.created_at).getFullYear();
+    if (!p) return false;
+    const createdAt = p.created_at || p.createdAt;
+    if (!createdAt) return false;
+    const projectYear = new Date(createdAt).getFullYear();
     return projectYear === currentYear;
-  }).sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+  }).sort((a, b) => {
+    const aDate = new Date(a.created_at || a.createdAt);
+    const bDate = new Date(b.created_at || b.createdAt);
+    return aDate - bDate;
+  });
 
   // Count projects by month
   let cumulative = 0;
   yearProjects.forEach((project) => {
-    if (project && project.created_at) {
-      const createdDate = new Date(project.created_at);
-      const monthIndex = createdDate.getMonth();
-      months[monthIndex].newProjects += 1;
-    }
+    if (!project) return;
+    const createdAt = project.created_at || project.createdAt;
+    if (!createdAt) return;
+    const createdDate = new Date(createdAt);
+    const monthIndex = createdDate.getMonth();
+    months[monthIndex].newProjects += 1;
   });
 
   // Calculate cumulative
@@ -253,8 +260,10 @@ function getAvailableYears(projects) {
 
   const years = new Set();
   projects.forEach((project) => {
-    if (project && project.created_at) {
-      const year = new Date(project.created_at).getFullYear();
+    if (!project) return;
+    const createdAt = project.created_at || project.createdAt;
+    if (createdAt) {
+      const year = new Date(createdAt).getFullYear();
       years.add(year);
     }
   });
@@ -370,6 +379,25 @@ export default function Dashboard() {
   const availableYears = useMemo(() => {
     return getAvailableYears(data.projects);
   }, [data.projects]);
+
+  // Calculate Y-axis configuration for Project Growth chart
+  const maxProjects = Math.max(...monthlyData.map(d => d.totalProjects), 0);
+  let yAxisMax;
+  let yAxisTicks;
+  
+  if (maxProjects <= 10) {
+    yAxisMax = maxProjects + 2;
+    yAxisTicks = Array.from({ length: yAxisMax + 1 }, (_, i) => i);
+  } else if (maxProjects <= 50) {
+    yAxisMax = Math.ceil((maxProjects + 5) / 5) * 5;
+    yAxisTicks = Array.from({ length: yAxisMax / 5 + 1 }, (_, i) => i * 5);
+  } else if (maxProjects <= 100) {
+    yAxisMax = Math.ceil((maxProjects + 10) / 10) * 10;
+    yAxisTicks = Array.from({ length: yAxisMax / 10 + 1 }, (_, i) => i * 10);
+  } else {
+    yAxisMax = Math.ceil((maxProjects + 20) / 20) * 20;
+    yAxisTicks = Array.from({ length: yAxisMax / 20 + 1 }, (_, i) => i * 20);
+  }
 
   // Process program distribution
   const projectsByProgram = useMemo(() => {
@@ -507,10 +535,11 @@ export default function Dashboard() {
                       tickLine={false} 
                       dx={0}
                       tick={{ fill: '#9CA3AF' }}
-                      domain={[0, 'auto']}
+                      domain={[0, yAxisMax]}
+                      ticks={yAxisTicks}
                       allowDecimals={false}
                     />
-                    <Tooltip content={<AreaTooltip />} cursor={{ stroke: '#EF4444', strokeWidth: 2, strokeDasharray: '6 4' }} />
+                    <Tooltip content={<AreaTooltip />} cursor={{ stroke: '#EF4444', strokeWidth: 1 }} />
                     <Area
                       type="monotone"
                       dataKey="totalProjects"
