@@ -365,10 +365,17 @@ export default function Dashboard() {
     const timer = setTimeout(() => setIsPageVisible(true), 100);
     // Quick Actions sidebar animation - starts after charts, at same time as first item
     const quickTimer = setTimeout(() => setIsQuickActionsVisible(true), 800);
+    
+    // Auto-refresh data every 30 seconds
+    const refreshInterval = setInterval(() => {
+      fetchDashboardData();
+    }, 30000);
+    
     return () => {
       clearTimeout(titleTimer);
       clearTimeout(timer);
       clearTimeout(quickTimer);
+      clearInterval(refreshInterval);
     };
   }, []);
 
