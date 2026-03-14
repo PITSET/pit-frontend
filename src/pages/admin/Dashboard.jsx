@@ -588,7 +588,7 @@ export default function Dashboard() {
 
             {/* Program Distribution - Modern design */}
             <ChartContainer title="Program Distribution" icon={ChartBarIcon} delay={600}>
-              <div className="h-[300px] focus:outline-none">
+              <div className="h-[300px] chart-no-focus focus:outline-none">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={projectsByProgram} layout="vertical" margin={{ top: 10, right: 10, left: -10, bottom: 0 }} isAnimationActive={true} animationDuration={2000} animationEasing="ease-out">
                     <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" horizontal={false} />
