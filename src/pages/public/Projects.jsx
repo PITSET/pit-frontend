@@ -54,6 +54,7 @@ export default function Projects() {
               image: resolveAssetUrl(imgVal || ""),
               programs: item.programs || [],
               date: formatProjectDate(item.created_at || item.date),
+              team_size: item.team_size || item.members_count || null,
             };
           });
 
