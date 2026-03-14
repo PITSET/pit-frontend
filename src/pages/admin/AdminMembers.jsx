@@ -6,7 +6,7 @@ import {
   ChevronRightIcon,
   PlusIcon,
   TrashIcon,
-  FunnelIcon,
+  ChevronDownIcon,
 } from "@heroicons/react/24/outline";
 
 import MemberModal from "../../components/admin_ui/MemberModal";
@@ -26,6 +26,7 @@ export default function AdminMembers() {
 
   // Role filter state
   const [roleFilter, setRoleFilter] = useState("all");
+  const [showRoleDropdown, setShowRoleDropdown] = useState(false);
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -64,6 +65,18 @@ export default function AdminMembers() {
   useEffect(() => {
     fetchMembers();
   }, []);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = () => {
+      setShowRoleDropdown(false);
+    };
+
+    if (showRoleDropdown) {
+      document.addEventListener("click", handleClickOutside);
+      return () => document.removeEventListener("click", handleClickOutside);
+    }
+  }, [showRoleDropdown]);
 
   // Filter data by role
   const filteredData = useMemo(() => {
@@ -197,81 +210,116 @@ export default function AdminMembers() {
         </button>
       </div>
 
-      {/* Role Filter - Button Style */}
+      {/* Role Filter - Custom Dropdown Style */}
       <div className="flex flex-col sm:flex-row gap-3 mb-4">
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="text-sm font-medium text-gray-600 mr-1">Filter by:</span>
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium text-gray-700">Filter:</span>
           
-          {/* All Roles Button */}
-          <button
-            onClick={() => setRoleFilter("all")}
-            className={`inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg border transition-all duration-200 ${
-              roleFilter === "all"
-                ? 'bg-orange-500 text-white border-orange-500 shadow-sm'
-                : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50 hover:border-gray-400'
-            }`}
-          >
-            <FunnelIcon className={`w-4 h-4 ${roleFilter === "all" ? 'text-white' : 'text-gray-400'}`} />
-            All
-            <span className={`ml-1 px-1.5 py-0.5 text-xs rounded-full ${
-              roleFilter === "all"
-                ? 'bg-orange-200 text-orange-800'
-                : 'bg-gray-100 text-gray-600'
-            }`}>
-              {data.length}
-            </span>
-          </button>
+          <div className="relative" onClick={(e) => e.stopPropagation()}>
+            {/* Custom dropdown button */}
+            <button
+              type="button"
+              onClick={() => setShowRoleDropdown(!showRoleDropdown)}
+              className="w-full sm:w-auto flex items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 hover:border-orange-300 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-300 transition-all duration-200 min-w-[180px]"
+            >
+              <span className={roleFilter !== "all" ? "text-orange-600" : "text-slate-600"}>
+                {roleFilter === "all" 
+                  ? `All (${data.length})` 
+                  : roleFilter === "founder" 
+                  ? "Founder" 
+                  : "Instructor"}
+              </span>
+              <ChevronDownIcon 
+                className={`w-5 h-5 text-slate-400 ml-2 transition-transform ${showRoleDropdown ? "rotate-180" : ""}`} 
+              />
+            </button>
 
-          {/* Instructor Button */}
-          <button
-            onClick={() => setRoleFilter("instructor")}
-            className={`inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg border transition-all duration-200 ${
-              roleFilter === "instructor"
-                ? 'bg-orange-500 text-white border-orange-500 shadow-sm'
-                : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50 hover:border-gray-400'
-            }`}
-          >
-            <span className={`w-2 h-2 rounded-full ${roleFilter === "instructor" ? 'bg-white' : 'bg-orange-400'}`}></span>
-            Instructor
-            <span className={`ml-1 px-1.5 py-0.5 text-xs rounded-full ${
-              roleFilter === "instructor"
-                ? 'bg-orange-200 text-orange-800'
-                : 'bg-gray-100 text-gray-600'
-            }`}>
-              {data.filter(item => item.is_instructor === true).length}
-            </span>
-          </button>
+            {/* Dropdown options */}
+            {showRoleDropdown && (
+              <div className="absolute z-20 mt-2 w-full min-w-[220px] rounded-xl border border-slate-200 bg-white shadow-xl max-h-60 overflow-y-auto animate-fadeIn">
+                {/* All option */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setRoleFilter("all");
+                    setShowRoleDropdown(false);
+                  }}
+                  className={`w-full px-4 py-3 text-left text-sm transition flex items-center justify-between border-b border-slate-100 ${
+                    roleFilter === "all"
+                      ? "bg-orange-50 text-orange-700"
+                      : "text-slate-700 hover:bg-slate-50"
+                  }`}
+                >
+                  <span className="font-medium">All Roles</span>
+                  <span className={`text-xs px-2 py-0.5 rounded-full ${
+                    roleFilter === "all"
+                      ? "bg-orange-200 text-orange-800"
+                      : "bg-slate-100 text-slate-600"
+                  }`}>
+                    {data.length}
+                  </span>
+                </button>
+                
+                {/* Founder option */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setRoleFilter("founder");
+                    setShowRoleDropdown(false);
+                  }}
+                  className={`w-full px-4 py-3 text-left text-sm transition flex items-center justify-between ${
+                    roleFilter === "founder"
+                      ? "bg-orange-50 text-orange-700"
+                      : "text-slate-700 hover:bg-slate-50"
+                  }`}
+                >
+                  <span>Founder</span>
+                  <span className={`text-xs px-2 py-0.5 rounded-full ${
+                    roleFilter === "founder"
+                      ? "bg-orange-200 text-orange-800"
+                      : "bg-slate-100 text-slate-600"
+                  }`}>
+                    {data.filter(item => item.is_founder === true).length}
+                  </span>
+                </button>
 
-          {/* Founder Button */}
-          <button
-            onClick={() => setRoleFilter("founder")}
-            className={`inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg border transition-all duration-200 ${
-              roleFilter === "founder"
-                ? 'bg-orange-500 text-white border-orange-500 shadow-sm'
-                : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50 hover:border-gray-400'
-            }`}
-          >
-            <span className={`w-2 h-2 rounded-full ${roleFilter === "founder" ? 'bg-white' : 'bg-orange-400'}`}></span>
-            Founder
-            <span className={`ml-1 px-1.5 py-0.5 text-xs rounded-full ${
-              roleFilter === "founder"
-                ? 'bg-orange-200 text-orange-800'
-                : 'bg-gray-100 text-gray-600'
-            }`}>
-              {data.filter(item => item.is_founder === true).length}
-            </span>
-          </button>
+                {/* Instructor option */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setRoleFilter("instructor");
+                    setShowRoleDropdown(false);
+                  }}
+                  className={`w-full px-4 py-3 text-left text-sm transition flex items-center justify-between ${
+                    roleFilter === "instructor"
+                      ? "bg-orange-50 text-orange-700"
+                      : "text-slate-700 hover:bg-slate-50"
+                  }`}
+                >
+                  <span>Instructor</span>
+                  <span className={`text-xs px-2 py-0.5 rounded-full ${
+                    roleFilter === "instructor"
+                      ? "bg-orange-200 text-orange-800"
+                      : "bg-slate-100 text-slate-600"
+                  }`}>
+                    {data.filter(item => item.is_instructor === true).length}
+                  </span>
+                </button>
+              </div>
+            )}
+          </div>
 
           {/* Clear Filter (only show when filter is active) */}
           {roleFilter !== "all" && (
             <button
               onClick={() => setRoleFilter("all")}
-              className="inline-flex items-center p-2 text-sm font-medium text-gray-500 hover:text-gray-700 transition-colors"
+              className="inline-flex items-center px-3 py-2 text-sm font-medium text-orange-600 bg-orange-50 hover:bg-orange-100 rounded-lg transition-colors"
               title="Clear filter"
             >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
+              Clear
             </button>
           )}
         </div>
