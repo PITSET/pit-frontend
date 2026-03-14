@@ -128,18 +128,24 @@ function QuickActionButton({ text, link, icon, delay = 0 }) {
 // Custom Tooltip for Area Chart - Modern dark theme
 function AreaTooltip({ active, payload, label }) {
   if (active && payload && payload.length) {
+    const data = payload[0]?.payload;
     return (
       <div className="bg-gray-900/95 backdrop-blur-sm text-white rounded-xl shadow-2xl p-4 border border-gray-700/50">
         <p className="font-bold text-sm mb-3 text-gray-300 border-b border-gray-700 pb-2">{label}</p>
-        {payload.map((entry, index) => (
-          <div key={index} className="flex items-center justify-between gap-6 text-sm py-1">
-            <div className="flex items-center gap-2">
-              <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: entry.color }} />
-              <span className="text-gray-400">{entry.name}:</span>
-            </div>
-            <span className="font-bold text-white">{entry.value}</span>
+        <div className="flex items-center justify-between gap-6 text-sm py-1">
+          <div className="flex items-center gap-2">
+            <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: payload[0]?.color }} />
+            <span className="text-gray-400">New Projects:</span>
           </div>
-        ))}
+          <span className="font-bold text-white">+{data?.newProjects || 0}</span>
+        </div>
+        <div className="flex items-center justify-between gap-6 text-sm py-1">
+          <div className="flex items-center gap-2">
+            <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: payload[0]?.color }} />
+            <span className="text-gray-400">Total:</span>
+          </div>
+          <span className="font-bold text-white">{data?.totalProjects || 0}</span>
+        </div>
       </div>
     );
   }
@@ -196,7 +202,7 @@ function processMonthlyData(projects) {
   const months = [];
   const now = new Date();
 
-  // Get last 12 months
+  // Get last 12 months in chronological order (oldest to newest)
   for (let i = 11; i >= 0; i--) {
     const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
     const monthName = date.toLocaleDateString('en-US', { month: 'short' });
@@ -205,32 +211,46 @@ function processMonthlyData(projects) {
     months.push({
       month: monthName,
       monthKey: monthKey,
+      sortOrder: 12 - i, // 1 to 12 for proper sorting
       newProjects: 0,
       totalProjects: 0,
     });
   }
 
+  // Sort projects by created_at to ensure proper cumulative calculation
+  const sortedProjects = [...projects].filter(p => p && p.created_at).sort((a, b) => {
+    return new Date(a.created_at) - new Date(b.created_at);
+  });
+
   // Count projects by month using created_at
   let cumulative = 0;
-  projects.forEach((project) => {
+  
+  // Initialize all months with 0
+  const monthData = {};
+  months.forEach(m => {
+    monthData[m.monthKey] = { ...m, newProjects: 0, totalProjects: 0 };
+  });
+
+  // Count projects
+  sortedProjects.forEach((project) => {
     if (project && project.created_at) {
       const createdDate = new Date(project.created_at);
       const projectMonthKey = `${createdDate.getFullYear()}-${String(createdDate.getMonth() + 1).padStart(2, '0')}`;
       
-      const monthIndex = months.findIndex((m) => m.monthKey === projectMonthKey);
-      if (monthIndex !== -1) {
-        months[monthIndex].newProjects += 1;
+      if (monthData[projectMonthKey]) {
+        monthData[projectMonthKey].newProjects += 1;
       }
     }
   });
 
-  // Calculate cumulative
-  months.forEach((m) => {
+  // Convert to array and calculate cumulative
+  const result = Object.values(monthData).sort((a, b) => a.sortOrder - b.sortOrder);
+  result.forEach((m) => {
     cumulative += m.newProjects;
     m.totalProjects = cumulative;
   });
 
-  return months;
+  return result;
 }
 
 // Process projects by program
@@ -424,6 +444,8 @@ export default function Dashboard() {
                       tickLine={false} 
                       dy={10}
                       tick={{ fill: '#9CA3AF' }}
+                      interval={0}
+                      tickCount={12}
                     />
                     <YAxis 
                       fontSize={12} 
@@ -431,6 +453,8 @@ export default function Dashboard() {
                       tickLine={false} 
                       dx={0}
                       tick={{ fill: '#9CA3AF' }}
+                      domain={[0, 'dataMax']}
+                      tickFormatter={(value) => Math.round(value)}
                     />
                     <Tooltip content={<AreaTooltip />} cursor={{ stroke: '#EF4444', strokeWidth: 2, strokeDasharray: '6 4' }} />
                     <Area
@@ -440,6 +464,7 @@ export default function Dashboard() {
                       stroke="#EF4444"
                       strokeWidth={3}
                       fill="url(#colorTotal)"
+                      animationBegin={500}
                     />
                   </AreaChart>
                 </ResponsiveContainer>
@@ -450,9 +475,12 @@ export default function Dashboard() {
                   <p className="text-xs text-gray-400">Total Projects</p>
                   <p className="text-2xl font-bold text-gray-800">{data.projects.length}</p>
                 </div>
-                <div className="flex items-center gap-1 text-green-500">
-                  <ArrowTrendingUpIcon className="w-4 h-4" />
-                  <span className="text-sm font-medium">+{monthlyData[monthlyData.length - 1]?.newProjects || 0} this month</span>
+                <div className="text-right">
+                  <p className="text-xs text-gray-400">This Month</p>
+                  <div className="flex items-center gap-1 text-green-500">
+                    <ArrowTrendingUpIcon className="w-4 h-4" />
+                    <span className="text-sm font-bold">+{monthlyData[monthlyData.length - 1]?.newProjects || 0}</span>
+                  </div>
                 </div>
               </div>
             </ChartContainer>
