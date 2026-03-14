@@ -11,6 +11,7 @@ import {
   ExclamationCircleIcon,
   ArrowTrendingUpIcon,
   ChartBarIcon,
+  ChevronDownIcon,
 } from "@heroicons/react/24/outline";
 import {
   XAxis,
@@ -182,75 +183,86 @@ function ChartContainer({ title, icon: Icon, children, delay = 0 }) {
         isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
       }`}
     >
-      <div className="flex items-center gap-3 mb-6">
-        <div className="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center">
-          <IconComponent className="w-5 h-5 text-red-500" />
+      {title && Icon && (
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center">
+            <IconComponent className="w-5 h-5 text-red-500" />
+          </div>
+          <h2 className="text-lg font-semibold text-gray-800">{title}</h2>
         </div>
-        <h2 className="text-lg font-semibold text-gray-800">{title}</h2>
-      </div>
+      )}
       {children}
     </div>
   );
 }
 
 // Process projects data to get monthly growth data
-function processMonthlyData(projects) {
+function processMonthlyData(projects, year = null) {
   if (!Array.isArray(projects) || projects.length === 0) {
     return [];
   }
 
-  const months = [];
   const now = new Date();
+  const currentYear = year || now.getFullYear();
+  const months = [];
 
-  // Get last 12 months in chronological order (oldest to newest)
-  for (let i = 11; i >= 0; i--) {
-    const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+  // Get 12 months for the selected year (Jan to Dec)
+  for (let i = 0; i < 12; i++) {
+    const date = new Date(currentYear, i, 1);
     const monthName = date.toLocaleDateString('en-US', { month: 'short' });
-    const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
     
     months.push({
       month: monthName,
-      monthKey: monthKey,
-      sortOrder: 12 - i, // 1 to 12 for proper sorting
+      sortOrder: i,
       newProjects: 0,
       totalProjects: 0,
     });
   }
 
-  // Sort projects by created_at to ensure proper cumulative calculation
-  const sortedProjects = [...projects].filter(p => p && p.created_at).sort((a, b) => {
-    return new Date(a.created_at) - new Date(b.created_at);
-  });
+  // Filter projects by year and sort
+  const yearProjects = projects.filter(p => {
+    if (!p || !p.created_at) return false;
+    const projectYear = new Date(p.created_at).getFullYear();
+    return projectYear === currentYear;
+  }).sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
 
-  // Count projects by month using created_at
+  // Count projects by month
   let cumulative = 0;
-  
-  // Initialize all months with 0
-  const monthData = {};
-  months.forEach(m => {
-    monthData[m.monthKey] = { ...m, newProjects: 0, totalProjects: 0 };
-  });
-
-  // Count projects
-  sortedProjects.forEach((project) => {
+  yearProjects.forEach((project) => {
     if (project && project.created_at) {
       const createdDate = new Date(project.created_at);
-      const projectMonthKey = `${createdDate.getFullYear()}-${String(createdDate.getMonth() + 1).padStart(2, '0')}`;
-      
-      if (monthData[projectMonthKey]) {
-        monthData[projectMonthKey].newProjects += 1;
-      }
+      const monthIndex = createdDate.getMonth();
+      months[monthIndex].newProjects += 1;
     }
   });
 
-  // Convert to array and calculate cumulative
-  const result = Object.values(monthData).sort((a, b) => a.sortOrder - b.sortOrder);
-  result.forEach((m) => {
+  // Calculate cumulative
+  months.forEach((m) => {
     cumulative += m.newProjects;
     m.totalProjects = cumulative;
   });
 
-  return result;
+  return months;
+}
+
+// Get available years from projects
+function getAvailableYears(projects) {
+  if (!Array.isArray(projects) || projects.length === 0) {
+    return [new Date().getFullYear()];
+  }
+
+  const years = new Set();
+  projects.forEach((project) => {
+    if (project && project.created_at) {
+      const year = new Date(project.created_at).getFullYear();
+      years.add(year);
+    }
+  });
+  
+  // Always include current year
+  years.add(new Date().getFullYear());
+  
+  return Array.from(years).sort((a, b) => b - a); // Sort descending
 }
 
 // Process projects by program
@@ -294,6 +306,7 @@ export default function Dashboard() {
   const [isPageVisible, setIsPageVisible] = useState(false);
   const [isQuickActionsVisible, setIsQuickActionsVisible] = useState(false);
   const [isTitleVisible, setIsTitleVisible] = useState(false);
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
 
   const fetchDashboardData = async () => {
     try {
@@ -350,7 +363,12 @@ export default function Dashboard() {
 
   // Process monthly data
   const monthlyData = useMemo(() => {
-    return processMonthlyData(data.projects);
+    return processMonthlyData(data.projects, selectedYear);
+  }, [data.projects, selectedYear]);
+
+  // Get available years from projects
+  const availableYears = useMemo(() => {
+    return getAvailableYears(data.projects);
   }, [data.projects]);
 
   // Process program distribution
@@ -426,7 +444,44 @@ export default function Dashboard() {
           {/* Charts with modern design */}
           <div className="grid md:grid-cols-2 gap-6">
             {/* Project Growth - Modern design */}
-            <ChartContainer title="Project Growth" icon={ArrowTrendingUpIcon} delay={500}>
+            {/* Project Growth - Modern design */}
+            <ChartContainer delay={500}>
+              {/* Year Filter in Header */}
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center">
+                    <ArrowTrendingUpIcon className="w-5 h-5 text-red-500" />
+                  </div>
+                  <h2 className="text-lg font-semibold text-gray-800">Project Growth</h2>
+                </div>
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => document.getElementById('year-dropdown').classList.toggle('hidden')}
+                    className="flex items-center justify-between bg-white border border-gray-300 text-gray-700 text-sm rounded-lg px-4 py-2 min-w-[100px] hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent cursor-pointer transition-colors duration-200 shadow-sm"
+                  >
+                    <span>{selectedYear}</span>
+                    <ChevronDownIcon className="w-4 h-4 text-gray-400 ml-2" />
+                  </button>
+                  <div id="year-dropdown" className="hidden absolute right-0 z-10 mt-1 w-full min-w-[100px] rounded-lg border border-gray-300 bg-white shadow-lg max-h-48 overflow-y-auto">
+                    {availableYears.map((year) => (
+                      <button
+                        key={year}
+                        type="button"
+                        onClick={() => {
+                          setSelectedYear(year);
+                          document.getElementById('year-dropdown').classList.add('hidden');
+                        }}
+                        className={`w-full text-left px-4 py-2 text-sm hover:bg-red-50 transition-colors duration-150 ${
+                          selectedYear === year ? 'text-red-600 font-medium bg-red-50' : 'text-gray-700'
+                        }`}
+                      >
+                        {year}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
               <div className="h-[300px] focus:outline-none">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={monthlyData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }} isAnimationActive={true} animationDuration={2000} animationEasing="ease-out">
@@ -478,7 +533,7 @@ export default function Dashboard() {
                   <p className="text-2xl font-bold text-gray-800">{data.projects.length}</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-xs text-gray-400">This Month</p>
+                  <p className="text-xs text-gray-400">This Year</p>
                   <div className="flex items-center gap-1 text-green-500">
                     <ArrowTrendingUpIcon className="w-4 h-4" />
                     <span className="text-sm font-bold">+{monthlyData[monthlyData.length - 1]?.newProjects || 0}</span>
