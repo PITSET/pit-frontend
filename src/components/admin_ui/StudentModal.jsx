@@ -383,7 +383,10 @@ export default function StudentModal({ isOpen, onClose, onRefresh, item }) {
                     <ArrowUpTrayIcon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                   </div>
                   <span className="text-white text-xs sm:text-sm font-medium">
-                    {image ? "Change" : "Upload"} Image
+                    {image ? "Change" : "Upload Photo"}
+                  </span>
+                  <span className="text-white/80 text-xs mt-1">
+                    JPG, PNG up to 10MB
                   </span>
                 </div>
 
