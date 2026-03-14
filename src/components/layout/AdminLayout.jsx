@@ -55,7 +55,7 @@ export default function AdminLayout() {
       <LogoutConfirmModal
         isOpen={showLogoutModal}
         onClose={() => setShowLogoutModal(false)}
-        onConfirm={logout}
+        onConfirm={() => logout(true)}
       />
 
       <main className="flex-1 overflow-auto">
