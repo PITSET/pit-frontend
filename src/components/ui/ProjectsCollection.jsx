@@ -2,6 +2,7 @@ import React, { useState, useMemo, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { BsSearch } from "react-icons/bs";
 import { HiAdjustmentsHorizontal, HiUsers } from "react-icons/hi2";
+import Loader from "../ui/Loader";
 
 /**
  * ProjectsCollection - A reusable component for listing projects with filtering and search.
@@ -99,11 +100,7 @@ export default function ProjectsCollection({ projects = [], isLoading = false })
   }, [projects, activeTab, searchQuery, filters]);
 
   if (isLoading) {
-    return (
-      <div className="py-20 flex justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-red-600"></div>
-      </div>
-    );
+    return <Loader label="Loading Prometheus Institute..." />;
   }
 
   return (
