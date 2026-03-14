@@ -204,10 +204,14 @@ function processMonthlyData(projects, year = null) {
 
   const now = new Date();
   const currentYear = year || now.getFullYear();
+  const currentMonth = now.getMonth(); // 0-11
+  const isCurrentYear = currentYear === now.getFullYear();
+  const monthsToShow = isCurrentYear ? currentMonth + 1 : 12; // Only show up to current month if this year
+  
   const months = [];
 
-  // Get 12 months for the selected year (Jan to Dec)
-  for (let i = 0; i < 12; i++) {
+  // Get months up to current month (or all 12 if not current year)
+  for (let i = 0; i < monthsToShow; i++) {
     const date = new Date(currentYear, i, 1);
     const monthName = date.toLocaleDateString('en-US', { month: 'short' });
     
@@ -240,7 +244,11 @@ function processMonthlyData(projects, year = null) {
     if (!createdAt) return;
     const createdDate = new Date(createdAt);
     const monthIndex = createdDate.getMonth();
-    months[monthIndex].newProjects += 1;
+    
+    // Only count if month is within our displayed range
+    if (monthIndex < monthsToShow) {
+      months[monthIndex].newProjects += 1;
+    }
   });
 
   // Calculate cumulative
