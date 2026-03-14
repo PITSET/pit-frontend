@@ -650,17 +650,17 @@ export default function Dashboard() {
             <ChartContainer title="Program Distribution" icon={ChartBarIcon} delay={600}>
               <div className="h-[250px] sm:h-[300px] chart-no-focus focus:outline-none">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={projectsByProgram} layout="vertical" margin={{ top: 10, right: 20, left: -10, bottom: 0 }} isAnimationActive={true} animationDuration={2000} animationEasing="ease-out">
+                  <BarChart data={projectsByProgram} layout="vertical" margin={{ top: 10, right: 20, left: -100, bottom: 0 }} isAnimationActive={true} animationDuration={2000} animationEasing="ease-out">
                     <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" horizontal={false} />
                     <XAxis 
                       type="number"
                       fontSize={12} 
                       axisLine={false} 
                       tickLine={false} 
-                      dx={0}
                       tick={{ fill: '#9CA3AF' }}
                       domain={[0, 'dataMax + 1']}
                       tickFormatter={(value) => Math.round(value)}
+                      padding={{ left: 0, right: 0 }}
                     />
                     <YAxis 
                       type="category"
@@ -672,7 +672,7 @@ export default function Dashboard() {
                       tick={{ fill: '#9CA3AF' }}
                     />
                     <Tooltip content={<BarTooltip />} cursor={{ fill: 'rgba(239, 68, 68, 0.08)' }} />
-                    <Bar dataKey="projects" radius={[0, 6, 6, 0]} layout="vertical" animationBegin={600}>
+                    <Bar dataKey="projects" radius={[0, 6, 6, 0]} layout="vertical" animationBegin={600} barCategoryGap="20%">
                       {projectsByProgram.map((entry, index) => (
                         <Cell key={index} fill={entry?.fill || '#EF4444'} />
                       ))}
