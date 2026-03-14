@@ -282,15 +282,52 @@ function getAvailableYears(projects) {
   return Array.from(years).sort((a, b) => b - a); // Sort descending
 }
 
+// Generate consistent unique colors based on the number of items (deterministic)
+function generateDynamicColors(count) {
+  // Extended palette of visually distinct colors
+  const palette = [
+    '#EF4444', // Red
+    '#F97316', // Orange
+    '#F59E0B', // Amber
+    '#84CC16', // Lime
+    '#10B981', // Emerald
+    '#06B6D4', // Cyan
+    '#3B82F6', // Blue
+    '#8B5CF6', // Violet
+    '#EC4899', // Pink
+    '#6366F1', // Indigo
+    '#14B8A6', // Teal
+    '#F43F5E', // Rose
+    '#A855F7', // Purple
+    '#0EA5E9', // Sky
+    '#22C55E', // Green
+  ];
+  
+  // If we have more programs than palette colors, cycle through with slight variations
+  const colors = [];
+  for (let i = 0; i < count; i++) {
+    const baseColor = palette[i % palette.length];
+    
+    // For colors beyond palette, add opacity variation
+    if (i >= palette.length) {
+      const opacity = 1 - Math.floor(i / palette.length) * 0.15;
+      colors.push(baseColor + Math.round(opacity * 255).toString(16).padStart(2, '0'));
+    } else {
+      colors.push(baseColor);
+    }
+  }
+  
+  return colors;
+}
+
 // Process projects by program
 function processProjectsByProgram(programs, projects) {
   if (!Array.isArray(programs) || !Array.isArray(projects)) {
     return [];
   }
 
-  const colors = ['#EF4444', '#F97316', '#F59E0B', '#EAB308', '#84CC16'];
-  
-  return programs.map((program, index) => {
+  // Filter programs that have projects
+  const programsWithProjects = programs.map((program) => {
     if (!program) return null;
     
     // Count projects linked to this program
@@ -301,14 +338,25 @@ function processProjectsByProgram(programs, projects) {
     }).length;
 
     return {
+      program,
+      projects: projectCount,
+    };
+  }).filter(p => p && p.projects > 0).sort((a, b) => b.projects - a.projects);
+
+  // Generate dynamic colors based on actual number of programs with projects
+  const colors = generateDynamicColors(programsWithProjects.length);
+  
+  return programsWithProjects.map((item, index) => {
+    const program = item.program;
+    return {
       name: program.program_name?.length > 12 
         ? program.program_name.substring(0, 12) + '...' 
         : program.program_name || 'Other',
       fullName: program.program_name || 'Unnamed',
-      projects: projectCount,
-      fill: colors[index % colors.length],
+      projects: item.projects,
+      fill: colors[index],
     };
-  }).filter(p => p && p.projects > 0).sort((a, b) => b.projects - a.projects).slice(0, 5);
+  });
 }
 
 export default function Dashboard() {
@@ -590,7 +638,7 @@ export default function Dashboard() {
             <ChartContainer title="Program Distribution" icon={ChartBarIcon} delay={600}>
               <div className="h-[300px] chart-no-focus focus:outline-none">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={projectsByProgram} layout="vertical" margin={{ top: 10, right: 10, left: -10, bottom: 0 }} isAnimationActive={true} animationDuration={2000} animationEasing="ease-out">
+                  <BarChart data={projectsByProgram} layout="vertical" margin={{ top: 10, right: 20, left: -20, bottom: 0 }} isAnimationActive={true} animationDuration={2000} animationEasing="ease-out">
                     <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" horizontal={false} />
                     <XAxis 
                       type="number"
@@ -608,8 +656,7 @@ export default function Dashboard() {
                       fontSize={12} 
                       axisLine={false} 
                       tickLine={false} 
-                      dx={0}
-                      width={150}
+                      width="auto"
                       tick={{ fill: '#9CA3AF' }}
                     />
                     <Tooltip content={<BarTooltip />} cursor={{ fill: 'rgba(239, 68, 68, 0.08)' }} />
