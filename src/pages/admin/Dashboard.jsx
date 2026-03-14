@@ -414,16 +414,10 @@ export default function Dashboard() {
     // Quick Actions sidebar animation - starts after charts, at same time as first item
     const quickTimer = setTimeout(() => setIsQuickActionsVisible(true), 800);
     
-    // Auto-refresh data every 30 seconds
-    const refreshInterval = setInterval(() => {
-      fetchDashboardData();
-    }, 30000);
-    
     return () => {
       clearTimeout(titleTimer);
       clearTimeout(timer);
       clearTimeout(quickTimer);
-      clearInterval(refreshInterval);
     };
   }, []);
 
@@ -638,7 +632,7 @@ export default function Dashboard() {
             <ChartContainer title="Program Distribution" icon={ChartBarIcon} delay={600}>
               <div className="h-[300px] chart-no-focus focus:outline-none">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={projectsByProgram} layout="vertical" margin={{ top: 10, right: 20, left: -20, bottom: 0 }} isAnimationActive={true} animationDuration={2000} animationEasing="ease-out">
+                  <BarChart data={projectsByProgram} layout="vertical" margin={{ top: 10, right: 20, left: -10, bottom: 0 }} isAnimationActive={true} animationDuration={2000} animationEasing="ease-out">
                     <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" horizontal={false} />
                     <XAxis 
                       type="number"
@@ -656,7 +650,7 @@ export default function Dashboard() {
                       fontSize={12} 
                       axisLine={false} 
                       tickLine={false} 
-                      width="auto"
+                      width={140}
                       tick={{ fill: '#9CA3AF' }}
                     />
                     <Tooltip content={<BarTooltip />} cursor={{ fill: 'rgba(239, 68, 68, 0.08)' }} />
