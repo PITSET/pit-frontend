@@ -30,7 +30,12 @@ export default function AdminStudents() {
   // Program filter state
   const [programFilter, setProgramFilter] = useState("all");
 
-  // Pagination state
+  // Helper function to get program name by ID
+  const getProgramName = (programId) => {
+    if (!programId) return "N/A";
+    const program = programs.find(p => p.id === programId);
+    return program?.name || programId;
+  };
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 4;
 
@@ -333,7 +338,7 @@ export default function AdminStudents() {
 
                     <td className="px-4 lg:px-8 py-4 lg:py-6 text-center">
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                        {item.programs?.name || item.program_id || "N/A"}
+                        {getProgramName(item.program_id)}
                       </span>
                     </td>
 
@@ -437,7 +442,7 @@ export default function AdminStudents() {
                     </p>
                     <div className="flex items-center gap-2">
                       <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                        {item.programs?.name || item.program_id || "No program"}
+                        {getProgramName(item.program_id)}
                       </span>
                     </div>
                   </div>
