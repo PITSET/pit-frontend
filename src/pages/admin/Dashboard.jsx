@@ -707,7 +707,8 @@ export default function Dashboard() {
               <QuickActionButton text="Manage Programs" link="/admin/academics/programs" icon={AcademicCapIcon} delay={600} />
               <QuickActionButton text="Manage Projects" link="/admin/academics/projects" icon={FolderIcon} delay={650} />
               <QuickActionButton text="Manage Members" link="/admin/team/members" icon={UsersIcon} delay={700} />
-              <QuickActionButton text="Manage Contact" link="/admin/contact" icon={EnvelopeIcon} delay={750} />
+              <QuickActionButton text="Manage Students" link="/admin/team/students" icon={UserGroupIcon} delay={750} />
+              <QuickActionButton text="Manage Contact" link="/admin/contact" icon={EnvelopeIcon} delay={800} />
             </div>
           </div>
         </div>
