@@ -565,7 +565,7 @@ export default function Dashboard() {
                   <p className="text-xs text-gray-400">This Year</p>
                   <div className="flex items-center gap-1 text-green-500">
                     <ArrowTrendingUpIcon className="w-4 h-4" />
-                    <span className="text-sm font-bold">+{monthlyData[monthlyData.length - 1]?.newProjects || 0}</span>
+                    <span className="text-sm font-bold">+{monthlyData.reduce((sum, m) => sum + m.newProjects, 0)}</span>
                   </div>
                 </div>
               </div>
