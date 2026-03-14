@@ -224,7 +224,7 @@ export default function AdminMembers() {
             >
               <span className={roleFilter !== "all" ? "text-orange-600" : "text-slate-600"}>
                 {roleFilter === "all" 
-                  ? `All (${data.length})` 
+                  ? `All Roles (${data.length})` 
                   : roleFilter === "founder" 
                   ? "Founder" 
                   : "Instructor"}
