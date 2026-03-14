@@ -320,6 +320,26 @@ function generateDynamicColors(count) {
   return colors;
 }
 
+// Generate abbreviation from program name
+function getProgramAbbreviation(programName) {
+  if (!programName) return 'Other';
+  
+  // Split by spaces and take first letter of each word
+  const words = programName.trim().split(/\s+/);
+  
+  if (words.length === 1) {
+    // Single word - take first 3-4 letters
+    return programName.substring(0, 4).toUpperCase();
+  }
+  
+  // Multiple words - take first letter of each word (max 4)
+  return words
+    .slice(0, 4)
+    .map(word => word[0])
+    .join('')
+    .toUpperCase();
+}
+
 // Process projects by program
 function processProjectsByProgram(programs, projects) {
   if (!Array.isArray(programs) || !Array.isArray(projects)) {
@@ -349,9 +369,7 @@ function processProjectsByProgram(programs, projects) {
   return programsWithProjects.map((item, index) => {
     const program = item.program;
     return {
-      name: program.program_name?.length > 12 
-        ? program.program_name.substring(0, 12) + '...' 
-        : program.program_name || 'Other',
+      name: getProgramAbbreviation(program.program_name),
       fullName: program.program_name || 'Unnamed',
       projects: item.projects,
       fill: colors[index],
