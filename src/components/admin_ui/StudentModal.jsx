@@ -7,6 +7,7 @@ import {
   UserIcon,
   ArrowUpTrayIcon,
   CheckIcon,
+  ChevronDownIcon,
 } from "@heroicons/react/24/outline";
 
 // api
@@ -22,14 +23,15 @@ export default function StudentModal({ isOpen, onClose, onRefresh, item }) {
   const [email, setEmail] = useState("");
   const [emailError, setEmailError] = useState("");
   const [programId, setProgramId] = useState("");
+  const [showProgramDropdown, setShowProgramDropdown] = useState(false);
   
   const [loading, setLoading] = useState(false);
   const [programs, setPrograms] = useState([]);
   const [programsLoading, setProgramsLoading] = useState(false);
   
-  // Image state
-  const [image, setImage] = useState(null);
+  // Refs
   const fileInputRef = useRef(null);
+  const programDropdownRef = useRef(null);
 
   // Fetch programs when modal opens
   useEffect(() => {
@@ -50,6 +52,18 @@ export default function StudentModal({ isOpen, onClose, onRefresh, item }) {
 
     fetchPrograms();
   }, [isOpen]);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (programDropdownRef.current && !programDropdownRef.current.contains(event.target)) {
+        setShowProgramDropdown(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   // Handle image select
   const handleImageChange = (e) => {
@@ -280,6 +294,7 @@ export default function StudentModal({ isOpen, onClose, onRefresh, item }) {
     setEmail(item?.email || "");
     setImage(null);
     setProgramId(item?.program_id || "");
+    setShowProgramDropdown(false);
   };
 
   // Load initial data when modal opens
@@ -293,11 +308,19 @@ export default function StudentModal({ isOpen, onClose, onRefresh, item }) {
         setEmail("");
         setImage(null);
         setProgramId("");
+        setShowProgramDropdown(false);
       }
     }
   }, [isOpen, item]);
 
+  // Image state
+  const [image, setImage] = useState(null);
+
   if (!isOpen) return null;
+
+  // Get selected program name
+  const selectedProgram = programs.find(p => p.id === programId);
+  const selectedProgramName = selectedProgram?.program_name || selectedProgram?.name || "";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/40 backdrop-blur-sm overflow-y-auto">
@@ -417,23 +440,58 @@ export default function StudentModal({ isOpen, onClose, onRefresh, item }) {
               </div>
 
               {/* Program */}
-              <div>
+              <div ref={programDropdownRef}>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">
                   Program <span className="text-red-500">*</span>
                 </label>
-                <select
-                  value={programId}
-                  onChange={(e) => setProgramId(e.target.value)}
-                  className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-shadow bg-white"
-                  disabled={programsLoading}
-                >
-                  <option value="">Select a program</option>
-                  {programs.map((program) => (
-                    <option key={program.id} value={program.id}>
-                      {program.name}
-                    </option>
-                  ))}
-                </select>
+                {programsLoading ? (
+                  <div className="flex items-center gap-2 text-gray-500">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-orange-500"></div>
+                    <span>Loading programs...</span>
+                  </div>
+                ) : (
+                  <>
+                    {/* Custom dropdown button */}
+                    <button
+                      type="button"
+                      onClick={() => setShowProgramDropdown(!showProgramDropdown)}
+                      className="w-full flex items-center justify-between rounded-lg border border-gray-300 bg-white px-3 sm:px-4 py-2 sm:py-2.5 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-400 transition"
+                    >
+                      <span className={programId ? "text-gray-900" : "text-gray-500"}>
+                        {selectedProgramName || "Select a program..."}
+                      </span>
+                      <ChevronDownIcon 
+                        className={`w-4 h-4 text-gray-500 transition-transform ${showProgramDropdown ? "rotate-180" : ""}`} 
+                      />
+                    </button>
+
+                    {/* Dropdown options */}
+                    {showProgramDropdown && (
+                      <div className="mt-1 rounded-lg border border-gray-300 bg-white shadow-sm max-h-40 overflow-y-auto">
+                        {programs.map(program => (
+                          <button
+                            key={program.id}
+                            type="button"
+                            onClick={() => {
+                              setProgramId(program.id);
+                              setShowProgramDropdown(false);
+                            }}
+                            className={`w-full px-3 sm:px-4 py-2 text-left text-sm transition flex items-center justify-between ${
+                              programId === program.id
+                                ? "bg-orange-50 text-orange-600"
+                                : "text-gray-700 bg-white hover:bg-gray-100"
+                            }`}
+                          >
+                            <span>{program.program_name || program.name}</span>
+                            {programId === program.id && (
+                              <CheckIcon className="w-4 h-4 text-orange-500" />
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </>
+                )}
               </div>
             </div>
           </div>

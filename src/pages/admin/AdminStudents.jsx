@@ -34,7 +34,7 @@ export default function AdminStudents() {
   const getProgramName = (programId) => {
     if (!programId) return "N/A";
     const program = programs.find(p => p.id === programId);
-    return program?.name || programId;
+    return program?.program_name || program?.name || programId;
   };
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 4;
@@ -264,7 +264,7 @@ export default function AdminStudents() {
               }`}
             >
               <span className={`w-2 h-2 rounded-full ${programFilter === program.id ? 'bg-white' : 'bg-blue-400'}`}></span>
-              {program.name}
+              {program.program_name || program.name}
               <span className={`ml-1 px-1.5 py-0.5 text-xs rounded-full ${
                 programFilter === program.id
                   ? 'bg-orange-200 text-orange-800'
