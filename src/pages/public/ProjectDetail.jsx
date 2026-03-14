@@ -22,6 +22,9 @@ export default function ProjectDetail() {
   const [loading, setLoading] = useState(true);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [totalImages, setTotalImages] = useState(0);
+  const [programNames, setProgramNames] = useState([]);
+  const [studentNames, setStudentNames] = useState([]);
+  const [studentCount, setStudentCount] = useState(0);
 
   // Auto-slide: advance every 5 seconds when there are multiple images
   useEffect(() => {
@@ -43,11 +46,51 @@ export default function ProjectDetail() {
     const fetchProject = async () => {
       setLoading(true);
       try {
-        const res = await api.get(`/projects/${id}`);
+        const [projectRes, programsRes] = await Promise.all([
+          api.get(`/projects/${id}`),
+          api.get("/programs").catch(() => ({ data: [] })),
+        ]);
+
         // Support either standard project array return with single object or object wrapper
-        const data = Array.isArray(res.data) ? res.data[0] : res.data?.data || res.data?.project || res.data;
+        const data = Array.isArray(projectRes.data)
+          ? projectRes.data[0]
+          : projectRes.data?.data || projectRes.data?.project || projectRes.data;
+
         if (isActive && data) {
           setProject(data);
+
+          // Resolve program names (handle IDs or Objects)
+          const allPrograms = Array.isArray(programsRes.data)
+            ? programsRes.data
+            : programsRes.data?.data || programsRes.data?.programs || [];
+
+          const projectPrograms = Array.isArray(data.programs) ? data.programs : [];
+          const pNames = projectPrograms
+            .map((pOrId) => {
+              if (typeof pOrId === "object" && pOrId !== null) {
+                return pOrId.program_name || pOrId.name;
+              }
+              const found = allPrograms.find((p) => String(p.id) === String(pOrId));
+              return found?.program_name || found?.name || null;
+            })
+            .filter(Boolean);
+          setProgramNames(pNames);
+
+          // Resolve student names from project data (no separate fetch needed)
+          const studentsData = Array.isArray(data.students) ? data.students : [];
+
+          setStudentCount(studentsData.length);
+
+          const sNames = studentsData
+            .map(s => {
+              if (typeof s === 'object' && s !== null) {
+                return s.full_name || s.name;
+              }
+              return null;
+            })
+            .filter(Boolean);
+
+          setStudentNames(sNames);
         }
       } catch (err) {
         console.error("Failed to fetch project detail:", err);
@@ -134,11 +177,11 @@ export default function ProjectDetail() {
           Project Detail
         </h1>
 
-        {/* HERO CARD SPLIT */}
-        <div className="flex flex-col lg:flex-row w-full bg-[#1A1A1A] rounded-[24px] overflow-hidden shadow-xl mb-16">
+        {/* HERO CARD SPLIT - Fixed Frame Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-10 bg-[#1A1A1A] rounded-[24px] overflow-hidden shadow-xl mb-16">
 
-          {/* LEFT: Image Container */}
-          <div className="relative w-full lg:w-[60%] h-[300px] sm:h-[400px] lg:h-[500px]">
+          {/* LEFT: Fixed Image Frame */}
+          <div className="lg:col-span-6 relative h-[300px] sm:h-[400px] lg:h-[550px] bg-black">
             <img
               src={coverImage}
               alt={project.name || "Project"}
@@ -158,13 +201,10 @@ export default function ProjectDetail() {
                 ))}
               </div>
             )}
-
-            {/* Fade right edge into exact dark gray */}
-            <div className="hidden lg:block absolute top-0 right-0 bottom-0 w-24 bg-gradient-to-r from-transparent to-[#1A1A1A]" />
           </div>
 
           {/* RIGHT: Stats Details */}
-          <div className="w-full lg:w-[40%] text-white p-8 lg:p-12 flex flex-col justify-center">
+          <div className="lg:col-span-4 text-white p-8 lg:p-12 flex flex-col justify-center">
 
             <h2 className="text-3xl lg:text-[38px] font-bold text-[#FF6B52] mb-10 leading-snug">
               {project.name || project.title || "Unnamed Project"}
@@ -172,35 +212,63 @@ export default function ProjectDetail() {
 
             <div className="space-y-5 text-sm md:text-[15px] font-medium tracking-wide">
               {project.leader && (
-                <div className="flex">
-                  <span className="w-28 text-white font-bold">Leader :</span>
+                <div className="flex items-center">
+                  <span className="w-28 text-white font-bold shrink-0">Leader :</span>
                   <span className="text-gray-300">{project.leader}</span>
                 </div>
               )}
 
-              <div className="flex">
-                <span className="w-28 text-white font-bold">Program :</span>
-                <span className="text-gray-300">Mechatronics Engineering</span>
+              <div className="flex items-start">
+                <span className="w-28 text-white font-bold shrink-0">Program :</span>
+                {programNames.length > 0 ? (
+                  <div className="flex flex-wrap gap-2">
+                    {programNames.map((name, i) => (
+                      <span
+                        key={i}
+                        className="bg-red-600/20 text-red-300 border border-red-500/40 text-xs font-semibold px-3 py-1 rounded-full shadow-sm"
+                      >
+                        {name}
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  <span className="text-gray-500">—</span>
+                )}
               </div>
 
               {project.duration && (
-                <div className="flex">
-                  <span className="w-28 text-white font-bold">Duration :</span>
+                <div className="flex items-center">
+                  <span className="w-28 text-white font-bold shrink-0">Duration :</span>
                   <span className="text-gray-300">{project.duration} Weeks</span>
                 </div>
               )}
 
-              <div className="flex">
-                <span className="w-28 text-white font-bold">Created at :</span>
-                <span className="text-gray-300">{formatProjectDate(project.created_at || project.date || project.updated_at)}</span>
+              <div className="flex items-center">
+                <span className="w-28 text-white font-bold shrink-0">Released :</span>
+                <span className="text-gray-300">
+                  {formatProjectDate(project.created_at || project.date || project.updated_at)}
+                </span>
               </div>
 
-              {project.team_size && (
-                <div className="flex">
-                  <span className="w-28 text-white font-bold">Team Size :</span>
-                  <span className="text-gray-300">{project.team_size} Students</span>
-                </div>
-              )}
+              <div className="flex items-start">
+                <span className="w-28 text-white font-bold shrink-0">Contributors :</span>
+                {studentNames.length > 0 ? (
+                  <div className="flex flex-wrap gap-2">
+                    {studentNames.map((name, i) => (
+                      <span
+                        key={i}
+                        className="bg-orange-600/20 text-orange-200 border border-orange-500/40 text-xs font-semibold px-3 py-1 rounded-full shadow-sm"
+                      >
+                        {name}
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  <span className="text-gray-300">
+                    {studentCount} Students
+                  </span>
+                )}
+              </div>
             </div>
 
             {/* Source Code Section */}
