@@ -72,8 +72,8 @@ function StatCard({ title, count, subtitle, icon: Icon, delay = 0 }) {
       <div className="absolute -top-2 -right-2 sm:-top-4 sm:-right-4 w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-red-200 transition-transform duration-500 ease-out group-hover:scale-[35] sm:group-hover:scale-[50] group-active:scale-[35] sm:group-active:scale-[50] -z-10"></div>
 
       {/* corner - red-200 */}
-      <div className="absolute top-0 right-0 w-10 h-10 flex items-center justify-center overflow-hidden bg-red-200 rounded-bl-[32px]">
-        <IconComponent className="w-5 h-5 text-red-500 -mt-1 -mr-1" />
+      <div className="absolute top-0 right-0 w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center overflow-hidden bg-red-200 rounded-bl-[32px] sm:rounded-bl-[40px]">
+        <IconComponent className="w-5 h-5 sm:w-6 sm:h-6 text-red-500 -mt-0.5 -mr-0.5 sm:-mt-1 sm:-mr-1" />
       </div>
 
       <p className="text-[1.5em] font-bold text-gray-800 mb-2 transition-colors duration-500 group-hover:text-gray-800">
