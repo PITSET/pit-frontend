@@ -406,15 +406,21 @@ export default function AdminProjects() {
 
       {/* Results count */}
       {(programFilter !== "all" || statusFilter !== "all") && (
-        <div className="mb-4 text-sm text-gray-600">
-          Showing {filteredData.length} of {data.length} projects
+        <div className="mb-4 px-3 py-2 text-sm text-gray-600 bg-gray-50 rounded-lg border border-gray-200">
+          <span className="font-medium text-gray-900">
+            {filteredData.length} {filteredData.length === 1 ? 'project' : 'projects'}
+          </span>
+          {' '}found
         </div>
       )}
 
       {/* Search count */}
       {searchQuery && programFilter === "all" && statusFilter === "all" && (
-        <div className="mb-4 text-sm text-gray-600">
-          Found {filteredData.length} projects
+        <div className="mb-4 px-3 py-2 text-sm text-gray-600 bg-gray-50 rounded-lg border border-gray-200">
+          <span className="font-medium text-gray-900">
+            {filteredData.length} {filteredData.length === 1 ? 'project' : 'projects'}
+          </span>
+          {' '}found
         </div>
       )}
 
