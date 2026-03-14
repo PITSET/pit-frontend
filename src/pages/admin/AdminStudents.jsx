@@ -263,7 +263,7 @@ export default function AdminStudents() {
                   : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50 hover:border-gray-400'
               }`}
             >
-              <span className={`w-2 h-2 rounded-full ${programFilter === program.id ? 'bg-white' : 'bg-blue-400'}`}></span>
+              <span className={`w-2 h-2 rounded-full ${programFilter === program.id ? 'bg-white' : 'bg-orange-400'}`}></span>
               {program.program_name || program.name}
               <span className={`ml-1 px-1.5 py-0.5 text-xs rounded-full ${
                 programFilter === program.id
@@ -337,7 +337,7 @@ export default function AdminStudents() {
                     </td>
 
                     <td className="px-4 lg:px-8 py-4 lg:py-6 text-center">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
                         {getProgramName(item.program_id)}
                       </span>
                     </td>
@@ -441,7 +441,7 @@ export default function AdminStudents() {
                       {item.email || "No email"}
                     </p>
                     <div className="flex items-center gap-2">
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
                         {getProgramName(item.program_id)}
                       </span>
                     </div>
