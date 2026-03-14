@@ -64,7 +64,7 @@ function StatCard({ title, count, subtitle, icon: Icon, delay = 0 }) {
 
   return (
     <div 
-      className={`relative max-w-[300px] max-h-[320px] m-3 p-8 rounded-[10px] overflow-hidden z-0 font-sans bg-white border border-gray-200 shadow-sm group transition-all duration-500 hover:shadow-xl cursor-pointer ${
+      className={`relative w-full p-4 sm:p-6 lg:p-8 rounded-[10px] overflow-hidden z-0 font-sans bg-white border border-gray-200 shadow-sm group transition-all duration-500 hover:shadow-xl cursor-pointer ${
         isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
       }`}
     >
@@ -106,7 +106,7 @@ function QuickActionButton({ text, link, icon, delay = 0 }) {
   return (
     <Link
       to={link}
-      className={`relative max-w-[300px] m-3 p-4 rounded-[10px] overflow-hidden z-0 font-sans bg-white border border-gray-200 shadow-sm group transition-all duration-500 hover:shadow-xl cursor-pointer flex items-center gap-3 ${
+      className={`relative w-full p-3 sm:p-4 rounded-[10px] overflow-hidden z-0 font-sans bg-white border border-gray-200 shadow-sm group transition-all duration-500 hover:shadow-xl cursor-pointer flex items-center gap-3 ${
         isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
       }`}
       style={{ transitionDelay: `${delay}ms` }}
@@ -470,9 +470,9 @@ export default function Dashboard() {
   }
 
   return (
-    <div className={`min-h-screen bg-gray-100 p-6 transition-opacity duration-700 ${isPageVisible ? 'opacity-100' : 'opacity-0'}`}>
+    <div className={`min-h-screen bg-gray-100 p-4 sm:p-6 transition-opacity duration-700 ${isPageVisible ? 'opacity-100' : 'opacity-0'}`}>
       {/* Page Title with animation */}
-      <h1 className={`text-2xl font-semibold text-gray-800 mb-6 transform transition-all duration-500 ${isTitleVisible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'}`}>
+      <h1 className={`text-xl sm:text-2xl font-semibold text-gray-800 mb-4 sm:mb-6 transform transition-all duration-500 ${isTitleVisible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'}`}>
         Dashboard
       </h1>
 
@@ -491,11 +491,11 @@ export default function Dashboard() {
         </div>
       )}
 
-      <div className="grid grid-cols-12 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 sm:gap-6">
         {/* MAIN CONTENT */}
         <div className="col-span-12 xl:col-span-9">
           {/* Stats */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-0 mb-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
             <StatCard
               title="Programs"
               count={data.programs.length}
@@ -527,7 +527,7 @@ export default function Dashboard() {
           </div>
 
           {/* Charts with modern design */}
-          <div className="grid md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
             {/* Project Growth - Modern design */}
             {/* Project Growth - Modern design */}
             <ChartContainer delay={500}>
@@ -567,7 +567,7 @@ export default function Dashboard() {
                   </div>
                 </div>
               </div>
-              <div className="h-[300px] focus:outline-none">
+              <div className="h-[250px] sm:h-[300px] focus:outline-none">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={monthlyData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }} isAnimationActive={true} animationDuration={2000} animationEasing="ease-out">
                     <defs>
@@ -630,7 +630,7 @@ export default function Dashboard() {
 
             {/* Program Distribution - Modern design */}
             <ChartContainer title="Program Distribution" icon={ChartBarIcon} delay={600}>
-              <div className="h-[300px] chart-no-focus focus:outline-none">
+              <div className="h-[250px] sm:h-[300px] chart-no-focus focus:outline-none">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={projectsByProgram} layout="vertical" margin={{ top: 10, right: 20, left: -10, bottom: 0 }} isAnimationActive={true} animationDuration={2000} animationEasing="ease-out">
                     <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" horizontal={false} />
@@ -678,12 +678,12 @@ export default function Dashboard() {
         </div>
 
         {/* RIGHT SIDEBAR - Quick Actions */}
-        <div className="col-span-12 xl:col-span-3 overflow-hidden">
+        <div className="col-span-12 xl:col-span-3 overflow-hidden mt-4 xl:mt-0">
           <div className={`bg-white rounded-xl border border-gray-200 p-4 shadow-sm hover:shadow-xl transition-all duration-500 ${isQuickActionsVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
             <h3 className="text-sm font-semibold text-gray-700 mb-4">
               Quick Actions
             </h3>
-            <div className="space-y-0">
+            <div className="space-y-2">
               <QuickActionButton text="Manage Home" link="/admin/content/home" icon={HomeIcon} delay={500} />
               <QuickActionButton text="Manage About" link="/admin/content/about" icon={InformationCircleIcon} delay={550} />
               <QuickActionButton text="Manage Programs" link="/admin/academics/programs" icon={AcademicCapIcon} delay={600} />
