@@ -6,7 +6,6 @@ import {
   XMarkIcon,
   UserIcon,
   ArrowUpTrayIcon,
-  CheckIcon,
   ChevronDownIcon,
 } from "@heroicons/react/24/outline";
 
@@ -142,7 +141,7 @@ export default function StudentModal({ isOpen, onClose, onRefresh, item }) {
 
   // Save changes
   const handleSave = async () => {
-    const toastId = toast.loading(isCreate ? "Creating student..." : "Saving changes...");
+    const toastId = toast.loading(isCreate ? "Creating..." : "Saving...");
 
     try {
       setLoading(true);
@@ -241,7 +240,7 @@ export default function StudentModal({ isOpen, onClose, onRefresh, item }) {
         // Create new student
         await createStudent(studentData);
 
-        toast.success("Student created successfully!");
+        toast.success("Created successfully!");
       } else {
         // Validate required fields for update
         if (!name || !name.trim()) {
@@ -264,7 +263,7 @@ export default function StudentModal({ isOpen, onClose, onRefresh, item }) {
 
         // Update existing student
         await updateStudent(item.id, studentData);
-        toast.success("Student updated successfully!", { id: toastId });
+        toast.success(isCreate ? "Created successfully!" : "Saved successfully!");
       }
 
       // auto-refresh parent data
@@ -553,10 +552,7 @@ export default function StudentModal({ isOpen, onClose, onRefresh, item }) {
                   <span>Saving...</span>
                 </>
               ) : (
-                <>
-                  <CheckIcon className="w-5 h-5" />
-                  <span>{isCreate ? "Create Student" : "Save Changes"}</span>
-                </>
+                <span>{isCreate ? "Create" : "Save"}</span>
               )}
             </button>
           </div>
