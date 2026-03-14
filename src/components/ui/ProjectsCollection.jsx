@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { BsSearch } from "react-icons/bs";
-import { HiAdjustmentsHorizontal } from "react-icons/hi2";
+import { HiAdjustmentsHorizontal, HiUsers } from "react-icons/hi2";
 
 /**
  * ProjectsCollection - A reusable component for listing projects with filtering and search.
@@ -79,10 +79,10 @@ export default function ProjectsCollection({ projects = [], isLoading = false })
         project.title?.toLowerCase().includes(query) ||
         project.name?.toLowerCase().includes(query);
 
-      // Filter by Team Size
+      // Filter by Team Size (Student Count)
       let matchesTeamSize = filters.teamSize === "All";
-      if (!matchesTeamSize && project.team_size) {
-        const size = parseInt(project.team_size);
+      if (!matchesTeamSize) {
+        const size = project.students?.length || 0;
         if (filters.teamSize === "1-3") matchesTeamSize = size >= 1 && size <= 3;
         else if (filters.teamSize === "4-6") matchesTeamSize = size >= 4 && size <= 6;
         else if (filters.teamSize === "7+") matchesTeamSize = size >= 7;
@@ -187,26 +187,6 @@ export default function ProjectsCollection({ projects = [], isLoading = false })
                     </div>
                   </div>
 
-                  {/* Team Size */}
-                  {/* <div>
-                    <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Team Size</label>
-                    <div className="grid grid-cols-2 gap-2">
-                      {teamSizes.map(size => (
-                        <button
-                          key={size}
-                          onClick={() => setFilters(prev => ({ ...prev, teamSize: size }))}
-                          className={`px-3 py-2 rounded-lg text-sm font-semibold transition-colors ${
-                            filters.teamSize === size 
-                            ? "bg-red-50 text-[#c92a2a]" 
-                            : "bg-gray-50 text-gray-600 hover:bg-gray-100"
-                          }`}
-                        >
-                          {size}
-                        </button>
-                      ))}
-                    </div>
-                  </div> */}
-
                   {/* Launch Date */}
                   <div>
                     <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Launch Date</label>
@@ -270,11 +250,10 @@ export default function ProjectsCollection({ projects = [], isLoading = false })
                 </p>
 
                 <div className="mt-auto flex items-center justify-between">
-                  {project.team_size && (
-                    <span className="text-[13px] font-medium text-gray-400">
-                      Team: {project.team_size} members
-                    </span>
-                  )}
+                  <div className="flex items-center gap-1.5 text-gray-400">
+                    <HiUsers className="text-lg" />
+                    <span className="text-[14px] font-bold">{project.students?.length || 0}</span>
+                  </div>
                   <Link
                     to={`/projects/${project.id}`}
                     className="bg-[#c92a2a] text-white px-6 py-2.5 rounded-xl font-bold text-sm hover:bg-[#b02525] transition-all shadow-lg shadow-red-100 hover:shadow-red-200"
