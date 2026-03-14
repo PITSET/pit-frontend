@@ -66,7 +66,6 @@ function StatCard({ title, count, subtitle, icon: Icon, delay = 0 }) {
       className={`relative max-w-[300px] max-h-[320px] m-3 p-8 rounded-[10px] overflow-hidden z-0 font-sans bg-white border border-gray-200 shadow-sm group transition-all duration-500 hover:shadow-xl cursor-pointer ${
         isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
       }`}
-      style={{ transitionDelay: `${delay}ms` }}
     >
       {/* animated circle - red-200 on hover */}
       <div className="absolute -top-4 -right-4 w-8 h-8 rounded-full bg-red-200 transition-transform duration-500 ease-out group-hover:scale-[28] -z-10"></div>
@@ -176,7 +175,6 @@ function ChartContainer({ title, icon: Icon, children, delay = 0 }) {
       className={`bg-white rounded-2xl border border-gray-100 p-6 shadow-sm hover:shadow-xl transition-all duration-500 focus:outline-none ${
         isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
       }`}
-      style={{ transitionDelay: `${delay}ms` }}
     >
       <div className="flex items-center gap-3 mb-6">
         <div className="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center">
@@ -274,6 +272,8 @@ export default function Dashboard() {
     students: [],
   });
   const [isPageVisible, setIsPageVisible] = useState(false);
+  const [isQuickActionsVisible, setIsQuickActionsVisible] = useState(false);
+  const [isTitleVisible, setIsTitleVisible] = useState(false);
 
   const fetchDashboardData = async () => {
     try {
@@ -310,9 +310,16 @@ export default function Dashboard() {
 
   useEffect(() => {
     fetchDashboardData();
-    // Page load animation
+    // Page load animations with staggered timing
+    const titleTimer = setTimeout(() => setIsTitleVisible(true), 0);
     const timer = setTimeout(() => setIsPageVisible(true), 100);
-    return () => clearTimeout(timer);
+    // Quick Actions sidebar animation - starts after charts, at same time as first item
+    const quickTimer = setTimeout(() => setIsQuickActionsVisible(true), 800);
+    return () => {
+      clearTimeout(titleTimer);
+      clearTimeout(timer);
+      clearTimeout(quickTimer);
+    };
   }, []);
 
   // Calculate instructor count
@@ -342,7 +349,7 @@ export default function Dashboard() {
   return (
     <div className={`min-h-screen bg-gray-100 p-6 transition-opacity duration-700 ${isPageVisible ? 'opacity-100' : 'opacity-0'}`}>
       {/* Page Title with animation */}
-      <h1 className={`text-2xl font-semibold text-gray-800 mb-6 transform transition-all duration-500 ${isPageVisible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'}`}>
+      <h1 className={`text-2xl font-semibold text-gray-800 mb-6 transform transition-all duration-500 ${isTitleVisible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'}`}>
         Dashboard
       </h1>
 
@@ -371,35 +378,35 @@ export default function Dashboard() {
               count={data.programs.length}
               subtitle="Academic programs"
               icon={AcademicCapIcon}
-              delay={200}
+              delay={100}
             />
             <StatCard
               title="Projects"
               count={data.projects.length}
               subtitle="Student projects"
               icon={FolderIcon}
-              delay={300}
+              delay={200}
             />
             <StatCard
               title="Instructors"
               count={instructorCount}
               subtitle="Team members"
               icon={UsersIcon}
-              delay={400}
+              delay={300}
             />
             <StatCard
               title="Students"
               count={data.students.length}
               subtitle="Enrolled students"
               icon={UserGroupIcon}
-              delay={500}
+              delay={400}
             />
           </div>
 
           {/* Charts with modern design */}
           <div className="grid md:grid-cols-2 gap-6">
             {/* Project Growth - Modern design */}
-            <ChartContainer title="Project Growth" icon={ArrowTrendingUpIcon} delay={600}>
+            <ChartContainer title="Project Growth" icon={ArrowTrendingUpIcon} delay={500}>
               <div className="h-[300px] focus:outline-none">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={monthlyData} isAnimationActive={true} animationDuration={2000} animationEasing="ease-out">
@@ -451,7 +458,7 @@ export default function Dashboard() {
             </ChartContainer>
 
             {/* Program Distribution - Modern design */}
-            <ChartContainer title="Program Distribution" icon={ChartBarIcon} delay={700}>
+            <ChartContainer title="Program Distribution" icon={ChartBarIcon} delay={600}>
               <div className="h-[300px] focus:outline-none">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={projectsByProgram} layout="vertical" isAnimationActive={true} animationDuration={2000} animationEasing="ease-out">
@@ -501,8 +508,8 @@ export default function Dashboard() {
         </div>
 
         {/* RIGHT SIDEBAR - Quick Actions */}
-        <div className="col-span-12 xl:col-span-3">
-          <div className={`bg-white rounded-xl border border-gray-200 p-4 shadow-sm hover:shadow-xl transition-shadow duration-500 ${isPageVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'}`} style={{ transitionDelay: '400ms' }}>
+        <div className="col-span-12 xl:col-span-3 overflow-hidden">
+          <div className={`bg-white rounded-xl border border-gray-200 p-4 shadow-sm hover:shadow-xl transition-all duration-500 ${isQuickActionsVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
             <h3 className="text-sm font-semibold text-gray-700 mb-4">
               Quick Actions
             </h3>
