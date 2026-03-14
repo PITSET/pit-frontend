@@ -429,7 +429,7 @@ export default function Dashboard() {
             <ChartContainer title="Project Growth" icon={ArrowTrendingUpIcon} delay={500}>
               <div className="h-[300px] focus:outline-none">
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={monthlyData} isAnimationActive={true} animationDuration={2000} animationEasing="ease-out">
+                  <AreaChart data={monthlyData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }} isAnimationActive={true} animationDuration={2000} animationEasing="ease-out">
                     <defs>
                       <linearGradient id="colorTotal" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="0%" stopColor="#EF4444" stopOpacity={0.4}/>
@@ -444,17 +444,16 @@ export default function Dashboard() {
                       tickLine={false} 
                       dy={10}
                       tick={{ fill: '#9CA3AF' }}
-                      interval={0}
-                      tickCount={12}
                     />
                     <YAxis 
+                      width={35}
                       fontSize={12} 
                       axisLine={false} 
                       tickLine={false} 
                       dx={0}
                       tick={{ fill: '#9CA3AF' }}
-                      domain={[0, 'dataMax']}
-                      tickFormatter={(value) => Math.round(value)}
+                      domain={[0, 'auto']}
+                      allowDecimals={false}
                     />
                     <Tooltip content={<AreaTooltip />} cursor={{ stroke: '#EF4444', strokeWidth: 2, strokeDasharray: '6 4' }} />
                     <Area
@@ -465,6 +464,9 @@ export default function Dashboard() {
                       strokeWidth={3}
                       fill="url(#colorTotal)"
                       animationBegin={500}
+                      strokeLinecap="round"
+                      dot={false}
+                      activeDot={{ r: 6 }}
                     />
                   </AreaChart>
                 </ResponsiveContainer>
@@ -489,7 +491,7 @@ export default function Dashboard() {
             <ChartContainer title="Program Distribution" icon={ChartBarIcon} delay={600}>
               <div className="h-[300px] focus:outline-none">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={projectsByProgram} layout="vertical" isAnimationActive={true} animationDuration={2000} animationEasing="ease-out">
+                  <BarChart data={projectsByProgram} layout="vertical" margin={{ top: 10, right: 10, left: -10, bottom: 0 }} isAnimationActive={true} animationDuration={2000} animationEasing="ease-out">
                     <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" horizontal={false} />
                     <XAxis 
                       type="number"
@@ -512,7 +514,7 @@ export default function Dashboard() {
                       tick={{ fill: '#9CA3AF' }}
                     />
                     <Tooltip content={<BarTooltip />} cursor={{ fill: 'rgba(239, 68, 68, 0.08)' }} />
-                    <Bar dataKey="projects" radius={[0, 6, 6, 0]} layout="vertical">
+                    <Bar dataKey="projects" radius={[0, 6, 6, 0]} layout="vertical" animationBegin={600}>
                       {projectsByProgram.map((entry, index) => (
                         <Cell key={index} fill={entry?.fill || '#EF4444'} />
                       ))}
