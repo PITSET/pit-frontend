@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { FaMapMarkerAlt, FaEnvelope, FaPhone } from "react-icons/fa";
+import api from "../../lib/api";
 
 export default function ContactPage() {
 
@@ -39,21 +40,15 @@ export default function ContactPage() {
       setStatus("");
       setStatusType("");
 
-      const response = await fetch("http://localhost:3000/api/contacts", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          name: formData.fullName,
-          email: formData.email,
-          message: formData.message
-        })
+      const response = await api.post("/contacts", {
+        name: formData.fullName,
+        email: formData.email,
+        message: formData.message,
       });
 
-      const data = await response.json();
+      const data = response?.data || {};
 
-      if (response.ok) {
+      if (response.status >= 200 && response.status < 300) {
 
         setStatus("✅ Message sent successfully!");
         setStatusType("success");

@@ -44,8 +44,17 @@ export default function AdminProjects() {
         getAllProjects(),
         getAllPrograms()
       ]);
-      setData(projectsRes.data);
+      const newData = projectsRes.data;
+      setData(newData);
       setPrograms(programsRes.data || []);
+
+      // Adjust current page if it becomes invalid after deletion
+      const newTotalPages = Math.ceil(newData.length / itemsPerPage);
+      if (currentPage > newTotalPages && newTotalPages > 0) {
+        setCurrentPage(newTotalPages);
+      } else if (newData.length === 0) {
+        setCurrentPage(1);
+      }
     } catch (err) {
       console.error("Failed to fetch projects:", err);
       setError("Failed to fetch projects");
@@ -76,9 +85,13 @@ export default function AdminProjects() {
   const filteredData = useMemo(() => {
     let result = data;
 
-    // Filter by program
+    // Filter by program - backend returns nested structure: project_programs: [{ programs: { id: 1 } }]
     if (programFilter !== "all") {
-      result = result.filter(item => item.programs?.includes(programFilter));
+      result = result.filter(item => {
+        // Extract program IDs from nested structure
+        const programIds = item.project_programs?.map(pp => pp.programs?.id) || [];
+        return programIds.includes(programFilter);
+      });
     }
 
     // Filter by status

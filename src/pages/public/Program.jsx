@@ -1,22 +1,17 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import axios from "axios";
+import api from "../../lib/api";
+import resolveAssetUrl from "../../lib/resolveAssetUrl";
 
 export default function Programs() {
   const [programs, setPrograms] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const resolveImageUrl = (url) => {
-    if (!url) return "";
-    if (/^https?:\/\//i.test(url)) return url;
-    return `http://localhost:3000/${url.replace(/^\/+/, "")}`;
-  };
-
   useEffect(() => {
     const fetchPrograms = async () => {
       try {
-        const res = await axios.get("http://localhost:3000/api/programs");
+        const res = await api.get("/programs");
 
         console.log("API Response:", res.data);
 
@@ -91,7 +86,7 @@ export default function Programs() {
 
                 {/* Program Image */}
                 <img
-                  src={resolveImageUrl(program.image_url)}
+                  src={resolveAssetUrl(program.image_url)}
                   alt={program.program_name}
                   className="object-cover"
                   style={{ width: "400px", height: "260px" }}

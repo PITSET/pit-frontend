@@ -12,6 +12,7 @@ import Projects from "../pages/public/Projects";
 
 import Program from "../pages/public/Program";
 import ProgramDetail from "../pages/public/ProgramDetail";
+import Instructor from "../pages/public/Instructor";
 
 
 
@@ -25,6 +26,8 @@ import AdminContact from "../pages/admin/AdminContact";
 import AdminPrograms from "../pages/admin/AdminPrograms";
 import AdminProjects from "../pages/admin/AdminProjects";
 import AdminMembers from "../pages/admin/AdminMembers";
+import AcceptInvite from "../pages/admin/AcceptInvite";
+import ResetPassword from "../pages/admin/ResetPassword";
 
 const router = createBrowserRouter([
   {
@@ -40,12 +43,24 @@ const router = createBrowserRouter([
       { path: "/programs", element: <Program /> },
       { path: "/programs/:id", element: <ProgramDetail /> },
       { path: "/program", element: <Navigate to="/programs" replace /> },
+      
+      { path: "/instructor", element: <Instructor /> },
     ],
   },
 
   {
     path: "/admin/login",
     element: <Login />,
+  },
+
+  {
+    path: "/admin/accept-invite",
+    element: <AcceptInvite />,
+  },
+
+  {
+    path: "/admin/reset-password",
+    element: <ResetPassword />,
   },
 
   {

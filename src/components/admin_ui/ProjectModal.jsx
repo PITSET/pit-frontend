@@ -16,6 +16,7 @@ import {
 // api
 import { createProject, updateProject } from "../../lib/services/projectService";
 import { getAllPrograms } from "../../lib/services/programService";
+import { getAllStudents } from "../../lib/services/studentService";
 import { supabase } from "../../lib/supabaseClient";
 
 export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
@@ -26,7 +27,6 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
   const [tasks, setTasks] = useState([]);
   const [leader, setLeader] = useState("");
   const [duration, setDuration] = useState("");
-  const [teamSize, setTeamSize] = useState("");
   const [githubUrl, setGithubUrl] = useState("");
   const [result, setResult] = useState("");
   const [loading, setLoading] = useState(false);
@@ -36,6 +36,13 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
   const [programsLoading, setProgramsLoading] = useState(false);
   const [showProgramDropdown, setShowProgramDropdown] = useState(false);
   const [urlError, setUrlError] = useState("");
+
+  // Student selection state
+  const [studentIds, setStudentIds] = useState([]);
+  const [students, setStudents] = useState([]);
+  const [studentsLoading, setStudentsLoading] = useState(false);
+  const [showStudentDropdown, setShowStudentDropdown] = useState(false);
+  const studentDropdownRef = useRef(null);
 
   // Refs for auto-focus on newly added objectives and tasks
   const objectiveRefs = useRef([]);
@@ -119,7 +126,23 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
       }
     };
 
+    const fetchStudents = async () => {
+      if (isOpen) {
+        setStudentsLoading(true);
+        try {
+          const response = await getAllStudents();
+          setStudents(response.data || []);
+        } catch (error) {
+          console.error("Failed to fetch students:", error);
+          // Don't show error toast - students are optional
+        } finally {
+          setStudentsLoading(false);
+        }
+      }
+    };
+
     fetchPrograms();
+    fetchStudents();
   }, [isOpen]);
 
   // Close dropdown when clicking outside
@@ -127,6 +150,9 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
     const handleClickOutside = (event) => {
       if (programDropdownRef.current && !programDropdownRef.current.contains(event.target)) {
         setShowProgramDropdown(false);
+      }
+      if (studentDropdownRef.current && !studentDropdownRef.current.contains(event.target)) {
+        setShowStudentDropdown(false);
       }
     };
 
@@ -336,15 +362,15 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
         tasks: filteredTasks.length > 0 ? filteredTasks : [],
         leader: leader?.trim() || null,
         duration: duration?.trim() || null,
-        team_size: teamSize && teamSize.trim() ? parseInt(teamSize) : null,
         github_url: githubUrl?.trim() || null,
         images: imageUrls.length > 0 ? imageUrls : [],
         video_url: result?.trim() || null,
         is_featured: isActive,
         program_ids: programIds,
+        // student_ids is sent separately in the create flow only
       };
 
-      // Note: student_ids is optional - currently not sent as there's no student selection UI
+      // Note: student_ids is handled separately - for create it's required, for update it's optional
 
       if (isCreate) {
         // Validate required fields for create
@@ -376,8 +402,20 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
           return;
         }
 
+        if (studentIds.length === 0) {
+          toast.error("Please select at least one student", { id: toastId });
+          setLoading(false);
+          return;
+        }
+
+        // Add student_ids to projectData for create (backend handles junction table)
+        const createData = {
+          ...projectData,
+          student_ids: studentIds,
+        };
+
         // Create new project
-        await createProject(projectData);
+        await createProject(createData);
 
         toast.success("Project created successfully!");
       } else {
@@ -405,7 +443,12 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
         }
 
         // Update existing project
-        await updateProject(item.id, projectData);
+        // Now backend handles student_ids properly - create update data with student_ids
+        const updateData = {
+          ...projectData,
+          student_ids: studentIds,
+        };
+        await updateProject(item.id, updateData);
         toast.success("Project updated successfully!", { id: toastId });
       }
 
@@ -448,21 +491,50 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
 
   // Reset form
   const resetForm = () => {
+    console.log("ResetForm - item data:", JSON.stringify(item, null, 2));
+    
     setName(item?.name || "");
     setOverview(item?.overview || "");
     setObjectives(Array.isArray(item?.objectives) ? item.objectives : []);
     setTasks(Array.isArray(item?.tasks) ? item.tasks : []);
     setLeader(item?.leader || "");
     setDuration(item?.duration?.toString() || "");
-    setTeamSize(item?.team_size?.toString() || "");
     setGithubUrl(item?.github_url || "");
     setResult(item?.video_url || ""); // Use video_url from backend
     setExistingImages(item?.images || []);
     setNewImages([]);
     setIsActive(item?.is_featured || false); // Use is_featured field from backend
     
-    // Load program_ids from item (backend returns programs as array of IDs)
-    setProgramIds(Array.isArray(item?.programs) ? item.programs : []);
+    // Load program_ids from item - backend returns nested structure
+    // Format: project_programs: [{ programs: { id: 1 } }]
+    let programIdsArray = [];
+    if (item?.project_programs) {
+      console.log("project_programs data:", JSON.stringify(item.project_programs, null, 2));
+      programIdsArray = item.project_programs
+        .map(pp => pp.programs?.id)
+        .filter(id => id != null);
+    } else if (Array.isArray(item?.programs)) {
+      // Fallback: already flat array of IDs
+      programIdsArray = item.programs;
+    }
+    console.log("Extracted programIds:", programIdsArray);
+    setProgramIds(programIdsArray);
+    
+    // Load student_ids from item - backend returns nested structure
+    // Format: project_students: [{ students: { id: 1 } }]
+    let studentIdsArray = [];
+    if (item?.project_students) {
+      console.log("project_students data:", JSON.stringify(item.project_students, null, 2));
+      studentIdsArray = item.project_students
+        .map(ps => ps.students?.id)
+        .filter(id => id != null);
+    } else if (Array.isArray(item?.students)) {
+      // Fallback: already flat array of IDs
+      console.log("students data (flat):", JSON.stringify(item.students, null, 2));
+      studentIdsArray = item.students;
+    }
+    console.log("Extracted studentIds:", studentIdsArray);
+    setStudentIds(studentIdsArray);
   };
 
   // Load initial data when modal opens
@@ -478,13 +550,15 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
         setTasks([]);
         setLeader("");
         setDuration("");
-        setTeamSize("");
         setGithubUrl("");
         setResult("");
         setExistingImages([]);
         setNewImages([]);
         setIsActive(true); // Default to active (is_featured = true)
         setProgramIds([]);
+        setStudentIds([]);
+        setShowProgramDropdown(false);
+        setShowStudentDropdown(false);
       }
     }
   }, [isOpen, item]);
@@ -495,6 +569,15 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
       setProgramIds(programIds.filter(id => id !== programId));
     } else {
       setProgramIds([...programIds, programId]);
+    }
+  };
+
+  // Toggle student selection
+  const toggleStudent = (studentId) => {
+    if (studentIds.includes(studentId)) {
+      setStudentIds(studentIds.filter(id => id !== studentId));
+    } else {
+      setStudentIds([...studentIds, studentId]);
     }
   };
 
@@ -617,7 +700,9 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
             <div className="space-y-4">
               {/* Project Name */}
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Project Name</label>
+                <label className="text-sm font-medium text-gray-700">
+                  Project Name <span className="text-red-500">*</span>
+                </label>
 
                 <input
                   type="text"
@@ -636,7 +721,9 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
 
               {/* Project Leader */}
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Leader</label>
+                <label className="text-sm font-medium text-gray-700">
+                  Leader <span className="text-red-500">*</span>
+                </label>
 
                 <input
                   type="text"
@@ -655,7 +742,9 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
 
               {/* Programs */}
               <div className="space-y-2" ref={programDropdownRef}>
-                <label className="text-sm font-medium text-gray-700">Programs</label>
+                <label className="text-sm font-medium text-gray-700">
+                  Programs <span className="text-red-500">*</span>
+                </label>
                 
                 {programsLoading ? (
                   <div className="flex items-center gap-2 text-gray-500">
@@ -707,6 +796,68 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
                 )}
               </div>
 
+              {/* Students */}
+              <div className="space-y-2" ref={studentDropdownRef}>
+                <label className="text-sm font-medium text-gray-700">
+                  Students <span className="text-red-500">*</span>
+                </label>
+                
+                {studentsLoading ? (
+                  <div className="flex items-center gap-2 text-gray-500">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-orange-500"></div>
+                    <span>Loading students...</span>
+                  </div>
+                ) : (
+                  <>
+                    {/* Custom dropdown button */}
+                    <button
+                      type="button"
+                      onClick={() => setShowStudentDropdown(!showStudentDropdown)}
+                      className="w-full flex items-center justify-between rounded-lg border border-gray-300 bg-white px-3 sm:px-4 py-2 sm:py-2.5 text-sm shadow-sm
+                      focus:outline-none focus:ring-2 focus:ring-orange-400 transition"
+                    >
+                      <span className={studentIds.length > 0 ? "text-gray-900" : "text-gray-500"}>
+                        {studentIds.length > 0 
+                          ? `${studentIds.length} student(s) selected`
+                          : "Select student(s)..."}
+                      </span>
+                      <ChevronDownIcon 
+                        className={`w-4 h-4 text-gray-500 transition-transform ${showStudentDropdown ? "rotate-180" : ""}`} 
+                      />
+                    </button>
+
+                    {/* Dropdown options */}
+                    {showStudentDropdown && (
+                      <div className="mt-1 rounded-lg border border-gray-300 bg-white shadow-sm max-h-40 overflow-y-auto">
+                        {students.length === 0 ? (
+                          <div className="px-3 sm:px-4 py-2 text-sm text-gray-500">
+                            No students available
+                          </div>
+                        ) : (
+                          students.map(student => (
+                            <button
+                              key={student.id}
+                              type="button"
+                              onClick={() => toggleStudent(student.id)}
+                              className={`w-full px-3 sm:px-4 py-2 text-left text-sm transition flex items-center justify-between ${
+                                studentIds.includes(student.id)
+                                  ? "bg-orange-50 text-orange-600"
+                                  : "text-gray-700 bg-white hover:bg-gray-100"
+                              }`}
+                            >
+                              <span>{student.name}</span>
+                              {studentIds.includes(student.id) && (
+                                <CheckIcon className="w-4 h-4 text-orange-500" />
+                              )}
+                            </button>
+                          ))
+                        )}
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+
               {/* Duration */}
               <div className="space-y-2">
                 <label className="text-sm font-medium text-gray-700">Duration (Weeks)</label>
@@ -728,27 +879,6 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
                     focus:outline-none focus:ring-2 focus:ring-orange-400 transition"
                   />
                 </div>
-              </div>
-
-              {/* Team Size */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Team Size</label>
-
-                <input
-                  type="number"
-                  min="1"
-                  value={teamSize}
-                  placeholder="e.g., 5"
-                  onChange={(e) => setTeamSize(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.target.blur();
-                    }
-                  }}
-                  onWheel={(e) => e.target.blur()}
-                  className="w-full rounded-lg border border-gray-300 bg-white px-3 sm:px-4 py-2 sm:py-2.5 text-sm shadow-sm
-                  focus:outline-none focus:ring-2 focus:ring-orange-400 transition"
-                />
               </div>
 
               {/* GitHub Repository URL */}

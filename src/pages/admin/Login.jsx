@@ -10,6 +10,9 @@ import { toast } from "react-hot-toast";
 // Auth utility (handles API request)
 import { login } from "../../utils/auth";
 
+// Supabase client
+import { supabase } from "../../lib/supabaseClient";
+
 // Logo image
 import logo_image from "../../assets/logo/logo_image.svg";
 
@@ -30,6 +33,11 @@ export default function Login() {
 
   // Toggle password visibility
   const [showPassword, setShowPassword] = useState(false);
+
+  // Show forgot password modal
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [forgotPasswordEmail, setForgotPasswordEmail] = useState("");
+  const [forgotPasswordLoading, setForgotPasswordLoading] = useState(false);
 
   /* ===============================
      UI STATE
@@ -57,6 +65,38 @@ export default function Login() {
 
   const togglePassword = () => {
     setShowPassword(!showPassword);
+  };
+
+  /* ===============================
+     FORGOT PASSWORD
+     =============================== */
+
+  const handleForgotPassword = async (e) => {
+    e.preventDefault();
+    
+    if (!forgotPasswordEmail) {
+      toast.error("Please enter your email address");
+      return;
+    }
+    
+    setForgotPasswordLoading(true);
+    
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(forgotPasswordEmail, {
+        redirectTo: `${window.location.origin}/admin/reset-password`,
+      });
+      
+      if (error) {
+        throw error;
+      }
+      
+      toast.success("Password reset link sent! Check your email.");
+      setShowForgotPassword(false);
+    } catch (err) {
+      toast.error(err.message || "Failed to send reset email");
+    }
+    
+    setForgotPasswordLoading(false);
   };
 
   /* ===============================
@@ -246,7 +286,54 @@ export default function Login() {
                 {loading ? "Logging in..." : "LOG IN"}
               </button>
             </div>
+            
+            {/* Forgot Password Link */}
+            <div className="text-center mt-4">
+              <button
+                type="button"
+                onClick={() => setShowForgotPassword(true)}
+                className="text-sm text-gray-600 hover:text-[#8B1A1A] underline"
+              >
+                Forgot Password?
+              </button>
+            </div>
           </form>
+          
+          {/* Forgot Password Modal */}
+          {showForgotPassword && (
+            <div className="absolute inset-0 bg-white/95 z-50 flex flex-col items-center justify-center p-6">
+              <h2 className="text-2xl font-bold mb-4">Reset Password</h2>
+              <p className="text-gray-600 mb-6 text-center">
+                Enter your email and we'll send you a link to reset your password.
+              </p>
+              <form onSubmit={handleForgotPassword} className="w-full space-y-4">
+                <input
+                  type="email"
+                  placeholder="Your email address"
+                  required
+                  className="w-full px-5 py-3 rounded-full bg-red-200/70 placeholder-gray-700 focus:outline-none focus:ring-2 focus:ring-red-400 shadow-sm"
+                  value={forgotPasswordEmail}
+                  onChange={(e) => setForgotPasswordEmail(e.target.value)}
+                />
+                <div className="flex gap-3 justify-center">
+                  <button
+                    type="button"
+                    onClick={() => setShowForgotPassword(false)}
+                    className="px-6 py-2 rounded-full border border-gray-300 text-gray-700 hover:bg-gray-100"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={forgotPasswordLoading}
+                    className="px-6 py-2 rounded-full bg-[#8B1A1A] text-white font-semibold hover:bg-red-900"
+                  >
+                    {forgotPasswordLoading ? "Sending..." : "Send Reset Link"}
+                  </button>
+                </div>
+              </form>
+            </div>
+          )}
         </div>
       </div>
     </div>
