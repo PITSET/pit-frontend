@@ -78,7 +78,7 @@ export default function ProjectDetail() {
 
           // Resolve student names from project data (no separate fetch needed)
           const studentsData = Array.isArray(data.students) ? data.students : [];
-          
+
           setStudentCount(studentsData.length);
 
           const sNames = studentsData
@@ -89,7 +89,7 @@ export default function ProjectDetail() {
               return null;
             })
             .filter(Boolean);
-          
+
           setStudentNames(sNames);
         }
       } catch (err) {
@@ -177,11 +177,11 @@ export default function ProjectDetail() {
           Project Detail
         </h1>
 
-        {/* HERO CARD SPLIT */}
-        <div className="flex flex-col lg:flex-row w-full bg-[#1A1A1A] rounded-[24px] overflow-hidden shadow-xl mb-16">
+        {/* HERO CARD SPLIT - Fixed Frame Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-10 bg-[#1A1A1A] rounded-[24px] overflow-hidden shadow-xl mb-16">
 
-          {/* LEFT: Image Container */}
-          <div className="relative w-full lg:w-[60%] h-[300px] sm:h-[400px] lg:h-[500px]">
+          {/* LEFT: Fixed Image Frame */}
+          <div className="lg:col-span-6 relative h-[300px] sm:h-[400px] lg:h-[550px] bg-black">
             <img
               src={coverImage}
               alt={project.name || "Project"}
@@ -201,13 +201,10 @@ export default function ProjectDetail() {
                 ))}
               </div>
             )}
-
-            {/* Fade right edge into exact dark gray */}
-            <div className="hidden lg:block absolute top-0 right-0 bottom-0 w-24 bg-gradient-to-r from-transparent to-[#1A1A1A]" />
           </div>
 
           {/* RIGHT: Stats Details */}
-          <div className="w-full lg:w-[40%] text-white p-8 lg:p-12 flex flex-col justify-center">
+          <div className="lg:col-span-4 text-white p-8 lg:p-12 flex flex-col justify-center">
 
             <h2 className="text-3xl lg:text-[38px] font-bold text-[#FF6B52] mb-10 leading-snug">
               {project.name || project.title || "Unnamed Project"}
