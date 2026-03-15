@@ -136,11 +136,18 @@ function AreaTooltip({ active, payload, label }) {
         <div className="flex items-center justify-between gap-6 text-sm py-1">
           <div className="flex items-center gap-2">
             <div className="w-2.5 h-2.5 rounded-full bg-green-500" />
-            <span className="text-gray-400">New Projects:</span>
+            <span className="text-gray-400">Active:</span>
           </div>
-          <span className="font-bold text-green-400">+{data?.newProjects || 0}</span>
+          <span className="font-bold text-green-400">+{data?.newProjectsActive || 0}</span>
         </div>
         <div className="flex items-center justify-between gap-6 text-sm py-1">
+          <div className="flex items-center gap-2">
+            <div className="w-2.5 h-2.5 rounded-full bg-gray-400" />
+            <span className="text-gray-400">Inactive:</span>
+          </div>
+          <span className="font-bold text-gray-400">+{data?.newProjectsInactive || 0}</span>
+        </div>
+        <div className="border-t border-gray-700 mt-2 pt-2 flex items-center justify-between gap-6 text-sm py-1">
           <div className="flex items-center gap-2">
             <div className="w-2.5 h-2.5 rounded-full bg-red-500" />
             <span className="text-gray-400">Total:</span>
@@ -204,7 +211,7 @@ function ChartContainer({ title, icon: Icon, children, delay = 0 }) {
   );
 }
 
-// Process projects data to get monthly growth data
+// Process projects data to get monthly growth data with active/inactive breakdown
 function processMonthlyData(projects, year = null) {
   if (!Array.isArray(projects) || projects.length === 0) {
     return [];
@@ -227,7 +234,11 @@ function processMonthlyData(projects, year = null) {
       month: monthName,
       sortOrder: i,
       newProjects: 0,
+      newProjectsActive: 0,
+      newProjectsInactive: 0,
       totalProjects: 0,
+      totalProjectsActive: 0,
+      totalProjectsInactive: 0,
     });
   }
 
@@ -244,8 +255,7 @@ function processMonthlyData(projects, year = null) {
     return aDate - bDate;
   });
 
-  // Count projects by month
-  let cumulative = 0;
+  // Count projects by month and track active/inactive
   yearProjects.forEach((project) => {
     if (!project) return;
     const createdAt = project.created_at || project.createdAt;
@@ -255,14 +265,25 @@ function processMonthlyData(projects, year = null) {
     
     // Only count if month is within our displayed range
     if (monthIndex < monthsToShow) {
+      const isActive = project.is_featured === true;
       months[monthIndex].newProjects += 1;
+      if (isActive) {
+        months[monthIndex].newProjectsActive += 1;
+      } else {
+        months[monthIndex].newProjectsInactive += 1;
+      }
     }
   });
 
-  // Calculate cumulative
+  // Calculate cumulative totals per month
+  let runningActive = 0;
+  let runningInactive = 0;
   months.forEach((m) => {
-    cumulative += m.newProjects;
-    m.totalProjects = cumulative;
+    runningActive += m.newProjectsActive;
+    runningInactive += m.newProjectsInactive;
+    m.totalProjects = runningActive + runningInactive;
+    m.totalProjectsActive = runningActive;
+    m.totalProjectsInactive = runningInactive;
   });
 
   return months;
@@ -616,6 +637,14 @@ export default function Dashboard() {
                         <stop offset="0%" stopColor="#EF4444" stopOpacity={0.4}/>
                         <stop offset="100%" stopColor="#EF4444" stopOpacity={0}/>
                       </linearGradient>
+                      <linearGradient id="colorActive" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#10B981" stopOpacity={0.4}/>
+                        <stop offset="100%" stopColor="#10B981" stopOpacity={0}/>
+                      </linearGradient>
+                      <linearGradient id="colorInactive" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#9CA3AF" stopOpacity={0.4}/>
+                        <stop offset="100%" stopColor="#9CA3AF" stopOpacity={0}/>
+                      </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" vertical={false} />
                     <XAxis 
@@ -638,13 +667,26 @@ export default function Dashboard() {
                       allowDecimals={false}
                     />
                     <Tooltip content={<AreaTooltip />} cursor={{ stroke: '#EF4444', strokeWidth: 1 }} />
+                    {/* Inactive projects (gray) - behind active */}
                     <Area
                       type="monotone"
-                      dataKey="totalProjects"
-                      name="Total Projects"
-                      stroke="#EF4444"
+                      dataKey="totalProjectsInactive"
+                      name="Inactive"
+                      stroke="#9CA3AF"
+                      strokeWidth={2}
+                      fill="url(#colorInactive)"
+                      animationBegin={500}
+                      strokeLinecap="round"
+                      dot={false}
+                    />
+                    {/* Active projects (green) - on top */}
+                    <Area
+                      type="monotone"
+                      dataKey="totalProjectsActive"
+                      name="Active"
+                      stroke="#10B981"
                       strokeWidth={3}
-                      fill="url(#colorTotal)"
+                      fill="url(#colorActive)"
                       animationBegin={500}
                       strokeLinecap="round"
                       dot={false}
@@ -657,13 +699,19 @@ export default function Dashboard() {
               <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
                 <div>
                   <p className="text-xs text-gray-400">Total Projects</p>
-                  <p className="text-2xl font-bold text-gray-800">{data.projects.length}</p>
+                  <div className="flex items-center gap-1">
+                    <span className="text-2xl font-bold text-green-600">{data.projects.filter(p => p.is_featured === true).length}</span>
+                    <span className="text-gray-400">/</span>
+                    <span className="text-2xl font-bold text-gray-500">{data.projects.filter(p => p.is_featured === false).length}</span>
+                  </div>
                 </div>
                 <div className="text-right">
                   <p className="text-xs text-gray-400">This Year</p>
-                  <div className="flex items-center gap-1 text-green-500">
-                    <ArrowTrendingUpIcon className="w-4 h-4" />
-                    <span className="text-sm font-bold">+{monthlyData.reduce((sum, m) => sum + m.newProjects, 0)}</span>
+                  <div className="flex items-center gap-1">
+                    <ArrowTrendingUpIcon className="w-4 h-4 text-green-500" />
+                    <span className="text-green-600 font-bold">+{monthlyData.reduce((sum, m) => sum + m.newProjectsActive, 0)}</span>
+                    <span className="text-gray-400">/</span>
+                    <span className="text-gray-500 font-bold">+{monthlyData.reduce((sum, m) => sum + m.newProjectsInactive, 0)}</span>
                   </div>
                 </div>
               </div>
@@ -707,13 +755,19 @@ export default function Dashboard() {
               <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
                 <div>
                   <p className="text-xs text-gray-400">Total Programs</p>
-                  <p className="text-2xl font-bold text-gray-800">{data.programs.length}</p>
+                  <div className="flex items-center gap-1">
+                    <span className="text-2xl font-bold text-green-600">{projectsByProgram.filter(p => p.isActive).length}</span>
+                    <span className="text-gray-400">/</span>
+                    <span className="text-2xl font-bold text-gray-500">{projectsByProgram.filter(p => !p.isActive).length}</span>
+                  </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-xs text-gray-400">Active / Inactive</p>
-                  <p className="text-lg font-bold text-gray-800">
-                    {projectsByProgram.filter(p => p.isActive).length} / {projectsByProgram.filter(p => !p.isActive).length}
-                  </p>
+                  <p className="text-xs text-gray-400">Total Projects</p>
+                  <div className="flex items-center gap-1">
+                    <span className="text-lg font-bold text-green-600">{data.projects.filter(p => p.is_featured === true).length}</span>
+                    <span className="text-gray-400">/</span>
+                    <span className="text-lg font-bold text-gray-500">{data.projects.filter(p => p.is_featured === false).length}</span>
+                  </div>
                 </div>
               </div>
             </ChartContainer>
