@@ -1,20 +1,43 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import api from "../../lib/api";
 import resolveAssetUrl from "../../lib/resolveAssetUrl";
 
+const TABS = [
+  "All",
+  "Mechatronics Engineering",
+  "Software Engineering",
+  "Mechanical Engineering",
+];
+
+function getPrimaryProgramName(instructor) {
+  const items = instructor?.team_member_programs;
+  if (!Array.isArray(items) || items.length === 0) return "";
+
+  const sorted = [...items].sort(
+    (a, b) => (a?.order_position ?? 0) - (b?.order_position ?? 0),
+  );
+
+  return sorted?.[0]?.programs?.program_name || "";
+}
+
 export default function Instructor() {
+  const [searchParams] = useSearchParams();
   const [instructors, setInstructors] = useState([]);
   const [activeTab, setActiveTab] = useState("All");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const tabs = [
-    "All",
-    "Mechatronics Engineering",
-    "Software Engineering",
-    "Mechanical Engineering",
-  ];
+  useEffect(() => {
+    const program = (searchParams.get("program") || "").trim();
+    if (!program) return;
+
+    const match = TABS.find(
+      (t) => t.toLowerCase() === program.toLowerCase(),
+    );
+
+    if (match) setActiveTab(match);
+  }, [searchParams]);
 
   // FETCH DATA
   useEffect(() => {
@@ -56,9 +79,7 @@ export default function Instructor() {
     activeTab === "All"
       ? instructors
       : instructors.filter((i) =>
-          i?.team_member_programs?.some(
-            (p) => p?.programs?.program_name === activeTab
-          )
+          getPrimaryProgramName(i) === activeTab
         );
 
   return (
@@ -101,7 +122,7 @@ export default function Instructor() {
             onChange={(e) => setActiveTab(e.target.value)}
             className="w-full border p-3 rounded"
           >
-            {tabs.map((tab) => (
+            {TABS.map((tab) => (
               <option key={tab} value={tab}>
                 {tab}
               </option>
@@ -111,7 +132,7 @@ export default function Instructor() {
 
         {/* DESKTOP TABS */}
         <div className="hidden md:flex relative w-full h-[67px] bg-[#F8F8FF] border-b-4 border-gray-400">
-          {tabs.map((tab) => (
+          {TABS.map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -147,8 +168,7 @@ export default function Instructor() {
           )}
 
          {filtered.map((inst) => {
-  const program =
-    inst?.team_member_programs?.[0]?.programs?.program_name || "";
+  const program = getPrimaryProgramName(inst);
   const memberId = inst?.id ?? inst?.team_member_id ?? inst?._id;
 
   return (
