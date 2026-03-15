@@ -349,25 +349,6 @@ function generateDynamicColors(count) {
   return colors;
 }
 
-// Generate abbreviation from program name
-function getProgramAbbreviation(programName) {
-  if (!programName) return 'Other';
-  
-  // Split by spaces and take first letter of each word
-  const words = programName.trim().split(/\s+/);
-  
-  if (words.length === 1) {
-    // Single word - take first 3-4 letters
-    return programName.substring(0, 4).toUpperCase();
-  }
-  
-  // Multiple words - take first letter of each word (max 4)
-  return words
-    .slice(0, 4)
-    .map(word => word[0])
-    .join('')
-    .toUpperCase();
-}
 
 // Process projects by program - includes all programs (active and inactive)
 // Uses is_active field: false = gray bar (inactive), true = colored bar (active)
@@ -398,15 +379,42 @@ function processProjectsByProgram(programs, projects) {
     
     return {
       programId: program.id,
-      name: getProgramAbbreviation(program.program_name),
-      fullName: program.program_name || 'Unnamed',
+      originalName: program.program_name || 'Unnamed',
       projects: projectCount,
       isActive: isActive,
     };
   }).sort((a, b) => b.projects - a.projects);
 
+  // Generate unique abbreviations
+  const usedNames = [];
+  const programsWithNames = programsWithProjects.map((item) => {
+    let abbrev;
+    const words = item.originalName.trim().split(/\s+/);
+    
+    if (words.length === 1) {
+      abbrev = item.originalName.substring(0, 4).toUpperCase();
+    } else {
+      abbrev = words.slice(0, 4).map(word => word[0]).join('').toUpperCase();
+    }
+    
+    // Ensure unique name
+    let uniqueAbbrev = abbrev;
+    let counter = 1;
+    while (usedNames.includes(uniqueAbbrev)) {
+      uniqueAbbrev = `${abbrev}${counter}`;
+      counter++;
+    }
+    usedNames.push(uniqueAbbrev);
+    
+    return {
+      ...item,
+      name: uniqueAbbrev,
+      fullName: item.originalName,
+    };
+  });
+
   // Generate dynamic colors for active (is_active=true) programs only
-  const activePrograms = programsWithProjects.filter(p => p.isActive);
+  const activePrograms = programsWithNames.filter(p => p.isActive);
   const colors = generateDynamicColors(activePrograms.length);
   
   // Assign colors: gray for inactive (is_active=false), dynamic colors for active
@@ -415,9 +423,9 @@ function processProjectsByProgram(programs, projects) {
     colorMap[program.programId] = colors[index];
   });
 
-  return programsWithProjects.map((item) => ({
+  return programsWithNames.map((item) => ({
     ...item,
-    fill: item.isActive ? colorMap[item.programId] : '#9CA3AF', // Gray for inactive
+    fill: item.isActive ? (colorMap[item.programId] || '#10B981') : '#9CA3AF', // Green for active, gray for inactive
   }));
 }
 
