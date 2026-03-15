@@ -136,11 +136,18 @@ function AreaTooltip({ active, payload, label }) {
         <div className="flex items-center justify-between gap-6 text-sm py-1">
           <div className="flex items-center gap-2">
             <div className="w-2.5 h-2.5 rounded-full bg-green-500" />
-            <span className="text-gray-400">New Projects:</span>
+            <span className="text-gray-400">Active:</span>
           </div>
-          <span className="font-bold text-green-400">+{data?.newProjects || 0}</span>
+          <span className="font-bold text-green-400">+{data?.newProjectsActive || 0}</span>
         </div>
         <div className="flex items-center justify-between gap-6 text-sm py-1">
+          <div className="flex items-center gap-2">
+            <div className="w-2.5 h-2.5 rounded-full bg-gray-400" />
+            <span className="text-gray-400">Inactive:</span>
+          </div>
+          <span className="font-bold text-gray-400">+{data?.newProjectsInactive || 0}</span>
+        </div>
+        <div className="border-t border-gray-700 mt-2 pt-2 flex items-center justify-between gap-6 text-sm py-1">
           <div className="flex items-center gap-2">
             <div className="w-2.5 h-2.5 rounded-full bg-red-500" />
             <span className="text-gray-400">Total:</span>
@@ -161,6 +168,9 @@ function BarTooltip({ active, payload }) {
       <div className="bg-gray-900/95 backdrop-blur-sm text-white rounded-xl shadow-2xl px-5 py-3 border border-gray-700/50">
         <p className="font-bold text-sm">{data.fullName}</p>
         <p className="text-sm text-gray-400">{data.projects} projects</p>
+        <p className={`text-xs mt-1 ${data.isActive ? 'text-green-400' : 'text-red-400'}`}>
+          {data.isActive ? 'Active' : 'Inactive'}
+        </p>
       </div>
     );
   }
@@ -170,10 +180,15 @@ function BarTooltip({ active, payload }) {
 // Chart wrapper component - Modern card style
 function ChartContainer({ title, icon: Icon, children, delay = 0 }) {
   const [isVisible, setIsVisible] = useState(false);
+  const [isReady, setIsReady] = useState(false);
   const IconComponent = Icon;
 
   useEffect(() => {
-    const timer = setTimeout(() => setIsVisible(true), delay);
+    const timer = setTimeout(() => {
+      setIsVisible(true);
+      // Only render children after animation completes (500ms duration)
+      setTimeout(() => setIsReady(true), 500);
+    }, delay);
     return () => clearTimeout(timer);
   }, [delay]);
 
@@ -191,12 +206,12 @@ function ChartContainer({ title, icon: Icon, children, delay = 0 }) {
           <h2 className="text-lg font-semibold text-gray-800">{title}</h2>
         </div>
       )}
-      {children}
+      {isReady ? children : <div className="h-[250px] sm:h-[300px]" />}
     </div>
   );
 }
 
-// Process projects data to get monthly growth data
+// Process projects data to get monthly growth data with active/inactive breakdown
 function processMonthlyData(projects, year = null) {
   if (!Array.isArray(projects) || projects.length === 0) {
     return [];
@@ -219,7 +234,11 @@ function processMonthlyData(projects, year = null) {
       month: monthName,
       sortOrder: i,
       newProjects: 0,
+      newProjectsActive: 0,
+      newProjectsInactive: 0,
       totalProjects: 0,
+      totalProjectsActive: 0,
+      totalProjectsInactive: 0,
     });
   }
 
@@ -236,8 +255,7 @@ function processMonthlyData(projects, year = null) {
     return aDate - bDate;
   });
 
-  // Count projects by month
-  let cumulative = 0;
+  // Count projects by month and track active/inactive
   yearProjects.forEach((project) => {
     if (!project) return;
     const createdAt = project.created_at || project.createdAt;
@@ -247,14 +265,25 @@ function processMonthlyData(projects, year = null) {
     
     // Only count if month is within our displayed range
     if (monthIndex < monthsToShow) {
+      const isActive = project.is_featured === true;
       months[monthIndex].newProjects += 1;
+      if (isActive) {
+        months[monthIndex].newProjectsActive += 1;
+      } else {
+        months[monthIndex].newProjectsInactive += 1;
+      }
     }
   });
 
-  // Calculate cumulative
+  // Calculate cumulative totals per month
+  let runningActive = 0;
+  let runningInactive = 0;
   months.forEach((m) => {
-    cumulative += m.newProjects;
-    m.totalProjects = cumulative;
+    runningActive += m.newProjectsActive;
+    runningInactive += m.newProjectsInactive;
+    m.totalProjects = runningActive + runningInactive;
+    m.totalProjectsActive = runningActive;
+    m.totalProjectsInactive = runningInactive;
   });
 
   return months;
@@ -320,61 +349,121 @@ function generateDynamicColors(count) {
   return colors;
 }
 
-// Generate abbreviation from program name
-function getProgramAbbreviation(programName) {
-  if (!programName) return 'Other';
-  
-  // Split by spaces and take first letter of each word
-  const words = programName.trim().split(/\s+/);
-  
-  if (words.length === 1) {
-    // Single word - take first 3-4 letters
-    return programName.substring(0, 4).toUpperCase();
-  }
-  
-  // Multiple words - take first letter of each word (max 4)
-  return words
-    .slice(0, 4)
-    .map(word => word[0])
-    .join('')
-    .toUpperCase();
-}
 
-// Process projects by program
+// Process projects by program - includes all programs (active and inactive)
+// Uses is_active field: false = gray bar (inactive), true = colored bar (active)
 function processProjectsByProgram(programs, projects) {
   if (!Array.isArray(programs) || !Array.isArray(projects)) {
     return [];
   }
 
-  // Filter programs that have projects
-  const programsWithProjects = programs.map((program) => {
-    if (!program) return null;
-    
-    // Count projects linked to this program
+  // Deduplicate programs by both ID and program_name
+  const seenIds = new Set();
+  const seenNames = new Set();
+  const uniquePrograms = programs.filter((program) => {
+    if (!program || !program.program_name) return false;
+    // Skip if we've already seen this ID or this name
+    if (seenIds.has(program.id) || seenNames.has(program.program_name)) return false;
+    seenIds.add(program.id);
+    seenNames.add(program.program_name);
+    return true;
+  });
+
+  // Map all programs to include their project count (including zero)
+  const programsWithProjects = uniquePrograms.map((program) => {
+    // Count projects linked to this program using program_name
     const projectCount = projects.filter((project) => {
       if (!project) return false;
-      const programIds = project.project_programs?.map(pp => pp.programs?.id) || [];
-      return programIds.includes(program.id);
+      // Try to match by program name in project_programs
+      const programNames = project.project_programs?.map(pp => pp.programs?.program_name) || [];
+      return programNames.includes(program.program_name);
     }).length;
 
+    // is_active determines both color and active/inactive status
+    // is_active = true → colored bar (active)
+    // is_active = false → gray bar (inactive)
+    const isActive = program.is_active === true;
+    
     return {
-      program,
+      programId: program.id,
+      originalName: program.program_name || 'Unnamed',
       projects: projectCount,
+      isActive: isActive,
     };
-  }).filter(p => p && p.projects > 0).sort((a, b) => b.projects - a.projects);
+  }).sort((a, b) => b.projects - a.projects);
 
-  // Generate dynamic colors based on actual number of programs with projects
-  const colors = generateDynamicColors(programsWithProjects.length);
-  
-  return programsWithProjects.map((item, index) => {
-    const program = item.program;
+  // Generate unique university-style program codes (no numbers)
+  function generateProgramCode(name, usedCodes) {
+    const words = name.trim().split(/\s+/);
+
+    let code = "";
+
+    // Step 1: first letters
+    if (words.length >= 3) {
+      code = words.slice(0, 3).map(w => w[0]).join("");
+    } else if (words.length === 2) {
+      code = words[0][0] + words[1].slice(0, 2);
+    } else {
+      code = words[0].slice(0, 3);
+    }
+
+    code = code.toUpperCase();
+
+    // Step 2: ensure uniqueness without numbers
+    if (!usedCodes.includes(code)) {
+      usedCodes.push(code);
+      return code;
+    }
+
+    // Step 3: try alternative combinations
+    const letters = name.replace(/\s+/g, "").toUpperCase();
+
+    for (let i = 0; i < letters.length - 2; i++) {
+      const candidate = letters.slice(i, i + 3);
+      if (!usedCodes.includes(candidate)) {
+        usedCodes.push(candidate);
+        return candidate;
+      }
+    }
+
+    // fallback (rare case)
+    let index = 0;
+    while (true) {
+      const candidate = letters.slice(index, index + 4);
+      if (!usedCodes.includes(candidate)) {
+        usedCodes.push(candidate);
+        return candidate;
+      }
+      index++;
+    }
+  }
+
+  // Generate program codes
+  const usedNames = [];
+  const programsWithNames = programsWithProjects.map((item) => {
+    const code = generateProgramCode(item.originalName, usedNames);
+
     return {
-      name: getProgramAbbreviation(program.program_name),
-      fullName: program.program_name || 'Unnamed',
-      projects: item.projects,
-      fill: colors[index],
+      ...item,
+      name: code,
+      fullName: item.originalName,
     };
   });
+
+  // Generate dynamic colors for active (is_active=true) programs only
+  const activePrograms = programsWithNames.filter(p => p.isActive);
+  const colors = generateDynamicColors(activePrograms.length);
+  
+  // Assign colors: gray for inactive (is_active=false), dynamic colors for active
+  const colorMap = {};
+  activePrograms.forEach((program, index) => {
+    colorMap[program.programId] = colors[index];
+  });
+
+  return programsWithNames.map((item) => ({
+    ...item,
+    fill: item.isActive ? (colorMap[item.programId] || '#10B981') : '#9CA3AF', // Green for active, gray for inactive
+  }));
 }
 
 export default function Dashboard() {
@@ -511,7 +600,7 @@ export default function Dashboard() {
 
       <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 sm:gap-6">
         {/* MAIN CONTENT */}
-        <div className="col-span-12 xl:col-span-9">
+        <div className="col-span-12 xl:col-span-9 min-w-0">
           {/* Stats */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
             <StatCard
@@ -585,13 +674,21 @@ export default function Dashboard() {
                   </div>
                 </div>
               </div>
-              <div className="h-[250px] sm:h-[300px] focus:outline-none">
-                <ResponsiveContainer width="100%" height="100%">
+              <div className="h-[250px] sm:h-[300px] min-w-0 focus:outline-none">
+                <ResponsiveContainer width="100%" height={300}>
                   <AreaChart data={monthlyData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }} isAnimationActive={true} animationDuration={2000} animationEasing="ease-out">
                     <defs>
                       <linearGradient id="colorTotal" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="0%" stopColor="#EF4444" stopOpacity={0.4}/>
                         <stop offset="100%" stopColor="#EF4444" stopOpacity={0}/>
+                      </linearGradient>
+                      <linearGradient id="colorActive" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#10B981" stopOpacity={0.4}/>
+                        <stop offset="100%" stopColor="#10B981" stopOpacity={0}/>
+                      </linearGradient>
+                      <linearGradient id="colorInactive" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#9CA3AF" stopOpacity={0.4}/>
+                        <stop offset="100%" stopColor="#9CA3AF" stopOpacity={0}/>
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" vertical={false} />
@@ -615,13 +712,26 @@ export default function Dashboard() {
                       allowDecimals={false}
                     />
                     <Tooltip content={<AreaTooltip />} cursor={{ stroke: '#EF4444', strokeWidth: 1 }} />
+                    {/* Inactive projects (gray) - behind active */}
                     <Area
                       type="monotone"
-                      dataKey="totalProjects"
-                      name="Total Projects"
-                      stroke="#EF4444"
+                      dataKey="totalProjectsInactive"
+                      name="Inactive"
+                      stroke="#9CA3AF"
+                      strokeWidth={2}
+                      fill="url(#colorInactive)"
+                      animationBegin={500}
+                      strokeLinecap="round"
+                      dot={false}
+                    />
+                    {/* Active projects (green) - on top */}
+                    <Area
+                      type="monotone"
+                      dataKey="totalProjectsActive"
+                      name="Active"
+                      stroke="#10B981"
                       strokeWidth={3}
-                      fill="url(#colorTotal)"
+                      fill="url(#colorActive)"
                       animationBegin={500}
                       strokeLinecap="round"
                       dot={false}
@@ -633,14 +743,15 @@ export default function Dashboard() {
               {/* Stats row */}
               <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
                 <div>
-                  <p className="text-xs text-gray-400">Total Projects</p>
-                  <p className="text-2xl font-bold text-gray-800">{data.projects.length}</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-xs text-gray-400">This Year</p>
-                  <div className="flex items-center gap-1 text-green-500">
-                    <ArrowTrendingUpIcon className="w-4 h-4" />
-                    <span className="text-sm font-bold">+{monthlyData.reduce((sum, m) => sum + m.newProjects, 0)}</span>
+                  <p className="text-xs text-gray-400">{selectedYear} Total Projects</p>
+                  <div className="flex items-center gap-2">
+                    <ArrowTrendingUpIcon className="w-5 h-5 text-green-500" />
+                    <span className="text-2xl font-bold text-green-600">+{monthlyData.reduce((sum, m) => sum + m.newProjects, 0)}</span>
+                    <span className="text-sm text-gray-400">
+                      (<span className="text-green-600">+{monthlyData.reduce((sum, m) => sum + m.newProjectsActive, 0)}</span>
+                      <span className="mx-1">/</span>
+                      <span className="text-gray-500">+{monthlyData.reduce((sum, m) => sum + m.newProjectsInactive, 0)}</span>)
+                    </span>
                   </div>
                 </div>
               </div>
@@ -648,33 +759,33 @@ export default function Dashboard() {
 
             {/* Program Distribution - Modern design */}
             <ChartContainer title="Program Distribution" icon={ChartBarIcon} delay={600}>
-              <div className="h-[250px] sm:h-[300px] chart-no-focus focus:outline-none">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={projectsByProgram} layout="vertical" margin={{ top: 10, right: 20, left: -100, bottom: 0 }} isAnimationActive={true} animationDuration={2000} animationEasing="ease-out">
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" horizontal={false} />
+              <div className="h-[250px] sm:h-[300px] chart-no-focus min-w-0 focus:outline-none">
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={projectsByProgram} margin={{ top: 10, right: 20, left: 20, bottom: 30 }} isAnimationActive={true} animationDuration={2000} animationEasing="ease-out">
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" vertical={true} />
                     <XAxis 
+                      dataKey="name"
+                      fontSize={12} 
+                      axisLine={false} 
+                      tickLine={false} 
+                      tick={{ fill: '#9CA3AF' }}
+                      interval={0}
+                      angle={-25}
+                      textAnchor="end"
+                      height={60}
+                    />
+                    <YAxis 
                       type="number"
                       fontSize={12} 
                       axisLine={false} 
                       tickLine={false} 
                       tick={{ fill: '#9CA3AF' }}
                       domain={[0, 'dataMax + 1']}
-                      tickFormatter={(value) => Math.round(value)}
-                      padding={{ left: 0, right: 0 }}
-                    />
-                    <YAxis 
-                      type="category"
-                      dataKey="name" 
-                      fontSize={12} 
-                      axisLine={false} 
-                      tickLine={false} 
-                      width={140}
-                      tick={{ fill: '#9CA3AF' }}
                     />
                     <Tooltip content={<BarTooltip />} cursor={{ fill: 'rgba(239, 68, 68, 0.08)' }} />
-                    <Bar dataKey="projects" radius={[0, 6, 6, 0]} layout="vertical" animationBegin={600} barCategoryGap="20%">
+                    <Bar dataKey="projects" radius={[6, 6, 0, 0]} animationBegin={600} barCategoryGap="20%">
                       {projectsByProgram.map((entry, index) => (
-                        <Cell key={index} fill={entry?.fill || '#EF4444'} />
+                        <Cell key={index} fill={entry?.fill || '#10B981'} />
                       ))}
                     </Bar>
                   </BarChart>
@@ -684,11 +795,19 @@ export default function Dashboard() {
               <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
                 <div>
                   <p className="text-xs text-gray-400">Total Programs</p>
-                  <p className="text-2xl font-bold text-gray-800">{data.programs.length}</p>
+                  <div className="flex items-center gap-1">
+                    <span className="text-2xl font-bold text-green-600">{projectsByProgram.filter(p => p.isActive).length}</span>
+                    <span className="text-gray-400">/</span>
+                    <span className="text-2xl font-bold text-gray-500">{projectsByProgram.filter(p => !p.isActive).length}</span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-1 text-green-600">
-                  <ChartBarIcon className="w-4 h-4" />
-                  <span className="text-sm font-medium">{projectsByProgram.length} active</span>
+                <div className="text-right">
+                  <p className="text-xs text-gray-400">Total Projects</p>
+                  <div className="flex items-center gap-1">
+                    <span className="text-lg font-bold text-green-600">{data.projects.filter(p => p.is_featured === true).length}</span>
+                    <span className="text-gray-400">/</span>
+                    <span className="text-lg font-bold text-gray-500">{data.projects.filter(p => p.is_featured === false).length}</span>
+                  </div>
                 </div>
               </div>
             </ChartContainer>
