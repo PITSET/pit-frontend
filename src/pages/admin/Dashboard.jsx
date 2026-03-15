@@ -357,19 +357,26 @@ function processProjectsByProgram(programs, projects) {
     return [];
   }
 
-  // Deduplicate programs by ID first
-  const uniquePrograms = programs.filter(
-    (program, index, self) => 
-      program && index === self.findIndex((p) => p && p.id === program.id)
-  );
+  // Deduplicate programs by both ID and program_name
+  const seenIds = new Set();
+  const seenNames = new Set();
+  const uniquePrograms = programs.filter((program) => {
+    if (!program || !program.program_name) return false;
+    // Skip if we've already seen this ID or this name
+    if (seenIds.has(program.id) || seenNames.has(program.program_name)) return false;
+    seenIds.add(program.id);
+    seenNames.add(program.program_name);
+    return true;
+  });
 
   // Map all programs to include their project count (including zero)
   const programsWithProjects = uniquePrograms.map((program) => {
-    // Count projects linked to this program
+    // Count projects linked to this program using program_name
     const projectCount = projects.filter((project) => {
       if (!project) return false;
-      const programIds = project.project_programs?.map(pp => pp.programs?.id) || [];
-      return programIds.includes(program.id);
+      // Try to match by program name in project_programs
+      const programNames = project.project_programs?.map(pp => pp.programs?.program_name) || [];
+      return programNames.includes(program.program_name);
     }).length;
 
     // is_active determines both color and active/inactive status
@@ -385,30 +392,60 @@ function processProjectsByProgram(programs, projects) {
     };
   }).sort((a, b) => b.projects - a.projects);
 
-  // Generate unique abbreviations
+  // Generate unique university-style program codes (no numbers)
+  function generateProgramCode(name, usedCodes) {
+    const words = name.trim().split(/\s+/);
+
+    let code = "";
+
+    // Step 1: first letters
+    if (words.length >= 3) {
+      code = words.slice(0, 3).map(w => w[0]).join("");
+    } else if (words.length === 2) {
+      code = words[0][0] + words[1].slice(0, 2);
+    } else {
+      code = words[0].slice(0, 3);
+    }
+
+    code = code.toUpperCase();
+
+    // Step 2: ensure uniqueness without numbers
+    if (!usedCodes.includes(code)) {
+      usedCodes.push(code);
+      return code;
+    }
+
+    // Step 3: try alternative combinations
+    const letters = name.replace(/\s+/g, "").toUpperCase();
+
+    for (let i = 0; i < letters.length - 2; i++) {
+      const candidate = letters.slice(i, i + 3);
+      if (!usedCodes.includes(candidate)) {
+        usedCodes.push(candidate);
+        return candidate;
+      }
+    }
+
+    // fallback (rare case)
+    let index = 0;
+    while (true) {
+      const candidate = letters.slice(index, index + 4);
+      if (!usedCodes.includes(candidate)) {
+        usedCodes.push(candidate);
+        return candidate;
+      }
+      index++;
+    }
+  }
+
+  // Generate program codes
   const usedNames = [];
   const programsWithNames = programsWithProjects.map((item) => {
-    let abbrev;
-    const words = item.originalName.trim().split(/\s+/);
-    
-    if (words.length === 1) {
-      abbrev = item.originalName.substring(0, 4).toUpperCase();
-    } else {
-      abbrev = words.slice(0, 4).map(word => word[0]).join('').toUpperCase();
-    }
-    
-    // Ensure unique name
-    let uniqueAbbrev = abbrev;
-    let counter = 1;
-    while (usedNames.includes(uniqueAbbrev)) {
-      uniqueAbbrev = `${abbrev}${counter}`;
-      counter++;
-    }
-    usedNames.push(uniqueAbbrev);
-    
+    const code = generateProgramCode(item.originalName, usedNames);
+
     return {
       ...item,
-      name: uniqueAbbrev,
+      name: code,
       fullName: item.originalName,
     };
   });
@@ -737,6 +774,10 @@ export default function Dashboard() {
                       axisLine={false} 
                       tickLine={false} 
                       tick={{ fill: '#9CA3AF' }}
+                      interval={0}
+                      angle={-25}
+                      textAnchor="end"
+                      height={60}
                     />
                     <YAxis 
                       type="number"
