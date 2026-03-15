@@ -721,31 +721,27 @@ export default function Dashboard() {
             <ChartContainer title="Program Distribution" icon={ChartBarIcon} delay={600}>
               <div className="h-[250px] sm:h-[300px] chart-no-focus min-w-0 focus:outline-none">
                 <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={projectsByProgram} layout="vertical" margin={{ top: 10, right: 20, left: -100, bottom: 0 }} isAnimationActive={true} animationDuration={2000} animationEasing="ease-out">
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" horizontal={false} />
+                  <BarChart data={projectsByProgram} margin={{ top: 10, right: 20, left: 20, bottom: 30 }} isAnimationActive={true} animationDuration={2000} animationEasing="ease-out">
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" vertical={true} />
                     <XAxis 
+                      dataKey="name"
+                      fontSize={12} 
+                      axisLine={false} 
+                      tickLine={false} 
+                      tick={{ fill: '#9CA3AF' }}
+                    />
+                    <YAxis 
                       type="number"
                       fontSize={12} 
                       axisLine={false} 
                       tickLine={false} 
                       tick={{ fill: '#9CA3AF' }}
                       domain={[0, 'dataMax + 1']}
-                      tickFormatter={(value) => Math.round(value)}
-                      padding={{ left: 0, right: 0 }}
-                    />
-                    <YAxis 
-                      type="category"
-                      dataKey="name" 
-                      fontSize={12} 
-                      axisLine={false} 
-                      tickLine={false} 
-                      width={140}
-                      tick={{ fill: '#9CA3AF' }}
                     />
                     <Tooltip content={<BarTooltip />} cursor={{ fill: 'rgba(239, 68, 68, 0.08)' }} />
-                    <Bar dataKey="projects" radius={[0, 6, 6, 0]} layout="vertical" animationBegin={600} barCategoryGap="20%">
+                    <Bar dataKey="projects" radius={[6, 6, 0, 0]} animationBegin={600} barCategoryGap="20%">
                       {projectsByProgram.map((entry, index) => (
-                        <Cell key={index} fill={entry?.fill || '#EF4444'} />
+                        <Cell key={index} fill={entry?.fill || '#10B981'} />
                       ))}
                     </Bar>
                   </BarChart>
