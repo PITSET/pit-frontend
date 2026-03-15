@@ -3,10 +3,10 @@
 import api from "../api";
 
 /**
- * GET all active programs (ordered by created_at descending)
+ * GET all programs (including inactive)
  */
 export const getAllPrograms = async () => {
-  const res = await api.get("/programs");
+  const res = await api.get("/programs?include_inactive=true");
   return res.data;
 };
 

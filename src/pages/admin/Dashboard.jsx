@@ -161,6 +161,9 @@ function BarTooltip({ active, payload }) {
       <div className="bg-gray-900/95 backdrop-blur-sm text-white rounded-xl shadow-2xl px-5 py-3 border border-gray-700/50">
         <p className="font-bold text-sm">{data.fullName}</p>
         <p className="text-sm text-gray-400">{data.projects} projects</p>
+        <p className={`text-xs mt-1 ${data.isActive ? 'text-green-400' : 'text-red-400'}`}>
+          {data.isActive ? 'Active' : 'Inactive'}
+        </p>
       </div>
     );
   }
@@ -345,16 +348,21 @@ function getProgramAbbreviation(programName) {
     .toUpperCase();
 }
 
-// Process projects by program
+// Process projects by program - includes all programs (active and inactive)
+// Uses is_active field: false = gray bar (inactive), true = colored bar (active)
 function processProjectsByProgram(programs, projects) {
   if (!Array.isArray(programs) || !Array.isArray(projects)) {
     return [];
   }
 
-  // Filter programs that have projects
-  const programsWithProjects = programs.map((program) => {
-    if (!program) return null;
-    
+  // Deduplicate programs by ID first
+  const uniquePrograms = programs.filter(
+    (program, index, self) => 
+      program && index === self.findIndex((p) => p && p.id === program.id)
+  );
+
+  // Map all programs to include their project count (including zero)
+  const programsWithProjects = uniquePrograms.map((program) => {
     // Count projects linked to this program
     const projectCount = projects.filter((project) => {
       if (!project) return false;
@@ -362,24 +370,34 @@ function processProjectsByProgram(programs, projects) {
       return programIds.includes(program.id);
     }).length;
 
+    // is_active determines both color and active/inactive status
+    // is_active = true → colored bar (active)
+    // is_active = false → gray bar (inactive)
+    const isActive = program.is_active === true;
+    
     return {
-      program,
-      projects: projectCount,
-    };
-  }).filter(p => p && p.projects > 0).sort((a, b) => b.projects - a.projects);
-
-  // Generate dynamic colors based on actual number of programs with projects
-  const colors = generateDynamicColors(programsWithProjects.length);
-  
-  return programsWithProjects.map((item, index) => {
-    const program = item.program;
-    return {
+      programId: program.id,
       name: getProgramAbbreviation(program.program_name),
       fullName: program.program_name || 'Unnamed',
-      projects: item.projects,
-      fill: colors[index],
+      projects: projectCount,
+      isActive: isActive,
     };
+  }).sort((a, b) => b.projects - a.projects);
+
+  // Generate dynamic colors for active (is_active=true) programs only
+  const activePrograms = programsWithProjects.filter(p => p.isActive);
+  const colors = generateDynamicColors(activePrograms.length);
+  
+  // Assign colors: gray for inactive (is_active=false), dynamic colors for active
+  const colorMap = {};
+  activePrograms.forEach((program, index) => {
+    colorMap[program.programId] = colors[index];
   });
+
+  return programsWithProjects.map((item) => ({
+    ...item,
+    fill: item.isActive ? colorMap[item.programId] : '#9CA3AF', // Gray for inactive
+  }));
 }
 
 export default function Dashboard() {
@@ -691,9 +709,11 @@ export default function Dashboard() {
                   <p className="text-xs text-gray-400">Total Programs</p>
                   <p className="text-2xl font-bold text-gray-800">{data.programs.length}</p>
                 </div>
-                <div className="flex items-center gap-1 text-green-600">
-                  <ChartBarIcon className="w-4 h-4" />
-                  <span className="text-sm font-medium">{projectsByProgram.length} active</span>
+                <div className="text-right">
+                  <p className="text-xs text-gray-400">Active / Inactive</p>
+                  <p className="text-lg font-bold text-gray-800">
+                    {projectsByProgram.filter(p => p.isActive).length} / {projectsByProgram.filter(p => !p.isActive).length}
+                  </p>
                 </div>
               </div>
             </ChartContainer>
