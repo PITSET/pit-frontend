@@ -24,6 +24,7 @@ import AdminContact from "../pages/admin/AdminContact";
 import AdminPrograms from "../pages/admin/AdminPrograms";
 import AdminProjects from "../pages/admin/AdminProjects";
 import AdminMembers from "../pages/admin/AdminMembers";
+import RedirectInstructorDetail from "./RedirectInstructorDetail";
 
 const router = createBrowserRouter([
   {
@@ -36,8 +37,10 @@ const router = createBrowserRouter([
       { path: "/programs/:id", element: <ProgramDetail /> },
       { path: "/program", element: <Navigate to="/programs" replace /> },
       
-      { path: "/instructor", element: <Instructor /> },
-      { path: "/instructor/:id", element: <InstructorDetail /> },
+      { path: "/instructors", element: <Instructor /> },
+      { path: "/instructors/:id", element: <InstructorDetail /> },
+      { path: "/instructor", element: <Navigate to="/instructors" replace /> },
+      { path: "/instructor/:id", element: <RedirectInstructorDetail /> },
 
     ],
   },

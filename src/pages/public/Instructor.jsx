@@ -6,6 +6,7 @@ import resolveAssetUrl from "../../lib/resolveAssetUrl";
 export default function Instructor() {
   const [instructors, setInstructors] = useState([]);
   const [activeTab, setActiveTab] = useState("All");
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   const tabs = [
@@ -23,14 +24,26 @@ export default function Instructor() {
       .get("/team-members")
       .then((res) => {
         if (!isMounted) return;
-        const members = res.data?.data || [];
+        const members = res.data?.data?.data ?? res.data?.data ?? [];
+
+        if (!Array.isArray(members)) {
+          throw new Error("Unexpected API response shape for /team-members");
+        }
+
         setInstructors(members.filter((m) => m?.is_instructor));
         setError("");
+        setLoading(false);
       })
       .catch((err) => {
         console.error("Failed to load instructors:", err);
         if (!isMounted) return;
-        setError("Failed to load instructors.");
+        const message =
+          err?.response?.data?.message ||
+          err?.response?.data?.error ||
+          err?.message ||
+          "Failed to load instructors.";
+        setError(message);
+        setLoading(false);
       });
 
     return () => {
@@ -127,16 +140,23 @@ export default function Instructor() {
             </div>
           )}
 
+          {loading && !error && (
+            <div className="col-span-full text-center text-gray-600">
+              Loading...
+            </div>
+          )}
+
          {filtered.map((inst) => {
   const program =
     inst?.team_member_programs?.[0]?.programs?.program_name || "";
+  const memberId = inst?.id ?? inst?.team_member_id ?? inst?._id;
 
   return (
-    <div
-      key={inst.id}
-      className="group w-full md:w-[312px] transition-all duration-300 hover:-translate-y-2 hover:shadow-xl cursor-pointer"
+    <Link
+      key={memberId ?? inst?.id ?? inst?.name}
+      to={memberId ? `/instructors/${memberId}` : "/instructors"}
+      className="group block w-full md:w-[312px] transition-all duration-300 hover:-translate-y-2 hover:shadow-xl"
     >
-
       {/* IMAGE */}
       <div className="overflow-hidden">
         <img
@@ -156,8 +176,7 @@ export default function Instructor() {
           {inst.name}
         </p>
       </div>
-
-    </div>
+    </Link>
   );
 })}
         </div>

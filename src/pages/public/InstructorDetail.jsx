@@ -6,14 +6,57 @@ import resolveAssetUrl from "../../lib/resolveAssetUrl";
 export default function InstructorDetail() {
   const { id } = useParams();
   const [instructor, setInstructor] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    api.get(`/team-members/${id}`).then((res) => {
-      setInstructor(res.data.data);
-    });
+    let isMounted = true;
+    setLoading(true);
+    setError("");
+
+    api
+      .get(`/team-members/${encodeURIComponent(id)}`)
+      .then((res) => {
+        if (!isMounted) return;
+
+        const data = res.data?.data?.data ?? res.data?.data ?? null;
+        if (!data) {
+          throw new Error("Instructor not found.");
+        }
+
+        setInstructor(data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Failed to load instructor:", err);
+        if (!isMounted) return;
+        const message =
+          err?.response?.data?.message ||
+          err?.response?.data?.error ||
+          err?.message ||
+          "Failed to load instructor.";
+        setError(message);
+        setLoading(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
   }, [id]);
 
-  if (!instructor) return <div className="p-10">Loading...</div>;
+  if (loading) return <div className="p-10">Loading...</div>;
+
+  if (error) {
+    return (
+      <div className="max-w-[1248px] mx-auto px-4 py-10">
+        <div className="p-6 border rounded text-center text-red-600">
+          {error}
+        </div>
+      </div>
+    );
+  }
+
+  if (!instructor) return <div className="p-10">Instructor not found.</div>;
 
   const program =
     instructor?.team_member_programs?.[0]?.programs?.program_name || "";
@@ -62,11 +105,13 @@ export default function InstructorDetail() {
 
         {/* IMAGE */}
         <div>
-          <img
-            src={resolveAssetUrl(instructor.image_url)}
-            alt={instructor.name}
-            className="w-full rounded-lg object-cover"
-          />
+          <div className="w-full overflow-hidden rounded-lg aspect-[4/5] bg-gray-100">
+            <img
+              src={resolveAssetUrl(instructor.image_url)}
+              alt={instructor.name}
+              className="w-full h-full object-cover object-top"
+            />
+          </div>
         </div>
 
         {/* RIGHT CONTENT */}
