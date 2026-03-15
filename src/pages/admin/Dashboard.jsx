@@ -170,10 +170,15 @@ function BarTooltip({ active, payload }) {
 // Chart wrapper component - Modern card style
 function ChartContainer({ title, icon: Icon, children, delay = 0 }) {
   const [isVisible, setIsVisible] = useState(false);
+  const [isReady, setIsReady] = useState(false);
   const IconComponent = Icon;
 
   useEffect(() => {
-    const timer = setTimeout(() => setIsVisible(true), delay);
+    const timer = setTimeout(() => {
+      setIsVisible(true);
+      // Only render children after animation completes (500ms duration)
+      setTimeout(() => setIsReady(true), 500);
+    }, delay);
     return () => clearTimeout(timer);
   }, [delay]);
 
@@ -191,7 +196,7 @@ function ChartContainer({ title, icon: Icon, children, delay = 0 }) {
           <h2 className="text-lg font-semibold text-gray-800">{title}</h2>
         </div>
       )}
-      {children}
+      {isReady ? children : <div className="h-[250px] sm:h-[300px]" />}
     </div>
   );
 }
@@ -511,7 +516,7 @@ export default function Dashboard() {
 
       <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 sm:gap-6">
         {/* MAIN CONTENT */}
-        <div className="col-span-12 xl:col-span-9">
+        <div className="col-span-12 xl:col-span-9 min-w-0">
           {/* Stats */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
             <StatCard
@@ -585,8 +590,8 @@ export default function Dashboard() {
                   </div>
                 </div>
               </div>
-              <div className="h-[250px] sm:h-[300px] focus:outline-none">
-                <ResponsiveContainer width="100%" height="100%">
+              <div className="h-[250px] sm:h-[300px] min-w-0 focus:outline-none">
+                <ResponsiveContainer width="100%" height={300}>
                   <AreaChart data={monthlyData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }} isAnimationActive={true} animationDuration={2000} animationEasing="ease-out">
                     <defs>
                       <linearGradient id="colorTotal" x1="0" y1="0" x2="0" y2="1">
@@ -648,8 +653,8 @@ export default function Dashboard() {
 
             {/* Program Distribution - Modern design */}
             <ChartContainer title="Program Distribution" icon={ChartBarIcon} delay={600}>
-              <div className="h-[250px] sm:h-[300px] chart-no-focus focus:outline-none">
-                <ResponsiveContainer width="100%" height="100%">
+              <div className="h-[250px] sm:h-[300px] chart-no-focus min-w-0 focus:outline-none">
+                <ResponsiveContainer width="100%" height={300}>
                   <BarChart data={projectsByProgram} layout="vertical" margin={{ top: 10, right: 20, left: -100, bottom: 0 }} isAnimationActive={true} animationDuration={2000} animationEasing="ease-out">
                     <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" horizontal={false} />
                     <XAxis 
