@@ -3,11 +3,10 @@ import { FaMapMarkerAlt, FaEnvelope, FaPhone } from "react-icons/fa";
 import api from "../../lib/api";
 
 export default function ContactPage() {
-
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
-    message: ""
+    message: "",
   });
 
   const [loading, setLoading] = useState(false);
@@ -15,17 +14,21 @@ export default function ContactPage() {
   const [statusType, setStatusType] = useState(""); // success | error
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
+    const { name, value } = e.target;
+
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (loading) return;
+
     if (!formData.fullName || !formData.email || !formData.message) {
-      setStatus("❌ Please fill in required fields.");
+      setStatus("❌ Please fill in all required fields.");
       setStatusType("error");
       return;
     }
@@ -41,35 +44,35 @@ export default function ContactPage() {
         message: formData.message,
       });
 
-      const data = response?.data || {};
+      const data = response?.data;
 
-      if (response.status >= 200 && response.status < 300) {
-
+      if (data?.success) {
         setStatus("✅ Message sent successfully!");
         setStatusType("success");
 
         setFormData({
           fullName: "",
           email: "",
-          message: ""
+          message: "",
         });
-
       } else {
-        setStatus(data.error || "❌ Failed to send message.");
+        setStatus(data?.error || "❌ Failed to send message.");
         setStatusType("error");
       }
-
     } catch (error) {
-      setStatus("❌ Server error. Please try again.");
-      setStatusType("error");
-    }
+      const backendError =
+        error?.response?.data?.error ||
+        error?.response?.data?.message;
 
-    setLoading(false);
+      setStatus(backendError || "❌ Server error. Please try again.");
+      setStatusType("error");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="bg-gray-100 min-h-screen">
-
       {/* HERO */}
       <div
         className="relative h-[360px] bg-cover bg-center"
@@ -87,14 +90,14 @@ export default function ContactPage() {
 
           <p className="mt-4 text-gray-700 max-w-xl">
             Prometheus Institute of Technology aims to educate Knyaw on the
-            Thai-Myanmar border in Science, Technology, Engineering, and Math (STEM).
+            Thai-Myanmar border in Science, Technology, Engineering, and Math
+            (STEM).
           </p>
         </div>
       </div>
 
       {/* CONTACT SECTION */}
       <div className="max-w-7xl mx-auto px-6 py-16 grid md:grid-cols-2 gap-12 items-stretch">
-
         {/* MAP */}
         <div className="w-full h-full bg-white rounded-lg shadow overflow-hidden">
           <iframe
@@ -107,7 +110,6 @@ export default function ContactPage() {
 
         {/* CONTACT FORM */}
         <div className="flex flex-col h-full">
-
           <p className="text-sm font-semibold uppercase text-[#BC1924]">
             GET IN TOUCH
           </p>
@@ -122,12 +124,13 @@ export default function ContactPage() {
             we'll respond promptly.
           </p>
 
-          {/* Contact Info */}
+          {/* CONTACT INFO */}
           <div className="bg-white shadow-md rounded-lg p-5 mt-6 space-y-4 text-sm">
-
             <div className="flex items-center gap-3">
               <FaMapMarkerAlt className="text-[#BC1924]" />
-              <p>351, Moo 3, District Phop Phra, Province Tak, Postcode 63150</p>
+              <p>
+                351, Moo 3, District Phop Phra, Province Tak, Postcode 63150
+              </p>
             </div>
 
             <div className="flex items-center gap-3">
@@ -139,12 +142,10 @@ export default function ContactPage() {
               <FaPhone className="text-[#BC1924]" />
               <p>123-456-789-0</p>
             </div>
-
           </div>
 
           {/* FORM */}
           <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-
             <input
               type="text"
               name="fullName"
@@ -201,7 +202,6 @@ export default function ContactPage() {
                 "SEND MESSAGE"
               )}
             </button>
-
           </form>
         </div>
       </div>
