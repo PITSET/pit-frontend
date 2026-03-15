@@ -743,20 +743,15 @@ export default function Dashboard() {
               {/* Stats row */}
               <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
                 <div>
-                  <p className="text-xs text-gray-400">Total Projects</p>
-                  <div className="flex items-center gap-1">
-                    <span className="text-2xl font-bold text-green-600">{data.projects.filter(p => p.is_featured === true).length}</span>
-                    <span className="text-gray-400">/</span>
-                    <span className="text-2xl font-bold text-gray-500">{data.projects.filter(p => p.is_featured === false).length}</span>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="text-xs text-gray-400">This Year</p>
-                  <div className="flex items-center gap-1">
-                    <ArrowTrendingUpIcon className="w-4 h-4 text-green-500" />
-                    <span className="text-green-600 font-bold">+{monthlyData.reduce((sum, m) => sum + m.newProjectsActive, 0)}</span>
-                    <span className="text-gray-400">/</span>
-                    <span className="text-gray-500 font-bold">+{monthlyData.reduce((sum, m) => sum + m.newProjectsInactive, 0)}</span>
+                  <p className="text-xs text-gray-400">{selectedYear} Total Projects</p>
+                  <div className="flex items-center gap-2">
+                    <ArrowTrendingUpIcon className="w-5 h-5 text-green-500" />
+                    <span className="text-2xl font-bold text-green-600">+{monthlyData.reduce((sum, m) => sum + m.newProjects, 0)}</span>
+                    <span className="text-sm text-gray-400">
+                      (<span className="text-green-600">+{monthlyData.reduce((sum, m) => sum + m.newProjectsActive, 0)}</span>
+                      <span className="mx-1">/</span>
+                      <span className="text-gray-500">+{monthlyData.reduce((sum, m) => sum + m.newProjectsInactive, 0)}</span>)
+                    </span>
                   </div>
                 </div>
               </div>
