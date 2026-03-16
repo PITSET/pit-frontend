@@ -1,5 +1,6 @@
 import { useEffect, useState, useMemo } from "react";
 import { getAllMembers, deleteMember } from "../../lib/services/memberService";
+import { getAllPrograms } from "../../lib/services/programService";
 import {
   PencilSquareIcon,
   ChevronLeftIcon,
@@ -27,6 +28,11 @@ export default function AdminMembers() {
   // Role filter state
   const [roleFilter, setRoleFilter] = useState("all");
   const [showRoleDropdown, setShowRoleDropdown] = useState(false);
+
+  // Program filter state
+  const [programFilter, setProgramFilter] = useState("all");
+  const [showProgramFilterDropdown, setShowProgramFilterDropdown] = useState(false);
+  const [programs, setPrograms] = useState([]);
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -64,21 +70,33 @@ export default function AdminMembers() {
 
   useEffect(() => {
     fetchMembers();
+    fetchPrograms();
   }, []);
+
+  // Fetch programs for filter
+  const fetchPrograms = async () => {
+    try {
+      const response = await getAllPrograms();
+      setPrograms(response.data);
+    } catch (err) {
+      console.error("Failed to fetch programs:", err);
+    }
+  };
 
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = () => {
       setShowRoleDropdown(false);
+      setShowProgramFilterDropdown(false);
     };
 
-    if (showRoleDropdown) {
+    if (showRoleDropdown || showProgramFilterDropdown) {
       document.addEventListener("click", handleClickOutside);
       return () => document.removeEventListener("click", handleClickOutside);
     }
-  }, [showRoleDropdown]);
+  }, [showRoleDropdown, showProgramFilterDropdown]);
 
-  // Filter data by role
+  // Filter data by role and program
   const filteredData = useMemo(() => {
     let result = data;
 
@@ -91,13 +109,21 @@ export default function AdminMembers() {
       });
     }
 
+    // Filter by program
+    if (programFilter !== "all") {
+      result = result.filter(item => {
+        const memberProgramIds = item?.team_member_programs?.map(p => p.programs?.id) || [];
+        return memberProgramIds.includes(parseInt(programFilter));
+      });
+    }
+
     return result;
-  }, [data, roleFilter]);
+  }, [data, roleFilter, programFilter]);
 
   // Reset page when filter changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [roleFilter]);
+  }, [roleFilter, programFilter]);
 
   // Calculate pagination
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
@@ -224,7 +250,7 @@ export default function AdminMembers() {
             >
               <span className={roleFilter !== "all" ? "text-orange-600" : "text-slate-600"}>
                 {roleFilter === "all" 
-                  ? `All Roles (${data.length})` 
+                  ? `All Roles (${programFilter !== "all" ? filteredData.length : data.length})` 
                   : roleFilter === "founder" 
                   ? "Founder" 
                   : "Instructor"}
@@ -256,7 +282,7 @@ export default function AdminMembers() {
                       ? "bg-orange-200 text-orange-800"
                       : "bg-slate-100 text-slate-600"
                   }`}>
-                    {data.length}
+                    {programFilter !== "all" ? filteredData.length : data.length}
                   </span>
                 </button>
                 
@@ -279,7 +305,7 @@ export default function AdminMembers() {
                       ? "bg-orange-200 text-orange-800"
                       : "bg-slate-100 text-slate-600"
                   }`}>
-                    {data.filter(item => item.is_founder === true).length}
+                    {(programFilter !== "all" ? filteredData : data).filter(item => item.is_founder === true).length}
                   </span>
                 </button>
 
@@ -302,7 +328,7 @@ export default function AdminMembers() {
                       ? "bg-orange-200 text-orange-800"
                       : "bg-slate-100 text-slate-600"
                   }`}>
-                    {data.filter(item => item.is_instructor === true).length}
+                    {(programFilter !== "all" ? filteredData : data).filter(item => item.is_instructor === true).length}
                   </span>
                 </button>
               </div>
@@ -323,10 +349,110 @@ export default function AdminMembers() {
             </button>
           )}
         </div>
+
+        {/* Program Filter */}
+        {programs.length > 0 && (
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium text-gray-700">Program:</span>
+            
+            <div className="relative" onClick={(e) => e.stopPropagation()}>
+              {/* Custom dropdown button */}
+              <button
+                type="button"
+                onClick={() => setShowProgramFilterDropdown(!showProgramFilterDropdown)}
+                className="w-full sm:w-auto flex items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 hover:border-orange-300 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-300 transition-all duration-200 min-w-[180px]"
+              >
+                <span className={programFilter !== "all" ? "text-orange-600" : "text-slate-600"}>
+                  {programFilter === "all" 
+                    ? `All Programs (${roleFilter !== "all" ? filteredData.length : data.length})` 
+                    : programs.find(p => p.id.toString() === programFilter)?.program_name || "Select Program"}
+                </span>
+                <ChevronDownIcon 
+                  className={`w-5 h-5 text-slate-400 ml-2 transition-transform ${showProgramFilterDropdown ? "rotate-180" : ""}`} 
+                />
+              </button>
+
+              {/* Dropdown options */}
+              {showProgramFilterDropdown && (
+                <div className="absolute z-20 mt-2 w-full min-w-[220px] rounded-xl border border-slate-200 bg-white shadow-xl max-h-60 overflow-y-auto animate-fadeIn">
+                  {/* All option */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setProgramFilter("all");
+                      setShowProgramFilterDropdown(false);
+                    }}
+                    className={`w-full px-4 py-3 text-left text-sm transition flex items-center justify-between border-b border-slate-100 ${
+                      programFilter === "all"
+                        ? "bg-orange-50 text-orange-700"
+                        : "text-slate-700 hover:bg-slate-50"
+                    }`}
+                  >
+                    <span className="font-medium">All Programs</span>
+                    <span className={`text-xs px-2 py-0.5 rounded-full ${
+                      programFilter === "all"
+                        ? "bg-orange-200 text-orange-800"
+                        : "bg-slate-100 text-slate-600"
+                    }`}>
+                      {data.length}
+                    </span>
+                  </button>
+                  
+                  {/* Program options */}
+                  {programs.map((program) => {
+                    const count = data.filter(item => {
+                      const memberProgramIds = item?.team_member_programs?.map(p => p.programs?.id) || [];
+                      return memberProgramIds.includes(program.id);
+                    }).length;
+
+                    return (
+                      <button
+                        key={program.id}
+                        type="button"
+                        onClick={() => {
+                          setProgramFilter(program.id.toString());
+                          setShowProgramFilterDropdown(false);
+                        }}
+                        className={`w-full px-4 py-3 text-left text-sm transition flex items-center justify-between ${
+                          programFilter === program.id.toString()
+                            ? "bg-orange-50 text-orange-700"
+                            : "text-slate-700 hover:bg-slate-50"
+                        }`}
+                      >
+                        <span className="truncate">{program.program_name}</span>
+                        <span className={`text-xs px-2 py-0.5 rounded-full ${
+                          programFilter === program.id.toString()
+                            ? "bg-orange-200 text-orange-800"
+                            : "bg-slate-100 text-slate-600"
+                        }`}>
+                          {count}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Clear Program Filter */}
+            {programFilter !== "all" && (
+              <button
+                onClick={() => setProgramFilter("all")}
+                className="inline-flex items-center px-3 py-2 text-sm font-medium text-orange-600 bg-orange-50 hover:bg-orange-100 rounded-lg transition-colors"
+                title="Clear program filter"
+              >
+                <svg className="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+                Clear
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Results count */}
-      {roleFilter !== "all" && (
+      {(roleFilter !== "all" || programFilter !== "all") && (
         <div className="mb-4 px-3 py-2 text-sm text-gray-600 bg-gray-50 rounded-lg border border-gray-200">
           <span className="font-medium text-gray-900">
             {filteredData.length} {filteredData.length === 1 ? 'member' : 'members'}
