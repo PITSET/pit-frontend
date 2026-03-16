@@ -253,7 +253,7 @@ export default function AdminStudents() {
             >
               <span className={programFilter !== "all" ? "text-orange-600" : "text-slate-600"}>
                 {programFilter === "all" 
-                  ? `All (${data.length})` 
+                  ? `All Programs (${data.length})` 
                   : getProgramName(programFilter)}
               </span>
               <ChevronDownIcon 

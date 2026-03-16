@@ -1,5 +1,6 @@
 import { useEffect, useState, useMemo } from "react";
 import { getAllMembers, deleteMember } from "../../lib/services/memberService";
+import { getAllPrograms } from "../../lib/services/programService";
 import {
   PencilSquareIcon,
   ChevronLeftIcon,
@@ -24,9 +25,9 @@ export default function AdminMembers() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
 
-  // Role filter state
-  const [roleFilter, setRoleFilter] = useState("all");
-  const [showRoleDropdown, setShowRoleDropdown] = useState(false);
+  const [programFilter, setProgramFilter] = useState("all");
+  const [showProgramFilterDropdown, setShowProgramFilterDropdown] = useState(false);
+  const [programs, setPrograms] = useState([]);
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -40,14 +41,7 @@ export default function AdminMembers() {
 
       // Adjust current page if it becomes invalid after deletion
       // Need to recalculate filtered data to get correct pagination
-      let newFilteredData = newData;
-      if (roleFilter !== 'all') {
-        newFilteredData = newData.filter(item => {
-          if (roleFilter === 'founder') return item.is_founder === true;
-          if (roleFilter === 'instructor') return item.is_instructor === true;
-          return true;
-        });
-      }
+      const newFilteredData = newData;
       const newTotalPages = Math.ceil(newFilteredData.length / itemsPerPage);
       if (currentPage > newTotalPages && newTotalPages > 0) {
         setCurrentPage(newTotalPages);
@@ -64,40 +58,50 @@ export default function AdminMembers() {
 
   useEffect(() => {
     fetchMembers();
+    fetchPrograms();
   }, []);
+
+  // Fetch programs for filter
+  const fetchPrograms = async () => {
+    try {
+      const response = await getAllPrograms();
+      setPrograms(response.data);
+    } catch (err) {
+      console.error("Failed to fetch programs:", err);
+    }
+  };
 
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = () => {
-      setShowRoleDropdown(false);
+      setShowProgramFilterDropdown(false);
     };
 
-    if (showRoleDropdown) {
+    if (showProgramFilterDropdown) {
       document.addEventListener("click", handleClickOutside);
       return () => document.removeEventListener("click", handleClickOutside);
     }
-  }, [showRoleDropdown]);
+  }, [showProgramFilterDropdown]);
 
-  // Filter data by role
+  // Filter data by program only
   const filteredData = useMemo(() => {
     let result = data;
 
-    // Filter by role (instructor or founder)
-    if (roleFilter !== "all") {
+    // Filter by program
+    if (programFilter !== "all") {
       result = result.filter(item => {
-        if (roleFilter === "founder") return item.is_founder === true;
-        if (roleFilter === "instructor") return item.is_instructor === true;
-        return true;
+        const memberProgramIds = item?.team_member_programs?.map(p => p.programs?.id) || [];
+        return memberProgramIds.includes(parseInt(programFilter));
       });
     }
 
     return result;
-  }, [data, roleFilter]);
+  }, [data, programFilter]);
 
   // Reset page when filter changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [roleFilter]);
+  }, [programFilter]);
 
   // Calculate pagination
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
@@ -210,123 +214,111 @@ export default function AdminMembers() {
         </button>
       </div>
 
-      {/* Role Filter - Custom Dropdown Style */}
+      {/* Filters - Custom Dropdown Style */}
       <div className="flex flex-col sm:flex-row gap-3 mb-4">
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-gray-700">Filter:</span>
-          
-          <div className="relative" onClick={(e) => e.stopPropagation()}>
-            {/* Custom dropdown button */}
-            <button
-              type="button"
-              onClick={() => setShowRoleDropdown(!showRoleDropdown)}
-              className="w-full sm:w-auto flex items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 hover:border-orange-300 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-300 transition-all duration-200 min-w-[180px]"
-            >
-              <span className={roleFilter !== "all" ? "text-orange-600" : "text-slate-600"}>
-                {roleFilter === "all" 
-                  ? `All Roles (${data.length})` 
-                  : roleFilter === "founder" 
-                  ? "Founder" 
-                  : "Instructor"}
-              </span>
-              <ChevronDownIcon 
-                className={`w-5 h-5 text-slate-400 ml-2 transition-transform ${showRoleDropdown ? "rotate-180" : ""}`} 
-              />
-            </button>
+        {/* Program Filter */}
+        {programs.length > 0 && (
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium text-gray-700">Filter:</span>
+            
+            <div className="relative" onClick={(e) => e.stopPropagation()}>
+              {/* Custom dropdown button */}
+              <button
+                type="button"
+                onClick={() => setShowProgramFilterDropdown(!showProgramFilterDropdown)}
+                className="w-full sm:w-auto flex items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 hover:border-orange-300 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-300 transition-all duration-200 min-w-[180px]"
+              >
+                <span className={programFilter !== "all" ? "text-orange-600" : "text-slate-600"}>
+                  {programFilter === "all" 
+                    ? `All Programs (${data.length})` 
+                    : programs.find(p => p.id.toString() === programFilter)?.program_name || "Select Program"}
+                </span>
+                <ChevronDownIcon 
+                  className={`w-5 h-5 text-slate-400 ml-2 transition-transform ${showProgramFilterDropdown ? "rotate-180" : ""}`} 
+                />
+              </button>
 
-            {/* Dropdown options */}
-            {showRoleDropdown && (
-              <div className="absolute z-20 mt-2 w-full min-w-[220px] rounded-xl border border-slate-200 bg-white shadow-xl max-h-60 overflow-y-auto animate-fadeIn">
-                {/* All option */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setRoleFilter("all");
-                    setShowRoleDropdown(false);
-                  }}
-                  className={`w-full px-4 py-3 text-left text-sm transition flex items-center justify-between border-b border-slate-100 ${
-                    roleFilter === "all"
-                      ? "bg-orange-50 text-orange-700"
-                      : "text-slate-700 hover:bg-slate-50"
-                  }`}
-                >
-                  <span className="font-medium">All Roles</span>
-                  <span className={`text-xs px-2 py-0.5 rounded-full ${
-                    roleFilter === "all"
-                      ? "bg-orange-200 text-orange-800"
-                      : "bg-slate-100 text-slate-600"
-                  }`}>
-                    {data.length}
-                  </span>
-                </button>
-                
-                {/* Founder option */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setRoleFilter("founder");
-                    setShowRoleDropdown(false);
-                  }}
-                  className={`w-full px-4 py-3 text-left text-sm transition flex items-center justify-between ${
-                    roleFilter === "founder"
-                      ? "bg-orange-50 text-orange-700"
-                      : "text-slate-700 hover:bg-slate-50"
-                  }`}
-                >
-                  <span>Founder</span>
-                  <span className={`text-xs px-2 py-0.5 rounded-full ${
-                    roleFilter === "founder"
-                      ? "bg-orange-200 text-orange-800"
-                      : "bg-slate-100 text-slate-600"
-                  }`}>
-                    {data.filter(item => item.is_founder === true).length}
-                  </span>
-                </button>
+              {/* Dropdown options */}
+              {showProgramFilterDropdown && (
+                <div className="absolute z-20 mt-2 w-full min-w-[220px] rounded-xl border border-slate-200 bg-white shadow-xl max-h-60 overflow-y-auto animate-fadeIn">
+                  {/* All option */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setProgramFilter("all");
+                      setShowProgramFilterDropdown(false);
+                    }}
+                    className={`w-full px-4 py-3 text-left text-sm transition flex items-center justify-between border-b border-slate-100 ${
+                      programFilter === "all"
+                        ? "bg-orange-50 text-orange-700"
+                        : "text-slate-700 hover:bg-slate-50"
+                    }`}
+                  >
+                    <span className="font-medium">All Programs</span>
+                    <span className={`text-xs px-2 py-0.5 rounded-full ${
+                      programFilter === "all"
+                        ? "bg-orange-200 text-orange-800"
+                        : "bg-slate-100 text-slate-600"
+                    }`}>
+                      {data.length}
+                    </span>
+                  </button>
+                  
+                  {/* Program options */}
+                  {programs.map((program) => {
+                    const count = data.filter(item => {
+                      const memberProgramIds = item?.team_member_programs?.map(p => p.programs?.id) || [];
+                      return memberProgramIds.includes(program.id);
+                    }).length;
 
-                {/* Instructor option */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setRoleFilter("instructor");
-                    setShowRoleDropdown(false);
-                  }}
-                  className={`w-full px-4 py-3 text-left text-sm transition flex items-center justify-between ${
-                    roleFilter === "instructor"
-                      ? "bg-orange-50 text-orange-700"
-                      : "text-slate-700 hover:bg-slate-50"
-                  }`}
-                >
-                  <span>Instructor</span>
-                  <span className={`text-xs px-2 py-0.5 rounded-full ${
-                    roleFilter === "instructor"
-                      ? "bg-orange-200 text-orange-800"
-                      : "bg-slate-100 text-slate-600"
-                  }`}>
-                    {data.filter(item => item.is_instructor === true).length}
-                  </span>
-                </button>
-              </div>
+                    return (
+                      <button
+                        key={program.id}
+                        type="button"
+                        onClick={() => {
+                          setProgramFilter(program.id.toString());
+                          setShowProgramFilterDropdown(false);
+                        }}
+                        className={`w-full px-4 py-3 text-left text-sm transition flex items-center justify-between ${
+                          programFilter === program.id.toString()
+                            ? "bg-orange-50 text-orange-700"
+                            : "text-slate-700 hover:bg-slate-50"
+                        }`}
+                      >
+                        <span className="truncate">{program.program_name}</span>
+                        <span className={`text-xs px-2 py-0.5 rounded-full ${
+                          programFilter === program.id.toString()
+                            ? "bg-orange-200 text-orange-800"
+                            : "bg-slate-100 text-slate-600"
+                        }`}>
+                          {count}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Clear Program Filter */}
+            {programFilter !== "all" && (
+              <button
+                onClick={() => setProgramFilter("all")}
+                className="inline-flex items-center px-3 py-2 text-sm font-medium text-orange-600 bg-orange-50 hover:bg-orange-100 rounded-lg transition-colors"
+                title="Clear program filter"
+              >
+                <svg className="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+                Clear
+              </button>
             )}
           </div>
-
-          {/* Clear Filter (only show when filter is active) */}
-          {roleFilter !== "all" && (
-            <button
-              onClick={() => setRoleFilter("all")}
-              className="inline-flex items-center px-3 py-2 text-sm font-medium text-orange-600 bg-orange-50 hover:bg-orange-100 rounded-lg transition-colors"
-              title="Clear filter"
-            >
-              <svg className="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-              Clear
-            </button>
-          )}
-        </div>
+        )}
       </div>
 
       {/* Results count */}
-      {roleFilter !== "all" && (
+      {(programFilter !== "all") && (
         <div className="mb-4 px-3 py-2 text-sm text-gray-600 bg-gray-50 rounded-lg border border-gray-200">
           <span className="font-medium text-gray-900">
             {filteredData.length} {filteredData.length === 1 ? 'member' : 'members'}
