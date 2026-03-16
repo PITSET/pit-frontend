@@ -62,7 +62,7 @@ export default function Home() {
     const load = async () => {
       setIsLoadingProjects(true);
       try {
-        const [homeRes, projectsRes] = await Promise.all([
+        const [homeRes, projectsRes, programsRes] = await Promise.all([
           api.get("/home").catch((e) => {
             console.error("Failed to load /api/home:", e);
             return { data: [] };
@@ -71,7 +71,15 @@ export default function Home() {
             console.error("Failed to load /api/projects:", e);
             return { data: [] };
           }),
+          api.get("/programs").catch((e) => {
+            console.error("Failed to load /api/programs:", e);
+            return { data: [] };
+          }),
         ]);
+
+        const allPrograms = Array.isArray(programsRes.data)
+          ? programsRes.data
+          : programsRes.data?.data || programsRes.data?.programs || [];
 
         const raw = Array.isArray(homeRes.data) ? homeRes.data : homeRes.data?.data || homeRes.data?.home || [];
         const activeItems = (Array.isArray(raw) ? raw : []).filter((item) => item?.is_active === true);
@@ -136,6 +144,23 @@ export default function Home() {
               }
             }
 
+            // Resolve program names (handle IDs or Objects)
+            const projectPrograms = Array.isArray(item.programs) ? item.programs : [];
+            const programNames = projectPrograms
+              .map((pOrId) => {
+                if (typeof pOrId === "object" && pOrId !== null) {
+                  return pOrId.program_name || pOrId.name;
+                }
+                const found = allPrograms.find((p) => String(p.id) === String(pOrId));
+                return found?.program_name || found?.name || null;
+              })
+              .filter(Boolean);
+  
+            // Resolve student count (calculate from linked students only)
+            const studentCount = Array.isArray(item.students) 
+              ? item.students.length 
+              : 0; // Don't use team_size per user instruction
+
             return {
               ...item,
               image: resolveAssetUrl(imgVal || ""),
@@ -144,6 +169,8 @@ export default function Home() {
               ),
               title: item?.name || item?.title || "",
               desc: item?.overview || item?.desc || item?.description || item?.content || "",
+              programNames,
+              studentCount,
             };
         })
         .filter((item) => item.title || item.desc || item.image);

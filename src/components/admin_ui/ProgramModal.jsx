@@ -236,7 +236,9 @@ export default function ProgramModal({ isOpen, onClose, onRefresh, item }) {
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 sm:space-y-5">
           {/* Program Name */}
           <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700">Program Name</label>
+            <label className="text-sm font-medium text-gray-700">
+              Program Name <span className="text-red-500">*</span>
+            </label>
 
             <input
               type="text"

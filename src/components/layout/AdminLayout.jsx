@@ -3,10 +3,12 @@ import { Outlet } from "react-router-dom";
 import { Bars3Icon } from "@heroicons/react/24/outline";
 
 import Sidebar from "./Sidebar";
+import LogoutConfirmModal from "../admin_ui/LogoutConfirmModal";
 import { logout, restoreSession } from "../../utils/auth";
 
 export default function AdminLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   // Periodic session check - auto logout when session expires
   useEffect(() => {
@@ -43,7 +45,18 @@ export default function AdminLayout() {
         />
       )}
 
-      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <Sidebar 
+        isOpen={sidebarOpen} 
+        onClose={() => setSidebarOpen(false)}
+        onLogout={() => setShowLogoutModal(true)}
+      />
+
+      {/* Logout Confirmation Modal */}
+      <LogoutConfirmModal
+        isOpen={showLogoutModal}
+        onClose={() => setShowLogoutModal(false)}
+        onConfirm={() => logout(true)}
+      />
 
       <main className="flex-1 overflow-auto">
         <div className="sticky top-0 z-20 flex items-center gap-3 border-b bg-white px-4 py-3 shadow-sm md:hidden">

@@ -221,6 +221,10 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
           });
 
         if (uploadError) {
+          // Check for RLS policy violation
+          if (uploadError.message?.includes("row-level security") || uploadError.message?.includes("RLS")) {
+            throw new Error("Storage permission denied. Please login again or contact administrator.");
+          }
           throw uploadError;
         }
 
@@ -229,6 +233,26 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
           .getPublicUrl(fileName);
 
         imageUrlToSave = `${data.publicUrl}?t=${Date.now()}`;
+
+        // Delete old image if replacing an existing member's image
+        if (item?.image_url) {
+          try {
+            const oldUrlParts = item.image_url.split("/");
+            const oldFileName = oldUrlParts[oldUrlParts.length - 1].split("?")[0];
+            
+            if (oldFileName) {
+              const { error: deleteError } = await supabase.storage
+                .from("member_images")
+                .remove([oldFileName]);
+              
+              if (deleteError) {
+                console.warn("Failed to delete old image:", deleteError);
+              }
+            }
+          } catch (err) {
+            console.warn("Error deleting old image:", err);
+          }
+        }
       }
 
       // Filter out empty achievements and skills
@@ -255,6 +279,18 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
           return;
         }
 
+        if (!email || !email.trim()) {
+          toast.error("Please enter an email", { id: toastId });
+          setLoading(false);
+          return;
+        }
+
+        if (!bio || !bio.trim()) {
+          toast.error("Please enter a biography", { id: toastId });
+          setLoading(false);
+          return;
+        }
+
         // At least one role must be selected
         if (!isFounder && !isInstructor) {
           toast.error("Please select at least one role: Founder or Instructor", { id: toastId });
@@ -277,6 +313,18 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
         // Validate required fields for update
         if (!name || !name.trim()) {
           toast.error("Please enter a name", { id: toastId });
+          setLoading(false);
+          return;
+        }
+
+        if (!email || !email.trim()) {
+          toast.error("Please enter an email", { id: toastId });
+          setLoading(false);
+          return;
+        }
+
+        if (!bio || !bio.trim()) {
+          toast.error("Please enter a biography", { id: toastId });
           setLoading(false);
           return;
         }
@@ -312,7 +360,11 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
       // Provide more specific error messages based on the error type
       let errorMessage = isCreate ? "Failed to create member" : "Failed to update member";
       
-      if (error.response) {
+      // Check for RLS policy violations
+      const errorStr = JSON.stringify(error).toLowerCase();
+      if (errorStr.includes("row-level security") || errorStr.includes("rls") || errorStr.includes("row-level security policy")) {
+        errorMessage = "Permission denied. Storage upload failed. Please login again or contact administrator.";
+      } else if (error.response) {
         const status = error.response.status;
         const data = error.response.data;
         
@@ -329,6 +381,8 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
         }
       } else if (error.request) {
         errorMessage = "Network error. Please check your connection.";
+      } else if (error.message) {
+        errorMessage = error.message;
       }
       
       toast.error(errorMessage, { id: toastId });
@@ -470,7 +524,7 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
             <div className="space-y-4">
               {/* Name */}
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Name (required)</label>
+                <label className="text-sm font-medium text-gray-700">Name <span className="text-red-500">*</span></label>
                 <input
                   type="text"
                   value={name}
@@ -483,7 +537,7 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
               {/* Email */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <label className="text-sm font-medium text-gray-700">Email</label>
+                  <label className="text-sm font-medium text-gray-700">Email <span className="text-red-500">*</span></label>
                   {emailError && (
                     <span className="text-xs text-red-500">{emailError}</span>
                   )}
@@ -516,7 +570,7 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
 
               {/* Role Selection */}
               <div className="space-y-3">
-                <label className="text-sm font-medium text-gray-700">Role (required)</label>
+                <label className="text-sm font-medium text-gray-700">Role <span className="text-red-500">*</span></label>
                 <div className="space-y-3">
                   {/* Founder Toggle */}
                   <div className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200 shadow-sm">
@@ -575,7 +629,7 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
               {/* Programs - Only show if instructor is selected */}
               {isInstructor && (
                 <div className="space-y-2" ref={programDropdownRef}>
-                  <label className="text-sm font-medium text-gray-700">Programs (required)</label>
+                  <label className="text-sm font-medium text-gray-700">Programs <span className="text-red-500">*</span></label>
                   
                   {programsLoading ? (
                     <div className="flex items-center gap-2 text-gray-500">
@@ -631,7 +685,7 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
 
           {/* Bio */}
           <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700">Biography</label>
+            <label className="text-sm font-medium text-gray-700">Biography <span className="text-red-500">*</span></label>
             <textarea
               value={bio}
               placeholder="Enter biography..."
