@@ -18,6 +18,7 @@ import { createProject, updateProject } from "../../lib/services/projectService"
 import { getAllPrograms } from "../../lib/services/programService";
 import { getAllStudents } from "../../lib/services/studentService";
 import { supabase } from "../../lib/supabaseClient";
+import { getOperationErrorMessage } from "../../lib/httpErrorHandler";
 
 export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
   const isCreate = !item;
@@ -461,27 +462,12 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
     } catch (error) {
       console.error("Failed to save:", error);
       
-      // Provide more specific error messages based on the error type
-      let errorMessage = isCreate ? "Failed to create project" : "Failed to update project";
-      
-      if (error.response) {
-        const status = error.response.status;
-        const data = error.response.data;
-        
-        if (status === 400) {
-          errorMessage = data?.message || "Invalid request. Please check your input.";
-        } else if (status === 401) {
-          errorMessage = "Unauthorized. Please login again.";
-        } else if (status === 404) {
-          errorMessage = "Project not found. It may have been deleted.";
-        } else if (status === 500) {
-          errorMessage = "Server error. Please try again later.";
-        } else {
-          errorMessage = data?.message || errorMessage;
-        }
-      } else if (error.request) {
-        errorMessage = "Network error. Please check your connection.";
-      }
+      // Use the improved error handler to get backend message with fallback
+      const errorMessage = getOperationErrorMessage(
+        error,
+        isCreate ? 'create' : 'update',
+        'project'
+      );
       
       toast.error(errorMessage, { id: toastId });
     } finally {

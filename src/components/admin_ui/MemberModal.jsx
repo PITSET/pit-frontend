@@ -19,6 +19,7 @@ import {
 import { createMember, updateMember } from "../../lib/services/memberService";
 import { getAllPrograms } from "../../lib/services/programService";
 import { supabase } from "../../lib/supabaseClient";
+import { getOperationErrorMessage } from "../../lib/httpErrorHandler";
 
 export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
   const isCreate = !item;
@@ -384,33 +385,12 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
     } catch (error) {
       console.error("Failed to save:", error);
       
-      // Provide more specific error messages based on the error type
-      let errorMessage = isCreate ? "Failed to create member" : "Failed to update member";
-      
-      // Check for RLS policy violations
-      const errorStr = JSON.stringify(error).toLowerCase();
-      if (errorStr.includes("row-level security") || errorStr.includes("rls") || errorStr.includes("row-level security policy")) {
-        errorMessage = "Permission denied. Storage upload failed. Please login again or contact administrator.";
-      } else if (error.response) {
-        const status = error.response.status;
-        const responseData = error.response.data;
-        
-        if (status === 400) {
-          errorMessage = responseData?.message || "Invalid request. Please check your input.";
-        } else if (status === 401) {
-          errorMessage = "Unauthorized. Please login again.";
-        } else if (status === 404) {
-          errorMessage = "Member not found. It may have been deleted.";
-        } else if (status === 500) {
-          errorMessage = "Server error. Please try again later.";
-        } else {
-          errorMessage = responseData?.message || errorMessage;
-        }
-      } else if (error.request) {
-        errorMessage = "Network error. Please check your connection.";
-      } else if (error.message) {
-        errorMessage = error.message;
-      }
+      // Use the improved error handler to get backend message with fallback
+      const errorMessage = getOperationErrorMessage(
+        error,
+        isCreate ? 'create' : 'update',
+        'member'
+      );
       
       toast.error(errorMessage, { id: toastId });
     } finally {

@@ -13,6 +13,7 @@ import {
 
 // api
 import { createContact, updateContact } from "../../lib/services/adminContactService";
+import { getOperationErrorMessage } from "../../lib/httpErrorHandler";
 
 export default function ContactModal({ isOpen, onClose, onRefresh, item }) {
   const isCreate = !item;
@@ -86,7 +87,15 @@ export default function ContactModal({ isOpen, onClose, onRefresh, item }) {
       onClose();
     } catch (error) {
       console.error("Failed to save contact:", error);
-      toast.error(error.response?.data?.message || "Failed to save contact", { id: toastId });
+      
+      // Use the improved error handler to get backend message with fallback
+      const errorMessage = getOperationErrorMessage(
+        error,
+        isCreate ? 'create' : 'update',
+        'contact'
+      );
+      
+      toast.error(errorMessage, { id: toastId });
     } finally {
       setLoading(false);
     }

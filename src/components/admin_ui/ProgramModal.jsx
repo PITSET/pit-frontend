@@ -12,6 +12,7 @@ import {
 // api
 import { createProgram, updateProgram } from "../../lib/services/programService";
 import { supabase } from "../../lib/supabaseClient";
+import { getOperationErrorMessage } from "../../lib/httpErrorHandler";
 
 export default function ProgramModal({ isOpen, onClose, onRefresh, item }) {
   const isCreate = !item;
@@ -196,7 +197,15 @@ export default function ProgramModal({ isOpen, onClose, onRefresh, item }) {
       onClose();
     } catch (error) {
       console.error("Failed to save:", error);
-      toast.error(isCreate ? "Failed to create program" : "Failed to update program", { id: toastId });
+      
+      // Use the improved error handler to get backend message with fallback
+      const errorMessage = getOperationErrorMessage(
+        error,
+        isCreate ? 'create' : 'update',
+        'program'
+      );
+      
+      toast.error(errorMessage, { id: toastId });
     } finally {
       setLoading(false);
     }

@@ -14,6 +14,7 @@ import {
 // api
 import { createAboutSection, updateAboutSection } from "../../lib/services/aboutService";
 import { supabase } from "../../lib/supabaseClient";
+import { getOperationErrorMessage } from "../../lib/httpErrorHandler";
 
 export default function AboutModal({ isOpen, onClose, onRefresh, item, existingSectionTypes = [], existingOrderPositions = [] }) {
   const isCreate = !item;
@@ -281,29 +282,12 @@ export default function AboutModal({ isOpen, onClose, onRefresh, item, existingS
     } catch (error) {
       console.error("Failed to save:", error);
       
-      // Provide more specific error messages based on the error type
-      let errorMessage = isCreate ? "Failed to create section" : "Failed to update section";
-      
-      if (error.response) {
-        // Server responded with error status
-        const status = error.response.status;
-        const responseData = error.response.data;
-        
-        if (status === 400) {
-          errorMessage = responseData?.message || "Invalid request. Please check your input.";
-        } else if (status === 401) {
-          errorMessage = "Unauthorized. Please login again.";
-        } else if (status === 404) {
-          errorMessage = "Section not found. It may have been deleted.";
-        } else if (status === 500) {
-          errorMessage = "Server error. Please try again later.";
-        } else {
-          errorMessage = responseData?.message || errorMessage;
-        }
-      } else if (error.request) {
-        // Network error
-        errorMessage = "Network error. Please check your connection.";
-      }
+      // Use the improved error handler to get backend message with fallback
+      const errorMessage = getOperationErrorMessage(
+        error,
+        isCreate ? 'create' : 'update',
+        'section'
+      );
       
       toast.error(errorMessage, { id: toastId });
     } finally {
