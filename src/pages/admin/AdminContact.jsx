@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getAllContacts, deleteContact } from "../../lib/services/adminContactService";
-import { getFetchErrorMessage, ErrorType, getErrorTitle } from "../../lib/httpErrorHandler";
+import { ErrorType, getErrorTitle } from "../../lib/httpErrorHandler";
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
@@ -14,11 +15,7 @@ import EmptyState from "../../components/admin_ui/EmptyState";
 import Loader from "../../components/ui/Loader";
 
 export default function Contact() {
-  const [contacts, setContacts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-
-  // Pagination state
+  const queryClient = useQueryClient();
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
@@ -28,38 +25,29 @@ export default function Contact() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
 
-  const fetchContacts = async () => {
-    try {
-      setLoading(true);
+  // Query with caching - data is cached for 30 minutes
+  const { data: response, isLoading, error, refetch } = useQuery({
+    queryKey: ["contacts"],
+    queryFn: async () => {
       const response = await getAllContacts();
-      const newData = response.data || [];
-      setContacts(newData);
-      setError("");
+      return response.data || [];
+    },
+    staleTime: 1000 * 60 * 10, // 10 minutes
+    cacheTime: 1000 * 60 * 30, // 30 minutes
+  });
 
-      // Adjust current page if it becomes invalid after deletion
-      const newTotalPages = Math.ceil(newData.length / itemsPerPage);
-      if (currentPage > newTotalPages && newTotalPages > 0) {
-        setCurrentPage(newTotalPages);
-      } else if (newData.length === 0) {
-        setCurrentPage(1);
-      }
-    } catch (err) {
-      console.error("Error fetching contacts:", err);
-      setError(getFetchErrorMessage(err, 'fetch contacts'));
-    } finally {
-      setLoading(false);
-    }
+  const contactsData = response || [];
+
+  // Invalidate cache after mutations to refetch fresh data
+  const invalidateContactsCache = () => {
+    queryClient.invalidateQueries({ queryKey: ["contacts"] });
   };
 
-  useEffect(() => {
-    fetchContacts();
-  }, []);
-
   // Calculate pagination
-  const totalPages = Math.ceil(contacts.length / itemsPerPage);
+  const totalPages = Math.ceil(contactsData.length / itemsPerPage);
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = contacts.slice(indexOfFirstItem, indexOfLastItem);
+  const currentItems = contactsData.slice(indexOfFirstItem, indexOfLastItem);
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
@@ -112,10 +100,10 @@ export default function Contact() {
     return { type: ErrorType.UNKNOWN, title: 'Unable to Load' };
   };
 
-  if (loading) return <Loader />;
+  if (isLoading) return <Loader />;
 
   // Handle different error types with appropriate UI
-  const errorInfo = getErrorInfo(error);
+  const errorInfo = getErrorInfo(error?.message || error);
   const errorType = errorInfo.type;
   const errorTitle = errorInfo.title;
   const isRateLimited = errorType === ErrorType.RATE_LIMIT;
@@ -140,10 +128,10 @@ export default function Contact() {
             ? 'Unable to connect to the server. Please check your internet connection.'
             : isServerError
             ? 'Server is experiencing issues. Please try again later.'
-            : error}
+            : error?.message || error}
         </p>
         <button 
-          onClick={fetchContacts}
+          onClick={() => refetch()}
           className="px-4 py-2 bg-orange-500 text-white font-medium rounded-lg hover:bg-orange-600 transition focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2"
         >
           Try Again
@@ -153,7 +141,7 @@ export default function Contact() {
   );
 
   // Empty state
-  if (contacts.length === 0) {
+  if (contactsData.length === 0) {
     return (
       <div className="p-4 md:p-6 max-w-7xl mx-auto min-h-[60vh] flex flex-col items-center justify-center">
         <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold text-gray-900 mb-6">
@@ -173,7 +161,7 @@ export default function Contact() {
             setIsModalOpen(false);
             setSelectedItem(null);
           }}
-          onRefresh={fetchContacts}
+          onRefresh={invalidateContactsCache}
           item={selectedItem}
         />
       </div>
@@ -198,7 +186,7 @@ export default function Contact() {
         </button>
       </div>
 
-      {contacts.length > 0 && (
+      {contactsData.length > 0 && (
         <>
           {/* Desktop Table View */}
           <div className="hidden md:block bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
@@ -256,7 +244,7 @@ export default function Contact() {
               <div className="flex flex-col sm:flex-row items-center justify-between px-4 py-3 bg-gray-50 border-t border-gray-200 gap-3 sm:gap-0">
                 <div className="text-sm text-gray-600 order-2 sm:order-1">
                   Showing {indexOfFirstItem + 1} to{" "}
-                  {Math.min(indexOfLastItem, contacts.length)} of {contacts.length} results
+                  {Math.min(indexOfLastItem, contactsData.length)} of {contactsData.length} results
                 </div>
                 <div className="flex items-center gap-1 sm:gap-2 order-1 sm:order-2">
                   <button
@@ -381,7 +369,7 @@ export default function Contact() {
           setIsModalOpen(false);
           setSelectedItem(null);
         }}
-        onRefresh={fetchContacts}
+        onRefresh={invalidateContactsCache}
         item={selectedItem}
       />
 
@@ -392,7 +380,7 @@ export default function Contact() {
           setIsDeleteModalOpen(false);
           setItemToDelete(null);
         }}
-        onRefresh={fetchContacts}
+        onRefresh={invalidateContactsCache}
         item={itemToDelete}
         deleteFunction={deleteContact}
         sectionType="contact"

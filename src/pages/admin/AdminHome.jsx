@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getHomeSections, deleteHomeSection } from "../../lib/services/homeService";
-import { getFetchErrorMessage, ErrorType, getErrorTitle } from "../../lib/httpErrorHandler";
+import { ErrorType, getErrorTitle } from "../../lib/httpErrorHandler";
 import {
   PencilSquareIcon,
   ChevronLeftIcon,
@@ -15,10 +16,7 @@ import EmptyState from "../../components/admin_ui/EmptyState";
 import Loader from "../../components/ui/Loader";
 
 export default function HomePage() {
-  const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-
+  const queryClient = useQueryClient();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -28,30 +26,23 @@ export default function HomePage() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 4;
 
-  const fetchHome = async () => {
-    try {
+  // Query with caching - data is cached for 30 minutes
+  const { data: response, isLoading, error, refetch } = useQuery({
+    queryKey: ["home-sections"],
+    queryFn: async () => {
       const response = await getHomeSections();
-      const newData = response.data;
-      setData(newData);
+      return response.data;
+    },
+    staleTime: 1000 * 60 * 10, // 10 minutes
+    cacheTime: 1000 * 60 * 30, // 30 minutes
+  });
 
-      // Adjust current page if it becomes invalid after deletion
-      const newTotalPages = Math.ceil(newData.length / itemsPerPage);
-      if (currentPage > newTotalPages && newTotalPages > 0) {
-        setCurrentPage(newTotalPages);
-      } else if (newData.length === 0) {
-        setCurrentPage(1);
-      }
-    } catch (err) {
-      console.error("Failed to fetch home data:", err);
-      setError(getFetchErrorMessage(err, 'fetch home data'));
-    } finally {
-      setLoading(false);
-    }
+  const data = response || [];
+
+  // Invalidate cache after mutations to refetch fresh data
+  const invalidateHomeCache = () => {
+    queryClient.invalidateQueries({ queryKey: ["home-sections"] });
   };
-
-  useEffect(() => {
-    fetchHome();
-  }, []);
 
   // Calculate pagination
   const totalPages = Math.ceil(data.length / itemsPerPage);
@@ -102,10 +93,10 @@ export default function HomePage() {
     return { type: ErrorType.UNKNOWN, title: 'Unable to Load' };
   };
 
-  if (loading) return <Loader />;
+  if (isLoading) return <Loader />;
 
   // Handle different error types with appropriate UI
-  const errorInfo = getErrorInfo(error);
+  const errorInfo = getErrorInfo(error?.message || error);
   const errorType = errorInfo.type;
   const errorTitle = errorInfo.title;
   const isRateLimited = errorType === ErrorType.RATE_LIMIT;
@@ -130,10 +121,10 @@ export default function HomePage() {
             ? 'Unable to connect to the server. Please check your internet connection.'
             : isServerError
             ? 'Server is experiencing issues. Please try again later.'
-            : error}
+            : error?.message || error}
         </p>
         <button 
-          onClick={fetchHome}
+          onClick={() => refetch()}
           className="px-4 py-2 bg-orange-500 text-white font-medium rounded-lg hover:bg-orange-600 transition focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2"
         >
           Try Again
@@ -163,7 +154,7 @@ export default function HomePage() {
         <HomeModal
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
-          onRefresh={fetchHome}
+          onRefresh={invalidateHomeCache}
           item={selectedItem}
           existingSectionTypes={[]}
           existingOrderPositions={[]}
@@ -414,7 +405,7 @@ export default function HomePage() {
       <HomeModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onRefresh={fetchHome}
+        onRefresh={invalidateHomeCache}
         item={selectedItem}
         existingSectionTypes={Object.values(
           data.reduce((acc, item) => {
@@ -439,7 +430,7 @@ export default function HomePage() {
           setIsDeleteModalOpen(false);
           setItemToDelete(null);
         }}
-        onRefresh={fetchHome}
+        onRefresh={invalidateHomeCache}
         item={itemToDelete}
         sectionType="Home Section"
         deleteFunction={deleteHomeSection}

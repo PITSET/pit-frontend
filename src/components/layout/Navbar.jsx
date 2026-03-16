@@ -51,20 +51,18 @@ export default function Navbar() {
 
             {/* 🔴 Red Underline */}
             <div
-              className={`absolute left-0 -bottom-2 h-[2px] bg-red-600 transition-all duration-300 ${
-                isDesktopProgramOpen ? "w-full" : "w-0"
-              }`}
+              className={`absolute left-0 -bottom-2 h-[2px] bg-red-600 transition-all duration-300 ${isDesktopProgramOpen ? "w-full" : "w-0"
+                }`}
             />
 
             {/* ================= DROPDOWN ================= */}
             <div
               className={`absolute top-full mt-8 right-[-140px]
               w-[1000px] max-w-[90vw]
-              transition-all duration-300 ${
-                isDesktopProgramOpen
+              transition-all duration-300 ${isDesktopProgramOpen
                   ? "opacity-100 visible translate-y-0"
                   : "opacity-0 invisible -translate-y-3"
-              }`}
+                }`}
             >
               <div className="bg-white rounded-2xl shadow-2xl border border-gray-100">
                 <div className="p-10 grid grid-cols-3 gap-14">
@@ -91,7 +89,7 @@ export default function Navbar() {
                         {/* Projects */}
                         <li className="group">
                           <Link
-                            to={`/programs?program=${encodeURIComponent(program)}`}
+                            to={`/projects?program=${encodeURIComponent(program)}`}
                             className="text-gray-800 font-medium group-hover:text-red-600 transition"
                           >
                             Projects
@@ -123,6 +121,15 @@ export default function Navbar() {
 
           <li>
             <Link
+              to="/projects"
+              className="hover:text-red-600 transition cursor-pointer"
+            >
+              Projects
+            </Link>
+          </li>
+
+          <li>
+            <Link
               to="/contact"
               className="hover:text-red-600 transition cursor-pointer"
             >
@@ -142,9 +149,8 @@ export default function Navbar() {
 
       {/* ================= MOBILE MENU ================= */}
       <div
-        className={`lg:hidden bg-white shadow-md px-6 overflow-hidden transition-all duration-300 ${
-          isMenuOpen ? "max-h-[800px] py-6" : "max-h-0"
-        }`}
+        className={`lg:hidden bg-white shadow-md px-6 overflow-hidden transition-all duration-300 ${isMenuOpen ? "max-h-[800px] py-6" : "max-h-0"
+          }`}
       >
         <div className="space-y-6 font-medium">
           <Link to="/about" className="hover:text-red-600 cursor-pointer transition">
@@ -181,8 +187,8 @@ export default function Navbar() {
                           </div>
                         </Link>
 
-                        <Link to={`/programs?program=${encodeURIComponent(program)}`}>
-                          <div className="font-medium">Projects</div>
+                        <Link to={`/projects?program=${encodeURIComponent(program)}`}>
+  <div className="font-medium">Projects</div>
                           <div className="text-sm text-gray-400">
                             List of all projects
                           </div>
@@ -201,6 +207,10 @@ export default function Navbar() {
               </div>
             )}
           </div>
+
+          <Link to="/projects" className="hover:text-red-600 cursor-pointer transition">
+            Projects
+          </Link>
 
           <Link to="/contact" className="hover:text-red-600 cursor-pointer transition">
             Contact

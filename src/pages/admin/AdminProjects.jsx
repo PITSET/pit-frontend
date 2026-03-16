@@ -1,7 +1,8 @@
-import { useEffect, useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getAllProjects, deleteProject } from "../../lib/services/projectService";
 import { getAllPrograms } from "../../lib/services/programService";
-import { getFetchErrorMessage, ErrorType, getErrorTitle } from "../../lib/httpErrorHandler";
+import { ErrorType, getErrorTitle } from "../../lib/httpErrorHandler";
 import {
   PencilSquareIcon,
   ChevronLeftIcon,
@@ -19,10 +20,7 @@ import EmptyState from "../../components/admin_ui/EmptyState";
 import Loader from "../../components/ui/Loader";
 
 export default function AdminProjects() {
-  const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-
+  const queryClient = useQueryClient();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -32,7 +30,6 @@ export default function AdminProjects() {
   const [searchQuery, setSearchQuery] = useState("");
   const [programFilter, setProgramFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [programs, setPrograms] = useState([]);
   const [showProgramDropdown, setShowProgramDropdown] = useState(false);
   const [showStatusDropdown, setShowStatusDropdown] = useState(false);
 
@@ -40,34 +37,38 @@ export default function AdminProjects() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 4;
 
-  const fetchProjects = async () => {
-    try {
-      const [projectsRes, programsRes] = await Promise.all([
-        getAllProjects(),
-        getAllPrograms()
-      ]);
-      const newData = projectsRes.data;
-      setData(newData);
-      setPrograms(programsRes.data || []);
+  // Query for projects with caching
+  const { data: projectsResponse, isLoading: isProjectsLoading, error: projectsError, refetch: refetchProjects } = useQuery({
+    queryKey: ["projects"],
+    queryFn: async () => {
+      const response = await getAllProjects();
+      return response.data;
+    },
+    staleTime: 1000 * 60 * 10, // 10 minutes
+    cacheTime: 1000 * 60 * 30, // 30 minutes
+  });
 
-      // Adjust current page if it becomes invalid after deletion
-      const newTotalPages = Math.ceil(newData.length / itemsPerPage);
-      if (currentPage > newTotalPages && newTotalPages > 0) {
-        setCurrentPage(newTotalPages);
-      } else if (newData.length === 0) {
-        setCurrentPage(1);
-      }
-    } catch (err) {
-      console.error("Failed to fetch projects:", err);
-      setError(getFetchErrorMessage(err, 'fetch projects'));
-    } finally {
-      setLoading(false);
-    }
+  // Query for programs with caching
+  const { data: programsResponse, isLoading: isProgramsLoading } = useQuery({
+    queryKey: ["programs"],
+    queryFn: async () => {
+      const response = await getAllPrograms();
+      return response.data || [];
+    },
+    staleTime: 1000 * 60 * 10, // 10 minutes
+    cacheTime: 1000 * 60 * 30, // 30 minutes
+  });
+
+  const data = projectsResponse || [];
+  const programs = programsResponse || [];
+
+  const isLoading = isProjectsLoading || isProgramsLoading;
+  const error = projectsError;
+
+  // Invalidate cache after mutations
+  const invalidateProjectsCache = () => {
+    queryClient.invalidateQueries({ queryKey: ["projects"] });
   };
-
-  useEffect(() => {
-    fetchProjects();
-  }, []);
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -167,10 +168,10 @@ export default function AdminProjects() {
     return { type: ErrorType.UNKNOWN, title: 'Unable to Load' };
   };
 
-  if (loading) return <Loader />;
+  if (isLoading) return <Loader />;
 
   // Handle different error types with appropriate UI
-  const errorInfo = getErrorInfo(error);
+  const errorInfo = getErrorInfo(error?.message || error);
   const errorType = errorInfo.type;
   const errorTitle = errorInfo.title;
   const isRateLimited = errorType === ErrorType.RATE_LIMIT;
@@ -195,10 +196,10 @@ export default function AdminProjects() {
             ? 'Unable to connect to the server. Please check your internet connection.'
             : isServerError
             ? 'Server is experiencing issues. Please try again later.'
-            : error}
+            : error?.message || error}
         </p>
         <button 
-          onClick={fetchProjects}
+          onClick={() => refetchProjects()}
           className="px-4 py-2 bg-orange-500 text-white font-medium rounded-lg hover:bg-orange-600 transition focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2"
         >
           Try Again
@@ -228,7 +229,7 @@ export default function AdminProjects() {
         <ProjectModal
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
-          onRefresh={fetchProjects}
+          onRefresh={invalidateProjectsCache}
           item={selectedItem}
         />
       </>
@@ -698,7 +699,7 @@ export default function AdminProjects() {
       <ProjectModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onRefresh={fetchProjects}
+        onRefresh={invalidateProjectsCache}
         item={selectedItem}
       />
 
@@ -709,7 +710,7 @@ export default function AdminProjects() {
           setIsDeleteModalOpen(false);
           setItemToDelete(null);
         }}
-        onRefresh={fetchProjects}
+        onRefresh={invalidateProjectsCache}
         item={itemToDelete}
         sectionType="Project"
         deleteFunction={deleteProject}
