@@ -15,7 +15,7 @@ import {
 import ProjectModal from "../../components/admin_ui/ProjectModal";
 import DeleteModal from "../../components/admin_ui/DeleteModal";
 import EmptyState from "../../components/admin_ui/EmptyState";
-import Loading from "../../components/ui/Loading";
+import Loader from "../../components/ui/Loader";
 
 export default function AdminProjects() {
   const [data, setData] = useState([]);
@@ -137,23 +137,7 @@ export default function AdminProjects() {
     setIsModalOpen(true);
   };
 
-  if (loading) return (
-    <Loading 
-      table={{
-        columns: [
-          { label: 'Image', show: true },
-          { label: 'Project Name', show: true },
-          { label: 'Overview', show: true },
-          { label: 'Status', show: true },
-          { label: 'Action', show: true }
-        ],
-        showPosition: false,
-        showImage: true,
-        showStatus: true,
-        rows: 4
-      }}
-    />
-  );
+  if (loading) return <Loader />;
 
   // Handle rate limiting (429) specifically
   const isRateLimited = error.includes('429');

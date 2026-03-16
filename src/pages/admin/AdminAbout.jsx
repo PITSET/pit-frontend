@@ -11,7 +11,7 @@ import {
 import AboutModal from "../../components/admin_ui/AboutModal";
 import DeleteModal from "../../components/admin_ui/DeleteModal";
 import EmptyState from "../../components/admin_ui/EmptyState";
-import Loading from "../../components/ui/Loading";
+import Loader from "../../components/ui/Loader";
 
 export default function AboutPage() {
   const [data, setData] = useState([]);
@@ -72,24 +72,7 @@ export default function AboutPage() {
     setIsModalOpen(true);
   };
 
-  if (loading) return (
-    <Loading 
-      table={{
-        columns: [
-          { label: 'Image', show: true },
-          { label: 'Title', show: true },
-          { label: 'Description', show: true },
-          { label: 'Position', show: true },
-          { label: 'Status', show: true },
-          { label: 'Action', show: true }
-        ],
-        showPosition: true,
-        showImage: true,
-        showStatus: true,
-        rows: 4
-      }}
-    />
-  );
+  if (loading) return <Loader />;
 
   // Handle rate limiting (429) specifically
   const isRateLimited = error.includes('429');

@@ -13,7 +13,7 @@ import {
 import MemberModal from "../../components/admin_ui/MemberModal";
 import DeleteModal from "../../components/admin_ui/DeleteModal";
 import EmptyState from "../../components/admin_ui/EmptyState";
-import Loading from "../../components/ui/Loading";
+import Loader from "../../components/ui/Loader";
 
 export default function AdminMembers() {
   const [data, setData] = useState([]);
@@ -123,23 +123,7 @@ export default function AdminMembers() {
     setIsModalOpen(true);
   };
 
-  if (loading) return (
-    <Loading 
-      table={{
-        columns: [
-          { label: 'Image', show: true },
-          { label: 'Name', show: true },
-          { label: 'Biography', show: true },
-          { label: 'Role', show: true },
-          { label: 'Action', show: true }
-        ],
-        showPosition: false,
-        showImage: true,
-        showStatus: true,
-        rows: 4
-      }}
-    />
-  );
+  if (loading) return <Loader />;
 
   // Handle rate limiting (429) specifically
   const isRateLimited = error.includes('429');

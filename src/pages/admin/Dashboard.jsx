@@ -30,7 +30,7 @@ import { getAllMembers } from "../../lib/services/memberService";
 import { getAllPrograms } from "../../lib/services/programService";
 import { getAllProjects } from "../../lib/services/projectService";
 import { getAllStudents } from "../../lib/services/studentService";
-import Loading from "../../components/ui/Loading";
+import Loader from "../../components/ui/Loader";
 
 // Animated Number Counter
 function AnimatedCounter({ value, duration = 1000 }) {
@@ -569,11 +569,7 @@ export default function Dashboard() {
   }, [data.programs, data.projects]);
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <Loading />
-      </div>
-    );
+    return <Loader />;
   }
 
   return (

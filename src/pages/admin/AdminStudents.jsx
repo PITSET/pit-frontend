@@ -15,7 +15,7 @@ import {
 import StudentModal from "../../components/admin_ui/StudentModal";
 import DeleteModal from "../../components/admin_ui/DeleteModal";
 import EmptyState from "../../components/admin_ui/EmptyState";
-import Loading from "../../components/ui/Loading";
+import Loader from "../../components/ui/Loader";
 
 export default function AdminStudents() {
   const [data, setData] = useState([]);
@@ -139,23 +139,7 @@ export default function AdminStudents() {
     }
   };
 
-  if (loading) return (
-    <Loading 
-      table={{
-        columns: [
-          { label: 'Image', show: true },
-          { label: 'Name', show: true },
-          { label: 'Email', show: true },
-          { label: 'Program', show: true },
-          { label: 'Action', show: true }
-        ],
-        showPosition: false,
-        showImage: true,
-        showStatus: true,
-        rows: 4
-      }}
-    />
-  );
+  if (loading) return <Loader />;
 
   // Handle rate limiting (429) specifically
   const isRateLimited = error.includes('429');
