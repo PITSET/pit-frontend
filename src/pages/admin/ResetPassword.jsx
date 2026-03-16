@@ -1,5 +1,6 @@
 // React Hooks
 import { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
 
 // Heroicons
 import { EyeIcon, EyeSlashIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
@@ -22,44 +23,39 @@ export default function ResetPassword() {
      STATE
      =============================== */
 
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  // React Hook Form
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    watch,
+  } = useForm({
+    defaultValues: {
+      password: "",
+      confirmPassword: "",
+    },
+  });
+
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
 
-  /* ===============================
-     PASSWORD VALIDATION
-     =============================== */
-
-  const validatePassword = () => {
-    if (!password) {
-      toast.error("Password is required");
-      return false;
-    }
-
-    if (password.length < 6) {
-      toast.error("Password must be at least 6 characters");
-      return false;
-    }
-
-    if (password !== confirmPassword) {
-      toast.error("Passwords do not match");
-      return false;
-    }
-
-    return true;
-  };
+  // Watch password for validation display
+  const passwordValue = watch("password");
 
   /* ===============================
      RESET PASSWORD
      =============================== */
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const onSubmit = async (data) => {
+    if (data.password.length < 6) {
+      toast.error("Password must be at least 6 characters");
+      return;
+    }
 
-    if (!validatePassword()) {
+    if (data.password !== data.confirmPassword) {
+      toast.error("Passwords do not match");
       return;
     }
 
@@ -68,7 +64,7 @@ export default function ResetPassword() {
     try {
       // Update the user's password
       const { error } = await supabase.auth.updateUser({
-        password: password,
+        password: data.password,
       });
 
       if (error) {
@@ -198,17 +194,21 @@ export default function ResetPassword() {
             Enter your new password below
           </p>
 
-          <form onSubmit={handleSubmit} className="space-y-6 w-full">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 w-full">
             {/* PASSWORD */}
             <div className="relative">
               <input
                 type={showPassword ? "text" : "password"}
                 placeholder="New Password"
-                required
                 autoComplete="new-password"
+                {...register("password", {
+                  required: "Password is required",
+                  minLength: {
+                    value: 6,
+                    message: "Password must be at least 6 characters",
+                  },
+                })}
                 className="w-full px-5 py-3 rounded-full bg-red-200/70 placeholder-gray-700 focus:outline-none focus:ring-2 focus:ring-red-400 shadow-sm"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
               />
 
               <button
@@ -223,17 +223,22 @@ export default function ResetPassword() {
                 )}
               </button>
             </div>
+            {errors.password && (
+              <p className="mt-1 text-xs text-red-500">{errors.password.message}</p>
+            )}
 
             {/* CONFIRM PASSWORD */}
             <div className="relative">
               <input
                 type={showConfirmPassword ? "text" : "password"}
                 placeholder="Confirm New Password"
-                required
                 autoComplete="new-password"
+                {...register("confirmPassword", {
+                  required: "Please confirm your password",
+                  validate: (value) =>
+                    value === passwordValue || "Passwords do not match",
+                })}
                 className="w-full px-5 py-3 rounded-full bg-red-200/70 placeholder-gray-700 focus:outline-none focus:ring-2 focus:ring-red-400 shadow-sm"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
               />
 
               <button
@@ -248,6 +253,9 @@ export default function ResetPassword() {
                 )}
               </button>
             </div>
+            {errors.confirmPassword && (
+              <p className="mt-1 text-xs text-red-500">{errors.confirmPassword.message}</p>
+            )}
 
             {/* BUTTON */}
             <div className="flex justify-center">

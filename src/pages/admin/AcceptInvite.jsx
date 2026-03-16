@@ -1,5 +1,6 @@
 // React Hooks
 import { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
 
 // Heroicons (password show/hide)
 import { EyeIcon, EyeSlashIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
@@ -22,9 +23,21 @@ export default function AcceptInvite() {
      STATE
      =============================== */
 
+  // React Hook Form
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    watch,
+  } = useForm({
+    defaultValues: {
+      password: "",
+      confirmPassword: "",
+    },
+  });
+
   // Password inputs
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const passwordValue = watch("password");
 
   // Toggle password visibility
   const [showPassword, setShowPassword] = useState(false);
@@ -109,36 +122,22 @@ export default function AcceptInvite() {
   };
 
   /* ===============================
-     PASSWORD VALIDATION
-     =============================== */
-
-  const validatePassword = () => {
-    if (!password) {
-      toast.error("Password is required");
-      return false;
-    }
-
-    if (password.length < 6) {
-      toast.error("Password must be at least 6 characters");
-      return false;
-    }
-
-    if (password !== confirmPassword) {
-      toast.error("Passwords do not match");
-      return false;
-    }
-
-    return true;
-  };
-
-  /* ===============================
      ACCEPT INVITATION
      =============================== */
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const onSubmit = async (data) => {
+    if (!data.password) {
+      toast.error("Password is required");
+      return;
+    }
 
-    if (!validatePassword()) {
+    if (data.password.length < 6) {
+      toast.error("Password must be at least 6 characters");
+      return;
+    }
+
+    if (data.password !== data.confirmPassword) {
+      toast.error("Passwords do not match");
       return;
     }
 
@@ -147,16 +146,16 @@ export default function AcceptInvite() {
     try {
       // Try Method 1: Use verifyOtp with the token (for invitation type)
       if (token && email && token !== "session_active") {
-        const { data, error } = await supabase.auth.verifyOtp({
+        const { data: otpData, error: otpError } = await supabase.auth.verifyOtp({
           email: email,
           token: token,
           type: "invite",
         });
         
-        if (data?.session && !error) {
+        if (otpData?.session && !otpError) {
           // Got session - now set password
           const { error: updateError } = await supabase.auth.updateUser({
-            password: password,
+            password: data.password,
           });
 
           if (updateError) {
@@ -164,7 +163,7 @@ export default function AcceptInvite() {
           }
 
           // Store session tokens for login
-          const session = data.session;
+          const session = otpData.session;
           localStorage.setItem("token", session.access_token);
           localStorage.setItem("refreshToken", session.refresh_token);
           const expiryTime = Date.now() + (session.expires_in * 1000);
@@ -196,7 +195,7 @@ export default function AcceptInvite() {
         if (!setSessionError) {
           // Get current user and set password
           const { error: updateError } = await supabase.auth.updateUser({
-            password: password,
+            password: data.password,
           });
 
           if (updateError) {
@@ -228,7 +227,7 @@ export default function AcceptInvite() {
       const { data: sessionData } = await supabase.auth.getSession();
       if (sessionData?.session) {
         const { error: updateError } = await supabase.auth.updateUser({
-          password: password,
+          password: data.password,
         });
 
         if (updateError) {
@@ -257,7 +256,7 @@ export default function AcceptInvite() {
       if (token && token !== "session_active") {
         // This is a fallback that might work
         const { error: finalError } = await supabase.auth.updateUser({
-          password: password,
+          password: data.password,
         });
 
         if (!finalError) {
@@ -461,7 +460,7 @@ export default function AcceptInvite() {
           </p>
 
           {/* SET PASSWORD FORM */}
-          <form onSubmit={handleSubmit} className="space-y-6 w-full">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 w-full">
             {/* PASSWORD */}
             <div className="relative">
               <input
@@ -469,11 +468,14 @@ export default function AcceptInvite() {
                 placeholder="Password"
                 required
                 autoComplete="new-password"
-                name="password"
-                id="password"
+                {...register("password", {
+                  required: "Password is required",
+                  minLength: {
+                    value: 6,
+                    message: "Password must be at least 6 characters",
+                  },
+                })}
                 className="w-full px-5 py-3 rounded-full bg-red-200/70 placeholder-gray-700 focus:outline-none focus:ring-2 focus:ring-red-400 shadow-sm"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
               />
 
               <button
@@ -488,6 +490,9 @@ export default function AcceptInvite() {
                 )}
               </button>
             </div>
+            {errors.password && (
+              <p className="mt-1 text-xs text-red-500">{errors.password.message}</p>
+            )}
 
             {/* CONFIRM PASSWORD */}
             <div className="relative">
@@ -496,11 +501,12 @@ export default function AcceptInvite() {
                 placeholder="Confirm Password"
                 required
                 autoComplete="new-password"
-                name="confirmPassword"
-                id="confirmPassword"
+                {...register("confirmPassword", {
+                  required: "Please confirm your password",
+                  validate: (value) =>
+                    value === passwordValue || "Passwords do not match",
+                })}
                 className="w-full px-5 py-3 rounded-full bg-red-200/70 placeholder-gray-700 focus:outline-none focus:ring-2 focus:ring-red-400 shadow-sm"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
               />
 
               <button
@@ -515,6 +521,9 @@ export default function AcceptInvite() {
                 )}
               </button>
             </div>
+            {errors.confirmPassword && (
+              <p className="mt-1 text-xs text-red-500">{errors.confirmPassword.message}</p>
+            )}
 
             {/* BUTTON */}
             <div className="flex justify-center">
@@ -523,7 +532,7 @@ export default function AcceptInvite() {
                 disabled={loading}
                 className="w-40 py-3 rounded-full bg-[#8B1A1A] text-white font-semibold hover:bg-red-900 transition"
               >
-                {loading ? "Setting..." : "SET PASSWORD"}
+                {loading ? "Creating..." : "ACCEPT INVITE"}
               </button>
             </div>
           </form>
