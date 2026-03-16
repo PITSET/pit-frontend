@@ -17,7 +17,9 @@ export default function Footer() {
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-10">
           {/* Logo */}
           <div>
-            <img src={logo} alt="logo" className="h-10" />
+            <a href="/">
+              <img src={logo} alt="logo" className="h-10 cursor-pointer" />
+            </a>
             <p className="mt-4 text-sm text-gray-600 leading-relaxed max-w-[240px]">
               Shaping future technologists through excellence in education.
             </p>
@@ -27,20 +29,20 @@ export default function Footer() {
           <div>
             <h3 className="font-bold text-base text-gray-900 mb-4">About</h3>
             <ul className="space-y-2 text-sm uppercase tracking-wide text-gray-700">
-              <li className="hover:text-black transition cursor-pointer">
-                About
+              <li>
+                <a href="/about" className="hover:text-black transition cursor-pointer">About</a>
               </li>
-              <li className="hover:text-black transition cursor-pointer">
-                Contact Us
+              <li>
+                <a href="/contact" className="hover:text-black transition cursor-pointer">Contact Us</a>
               </li>
-              <li className="hover:text-black transition cursor-pointer">
-                History
+              <li>
+                <a href="/history" className="hover:text-black transition cursor-pointer">History</a>
               </li>
-              <li className="hover:text-black transition cursor-pointer">
-                Vision
+              <li>
+                <a href="/vision" className="hover:text-black transition cursor-pointer">Vision</a>
               </li>
-              <li className="hover:text-black transition cursor-pointer">
-                Mission
+              <li>
+                <a href="/mission" className="hover:text-black transition cursor-pointer">Mission</a>
               </li>
             </ul>
           </div>
@@ -49,17 +51,20 @@ export default function Footer() {
           <div>
             <h3 className="font-bold text-base text-gray-900 mb-4">Programs</h3>
             <ul className="space-y-2 text-sm uppercase tracking-wide text-gray-700">
-              <li className="hover:text-black transition cursor-pointer">
-                ME Program
+              <li>
+                <a href="/program" className="hover:text-black transition cursor-pointer">Program</a>
               </li>
-              <li className="hover:text-black transition cursor-pointer">
-                JME Program
+              <li>
+                <a href="/program/mechanical-engineering" className="hover:text-black transition cursor-pointer">ME Program</a>
               </li>
-              <li className="hover:text-black transition cursor-pointer">
-                SE Program
+              <li>
+                <a href="/program/mechatronics-engineering" className="hover:text-black transition cursor-pointer">JME Program</a>
               </li>
-              <li className="hover:text-black transition cursor-pointer">
-                Instructor
+              <li>
+                <a href="/program/software-engineering" className="hover:text-black transition cursor-pointer">SE Program</a>
+              </li>
+              <li>
+                <a href="/instructor" className="hover:text-black transition cursor-pointer">Instructor</a>
               </li>
             </ul>
           </div>
@@ -68,14 +73,17 @@ export default function Footer() {
           <div>
             <h3 className="font-bold text-base text-gray-900 mb-4">Projects</h3>
             <ul className="space-y-2 text-sm uppercase tracking-wide text-gray-700">
-              <li className="hover:text-black transition cursor-pointer">
-                SE Projects
+              <li>
+                <a href="/projects" className="hover:text-black transition cursor-pointer">Project</a>
               </li>
-              <li className="hover:text-black transition cursor-pointer">
-                JME Projects
+              <li>
+                <a href="/projects/software-engineering" className="hover:text-black transition cursor-pointer">SE Projects</a>
               </li>
-              <li className="hover:text-black transition cursor-pointer">
-                ME Projects
+              <li>
+                <a href="/projects/mechatronics-engineering" className="hover:text-black transition cursor-pointer">JME Projects</a>
+              </li>
+              <li>
+                <a href="/projects/mechanical-engineering" className="hover:text-black transition cursor-pointer">ME Projects</a>
               </li>
             </ul>
           </div>
@@ -87,24 +95,17 @@ export default function Footer() {
             </h3>
 
             <ul className="space-y-3 text-sm uppercase tracking-wide">
-              <li className="flex items-center gap-3 text-gray-700 hover:text-blue-600 transition cursor-pointer">
-                <FaFacebookF className="text-blue-600" />
-                Facebook
+              <li>
+                <a href="https://www.facebook.com/share/1CZeL9A9Fs/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-gray-700 hover:text-blue-600 transition cursor-pointer">
+                  <FaFacebookF className="text-blue-600" />
+                  Facebook
+                </a>
               </li>
-
-              <li className="flex items-center gap-3 text-gray-700 hover:text-red-600 transition cursor-pointer">
-                <FaYoutube className="text-red-600" />
-                Youtube
-              </li>
-
-              <li className="flex items-center gap-3 text-gray-700 hover:text-pink-600 transition cursor-pointer">
-                <FaInstagram className="text-pink-600" />
-                Instagram
-              </li>
-
-              <li className="flex items-center gap-3 text-gray-700 hover:text-black transition cursor-pointer">
-                <FaXTwitter />
-                Twitter
+              <li>
+                <a href="https://www.youtube.com/@PrometheusInstituteofTechnolog" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-gray-700 hover:text-red-600 transition cursor-pointer">
+                  <FaYoutube className="text-red-600" />
+                  Youtube
+                </a>
               </li>
             </ul>
           </div>
