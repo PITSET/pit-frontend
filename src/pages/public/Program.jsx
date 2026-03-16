@@ -3,6 +3,10 @@ import { Link } from "react-router-dom";
 import api from "../../lib/api";
 import resolveAssetUrl from "../../lib/resolveAssetUrl";
 
+import axios from "axios";
+import Breadcrumbs from "../../components/ui/Breadcrumbs";
+
+
 export default function Programs() {
   const [programs, setPrograms] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -51,18 +55,8 @@ export default function Programs() {
     <div className="bg-gray-100 py-12">
       <div className="max-w-[1280px] mx-auto px-6">
 
-        {/* Breadcrumb */}
-        <div className="flex items-center gap-3 mb-4 text-[16px] font-[Roboto]">
-          <Link to="/" className="text-gray-700 hover:text-red-600">
-            Home
-          </Link>
-
-          <span className="text-red-600 text-xl font-bold">›</span>
-
-          <Link to="/programs" className="text-red-600 hover:underline">
-            Programs
-          </Link>
-        </div>
+        {/* Breadcrumbs */}
+        <Breadcrumbs items={[{ label: "Programs", path: "/programs" }]} />
 
         {/* Page Title */}
         <h1 className="text-[50px] font-bold text-red-600 mb-10 font-[Roboto_Condensed]">

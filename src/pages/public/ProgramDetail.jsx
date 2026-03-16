@@ -1,7 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+
 import api from "../../lib/api";
 import resolveAssetUrl from "../../lib/resolveAssetUrl";
+
+import axios from "axios";
+import Breadcrumbs from "../../components/ui/Breadcrumbs";
+
 
 export default function ProgramDetail() {
   const { id } = useParams();
@@ -57,61 +62,69 @@ export default function ProgramDetail() {
 
   return (
     <div className="bg-gray-100">
-  {/* HERO SECTION */}
-<div className="relative w-full min-h-screen overflow-hidden">
+      <div className="max-w-[1280px] mx-auto px-6 pt-8">
+        <Breadcrumbs
+          items={[
+            { label: "Programs", path: "/programs" },
+            { label: program.program_name, path: `/programs/${id}` }
+          ]}
+        />
+      </div>
+      {/* HERO SECTION */}
+      <div className="relative w-full min-h-screen overflow-hidden">
 
-  {/* Background Image */}
-  <img
-    src={resolveAssetUrl(program.image_url)}
-    alt={program.program_name}
-    className="absolute inset-0 w-full h-full object-cover object-center"
-  />
+        {/* Background Image */}
+        <img
+          src={resolveAssetUrl(program.image_url)}
+          alt={program.program_name}
+          className="absolute inset-0 w-full h-full object-cover object-center"
+        />
 
-  {/* Dark Gradient Overlay */}
-  <div className="absolute inset-0 bg-gradient-to-r from-[#0b2545]/90 via-[#0b2545]/70 to-transparent"></div>
+        {/* Dark Gradient Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-r from-[#0b2545]/90 via-[#0b2545]/70 to-transparent"></div>
 
-  {/* Content */}
-  <div className="relative max-w-[1280px] mx-auto min-h-screen flex items-center px-6">
+        {/* Content */}
+        <div className="relative max-w-[1280px] mx-auto min-h-screen flex items-center px-6">
 
-    <div className="max-w-[520px] text-white">
+          <div className="max-w-[520px] text-white">
 
-      <h1 className="text-[48px] leading-[56px] font-bold font-[Roboto_Condensed] mb-6">
-        {program.program_name}
-      </h1>
+            <h1 className="text-[48px] leading-[56px] font-bold font-[Roboto_Condensed] mb-6">
+              {program.program_name}
+            </h1>
 
-      <p className="text-[18px] leading-[30px] font-[Roboto] text-gray-200">
-        {program.description}
-      </p>
+            <p className="text-[18px] leading-[30px] font-[Roboto] text-gray-200">
+              {program.description}
+            </p>
 
-    </div>
+          </div>
 
-  </div>
+        </div>
 
-</div>
+      </div>
 
-{/* PROGRAM OVERVIEW */}
-<section className="relative w-full min-h-screen flex items-center overflow-hidden">
+      {/* PROGRAM OVERVIEW */}
+      <section className="relative w-full min-h-screen flex items-center overflow-hidden">
 
-  {/* Background */}
-  <div className="absolute inset-0 bg-gray-200"></div>
+        {/* Background */}
+        <div className="absolute inset-0 bg-gray-200"></div>
 
-  {/* Optional soft gradient */}
-  <div className="absolute inset-0 bg-gradient-to-b from-gray-200 via-gray-100 to-gray-200"></div>
+        {/* Optional soft gradient */}
+        <div className="absolute inset-0 bg-gradient-to-b from-gray-200 via-gray-100 to-gray-200"></div>
 
-  {/* Content */}
-  <div className="relative max-w-[900px] mx-auto text-center px-6">
+        {/* Content */}
+        <div className="relative max-w-[900px] mx-auto text-center px-6">
 
-    <h2 className="text-red-700 mb-8 font-[Roboto_Condensed] font-bold text-[64px]">
-      Program Overview
-    </h2>
+          <h2 className="text-red-700 mb-8 font-[Roboto_Condensed] font-bold text-[64px]">
+            Program Overview
+          </h2>
 
-    <p className="text-gray-700 leading-relaxed font-[Roboto] text-[24px]">
-      {program.overview}
-    </p>
+          <p className="text-gray-700 leading-relaxed font-[Roboto] text-[24px]">
+            {program.overview}
+          </p>
 
-  </div>
+        </div>
 
-</section>
+      </section>
 
       {/* PROJECTS SECTION */}
       <section className="max-w-[] mx-auto px-6 pb-20">
