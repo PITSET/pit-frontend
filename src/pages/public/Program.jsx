@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import api from "../../lib/api";
 import resolveAssetUrl from "../../lib/resolveAssetUrl";
 
@@ -8,6 +8,7 @@ import Breadcrumbs from "../../components/ui/Breadcrumbs";
 
 
 export default function Programs() {
+  const [searchParams] = useSearchParams();
   const [programs, setPrograms] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -51,6 +52,15 @@ export default function Programs() {
     );
   }
 
+  const filterProgram = (searchParams.get("program") || "").trim();
+  const filteredPrograms = filterProgram
+    ? programs.filter(
+        (p) =>
+          (p?.program_name || "").toLowerCase() ===
+          filterProgram.toLowerCase(),
+      )
+    : programs;
+
   return (
     <div className="bg-gray-100 py-12">
       <div className="max-w-[1280px] mx-auto px-6">
@@ -66,12 +76,12 @@ export default function Programs() {
         {/* Programs Grid */}
         <div className="grid grid-cols-3 gap-8 justify-items-center">
 
-          {programs.length === 0 ? (
+          {filteredPrograms.length === 0 ? (
             <p className="col-span-3 text-gray-500">
               No programs found.
             </p>
           ) : (
-            programs.map((program) => (
+            filteredPrograms.map((program) => (
               <div
                 key={program.id}
                 className="bg-white rounded-xl shadow-md flex flex-col overflow-hidden"

@@ -13,6 +13,8 @@ import Projects from "../pages/public/Projects";
 import Program from "../pages/public/Program";
 import ProgramDetail from "../pages/public/ProgramDetail";
 import Instructor from "../pages/public/Instructor";
+import InstructorDetail from "../pages/public/InstructorDetail";
+
 
 
 
@@ -26,6 +28,7 @@ import AdminContact from "../pages/admin/AdminContact";
 import AdminPrograms from "../pages/admin/AdminPrograms";
 import AdminProjects from "../pages/admin/AdminProjects";
 import AdminMembers from "../pages/admin/AdminMembers";
+import AdminStudents from "../pages/admin/AdminStudents";
 import AcceptInvite from "../pages/admin/AcceptInvite";
 import ResetPassword from "../pages/admin/ResetPassword";
 
@@ -44,7 +47,11 @@ const router = createBrowserRouter([
       { path: "/programs/:id", element: <ProgramDetail /> },
       { path: "/program", element: <Navigate to="/programs" replace /> },
       
-      { path: "/instructor", element: <Instructor /> },
+      { path: "/instructors", element: <Instructor /> },
+      { path: "/instructors/:id", element: <InstructorDetail /> },
+      { path: "/instructor", element: <Navigate to="/instructors" replace /> },
+      { path: "/instructor/:id", element: <InstructorDetail /> },
+
     ],
   },
 
@@ -90,6 +97,7 @@ const router = createBrowserRouter([
         element: <Navigate to="/admin/team/members" replace />,
       },
       { path: "team/members", element: <AdminMembers /> },
+      { path: "team/students", element: <AdminStudents /> },
       { path: "contact", element: <AdminContact /> },
     ],
   },

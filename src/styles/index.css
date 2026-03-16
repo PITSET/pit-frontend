@@ -12,6 +12,20 @@
   --color-primary-end: #ff2f39;
 }
 
+/* Remove focus outline from ALL Recharts globally */
+.recharts-wrapper:focus,
+.recharts-wrapper:focus-visible,
+.recharts-surface:focus,
+.recharts-surface:focus-visible {
+  outline: none !important;
+}
+
+/* Allow mouse click focus without outline */
+.recharts-wrapper:focus:not(:focus-visible),
+.recharts-surface:focus:not(:focus-visible) {
+  outline: none;
+}
+
 /* ── Reusable primary gradient utilities ── */
 @utility bg-primary-gradient {
   background: linear-gradient(90deg, #f98349 0%, #f65919 33.41%, #ff2f39 100%);

@@ -9,6 +9,7 @@ import {
   TrashIcon,
   MagnifyingGlassIcon,
   FolderIcon,
+  ChevronDownIcon,
 } from "@heroicons/react/24/outline";
 
 import ProjectModal from "../../components/admin_ui/ProjectModal";
@@ -229,35 +230,39 @@ export default function AdminProjects() {
 
       {/* Search and Filter */}
       <div className="flex flex-col sm:flex-row gap-3 mb-4">
-        {/* Program Filter */}
-        <div className="relative program-dropdown-container">
-          <button
-            type="button"
-            onClick={() => setShowProgramDropdown(!showProgramDropdown)}
-            className="flex items-center gap-2 px-4 py-2.5 border border-gray-300 rounded-lg bg-white text-sm text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-orange-400 transition min-w-[140px]"
-          >
-            <FolderIcon className="h-5 w-5 text-gray-400 flex-shrink-0" />
-            <span className="truncate flex-1 text-left">
-              {programFilter === "all" ? "All Programs" : programs.find(p => p.id === programFilter)?.program_name || "Program"}
-            </span>
-            <svg className={`h-4 w-4 text-gray-400 transition-transform ${showProgramDropdown ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
-          </button>
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium text-gray-700">Filter:</span>
           
-          {showProgramDropdown && (
-            <div className="absolute left-0 mt-2 w-56 bg-white border border-gray-200 rounded-lg shadow-lg z-10 max-h-64 overflow-y-auto">
-              <div className="py-1">
+          {/* Program Filter */}
+          <div className="relative program-dropdown-container">
+            <button
+              type="button"
+              onClick={() => setShowProgramDropdown(!showProgramDropdown)}
+              className="flex items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 hover:border-orange-300 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-300 transition-all duration-200 min-w-[160px]"
+            >
+              <span className={programFilter !== "all" ? "text-orange-600" : "text-slate-600"}>
+                {programFilter === "all" ? `All Programs (${data.length})` : programs.find(p => p.id === programFilter)?.program_name || "Program"}
+              </span>
+              <ChevronDownIcon className={`h-5 w-5 text-slate-400 ml-2 transition-transform ${showProgramDropdown ? 'rotate-180' : ''}`} />
+            </button>
+            
+            {showProgramDropdown && (
+              <div className="absolute left-0 mt-2 w-full min-w-[220px] rounded-xl border border-slate-200 bg-white shadow-xl z-10 max-h-64 overflow-y-auto animate-fadeIn">
                 <button
                   onClick={() => {
                     setProgramFilter("all");
                     setShowProgramDropdown(false);
                   }}
-                  className={`w-full text-left px-4 py-2.5 text-sm hover:bg-gray-100 transition ${
-                    programFilter === "all" ? "text-orange-600 font-medium bg-orange-50" : "text-gray-700"
+                  className={`w-full px-4 py-3 text-left text-sm transition flex items-center justify-between border-b border-slate-100 ${
+                    programFilter === "all" ? "bg-orange-50 text-orange-700" : "text-slate-700 hover:bg-slate-50"
                   }`}
                 >
-                  All Programs
+                  <span className="font-medium">All Programs</span>
+                  <span className={`text-xs px-2 py-0.5 rounded-full ${
+                    programFilter === "all" ? "bg-orange-200 text-orange-800" : "bg-slate-100 text-slate-600"
+                  }`}>
+                    {data.length}
+                  </span>
                 </button>
                 {programs.map(program => (
                   <button
@@ -266,75 +271,121 @@ export default function AdminProjects() {
                       setProgramFilter(program.id);
                       setShowProgramDropdown(false);
                     }}
-                    className={`w-full text-left px-4 py-2.5 text-sm hover:bg-gray-100 transition ${
-                      programFilter === program.id ? "text-orange-600 font-medium bg-orange-50" : "text-gray-700"
+                    className={`w-full px-4 py-3 text-left text-sm transition flex items-center justify-between ${
+                      programFilter === program.id ? "bg-orange-50 text-orange-700" : "text-slate-700 hover:bg-slate-50"
                     }`}
                   >
-                    {program.program_name}
+                    <span>{program.program_name}</span>
+                    <span className={`text-xs px-2 py-0.5 rounded-full ${
+                      programFilter === program.id ? "bg-orange-200 text-orange-800" : "bg-slate-100 text-slate-600"
+                    }`}>
+                      {data.filter(item => item.project_programs?.some(pp => pp.programs?.id === program.id)).length}
+                    </span>
                   </button>
                 ))}
               </div>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
 
-        {/* Status Filter */}
-        <div className="relative status-dropdown-container">
-          <button
-            type="button"
-            onClick={() => setShowStatusDropdown(!showStatusDropdown)}
-            className="flex items-center gap-2 px-4 py-2.5 border border-gray-300 rounded-lg bg-white text-sm text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-orange-400 transition min-w-[120px]"
-          >
-            <span className={`w-2 h-2 rounded-full flex-shrink-0 ${statusFilter === 'active' ? 'bg-green-500' : statusFilter === 'inactive' ? 'bg-gray-400' : 'bg-gray-300'}`}></span>
-            <span className="truncate flex-1 text-left">
-              {statusFilter === "all" ? "All Status" : statusFilter === "active" ? "Active" : "Inactive"}
-            </span>
-            <svg className={`h-4 w-4 text-gray-400 transition-transform flex-shrink-0 ${showStatusDropdown ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
-          </button>
-          
-          {showStatusDropdown && (
-            <div className="absolute left-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
-              <div className="py-1">
+          {/* Clear Program Filter */}
+          {programFilter !== "all" && (
+            <button
+              onClick={() => setProgramFilter("all")}
+              className="inline-flex items-center px-3 py-2 text-sm font-medium text-orange-600 bg-orange-50 hover:bg-orange-100 rounded-lg transition-colors"
+              title="Clear filter"
+            >
+              <svg className="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+              Clear
+            </button>
+          )}
+
+          {/* Status Filter */}
+          <div className="relative status-dropdown-container">
+            <button
+              type="button"
+              onClick={() => setShowStatusDropdown(!showStatusDropdown)}
+              className="flex items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 hover:border-orange-300 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-300 transition-all duration-200 min-w-[140px]"
+            >
+              <span className={statusFilter !== "all" ? "text-orange-600" : "text-slate-600"}>
+                {statusFilter === "all" ? `All Status (${data.length})` : statusFilter === "active" ? "Active" : "Inactive"}
+              </span>
+              <ChevronDownIcon className={`h-5 w-5 text-slate-400 ml-2 transition-transform ${showStatusDropdown ? 'rotate-180' : ''}`} />
+            </button>
+            
+            {showStatusDropdown && (
+              <div className="absolute left-0 mt-2 w-full min-w-[180px] rounded-xl border border-slate-200 bg-white shadow-xl z-10 animate-fadeIn">
                 <button
                   onClick={() => {
                     setStatusFilter("all");
                     setShowStatusDropdown(false);
                   }}
-                  className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-100 transition flex items-center gap-2 ${
-                    statusFilter === "all" ? "text-orange-600 font-medium bg-orange-50" : "text-gray-700"
+                  className={`w-full px-4 py-3 text-left text-sm transition flex items-center justify-between border-b border-slate-100 ${
+                    statusFilter === "all" ? "bg-orange-50 text-orange-700" : "text-slate-700 hover:bg-slate-50"
                   }`}
                 >
-                  <span className="w-2 h-2 rounded-full bg-gray-300"></span>
-                  All Status
+                  <span className="font-medium">All Status</span>
+                  <span className={`text-xs px-2 py-0.5 rounded-full ${
+                    statusFilter === "all" ? "bg-orange-200 text-orange-800" : "bg-slate-100 text-slate-600"
+                  }`}>
+                    {data.length}
+                  </span>
                 </button>
                 <button
                   onClick={() => {
                     setStatusFilter("active");
                     setShowStatusDropdown(false);
                   }}
-                  className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-100 transition flex items-center gap-2 ${
-                    statusFilter === "active" ? "text-orange-600 font-medium bg-orange-50" : "text-gray-700"
+                  className={`w-full px-4 py-3 text-left text-sm transition flex items-center justify-between ${
+                    statusFilter === "active" ? "bg-orange-50 text-orange-700" : "text-slate-700 hover:bg-slate-50"
                   }`}
                 >
-                  <span className="w-2 h-2 rounded-full bg-green-500"></span>
-                  Active
+                  <span className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                    Active
+                  </span>
+                  <span className={`text-xs px-2 py-0.5 rounded-full ${
+                    statusFilter === "active" ? "bg-orange-200 text-orange-800" : "bg-slate-100 text-slate-600"
+                  }`}>
+                    {data.filter(item => item.is_featured === true).length}
+                  </span>
                 </button>
                 <button
                   onClick={() => {
                     setStatusFilter("inactive");
                     setShowStatusDropdown(false);
                   }}
-                  className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-100 transition flex items-center gap-2 ${
-                    statusFilter === "inactive" ? "text-orange-600 font-medium bg-orange-50" : "text-gray-700"
+                  className={`w-full px-4 py-3 text-left text-sm transition flex items-center justify-between ${
+                    statusFilter === "inactive" ? "bg-orange-50 text-orange-700" : "text-slate-700 hover:bg-slate-50"
                   }`}
                 >
-                  <span className="w-2 h-2 rounded-full bg-gray-400"></span>
-                  Inactive
+                  <span className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-gray-400"></span>
+                    Inactive
+                  </span>
+                  <span className={`text-xs px-2 py-0.5 rounded-full ${
+                    statusFilter === "inactive" ? "bg-orange-200 text-orange-800" : "bg-slate-100 text-slate-600"
+                  }`}>
+                    {data.filter(item => item.is_featured === false).length}
+                  </span>
                 </button>
               </div>
-            </div>
+            )}
+          </div>
+
+          {/* Clear Status Filter */}
+          {statusFilter !== "all" && (
+            <button
+              onClick={() => setStatusFilter("all")}
+              className="inline-flex items-center px-3 py-2 text-sm font-medium text-orange-600 bg-orange-50 hover:bg-orange-100 rounded-lg transition-colors"
+              title="Clear filter"
+            >
+              <svg className="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+              Clear
+            </button>
           )}
         </div>
 
@@ -355,15 +406,21 @@ export default function AdminProjects() {
 
       {/* Results count */}
       {(programFilter !== "all" || statusFilter !== "all") && (
-        <div className="mb-4 text-sm text-gray-600">
-          Showing {filteredData.length} of {data.length} projects
+        <div className="mb-4 px-3 py-2 text-sm text-gray-600 bg-gray-50 rounded-lg border border-gray-200">
+          <span className="font-medium text-gray-900">
+            {filteredData.length} {filteredData.length === 1 ? 'project' : 'projects'}
+          </span>
+          {' '}found
         </div>
       )}
 
       {/* Search count */}
       {searchQuery && programFilter === "all" && statusFilter === "all" && (
-        <div className="mb-4 text-sm text-gray-600">
-          Found {filteredData.length} projects
+        <div className="mb-4 px-3 py-2 text-sm text-gray-600 bg-gray-50 rounded-lg border border-gray-200">
+          <span className="font-medium text-gray-900">
+            {filteredData.length} {filteredData.length === 1 ? 'project' : 'projects'}
+          </span>
+          {' '}found
         </div>
       )}
 

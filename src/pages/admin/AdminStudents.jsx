@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
-import { getAllMembers, deleteMember } from "../../lib/services/memberService";
+import { getAllStudents, deleteStudent } from "../../lib/services/studentService";
 import { getAllPrograms } from "../../lib/services/programService";
 import {
   PencilSquareIcon,
@@ -7,16 +7,19 @@ import {
   ChevronRightIcon,
   PlusIcon,
   TrashIcon,
+  FunnelIcon,
   ChevronDownIcon,
+  CheckIcon,
 } from "@heroicons/react/24/outline";
 
-import MemberModal from "../../components/admin_ui/MemberModal";
+import StudentModal from "../../components/admin_ui/StudentModal";
 import DeleteModal from "../../components/admin_ui/DeleteModal";
 import EmptyState from "../../components/admin_ui/EmptyState";
 import Loading from "../../components/ui/Loading";
 
-export default function AdminMembers() {
+export default function AdminStudents() {
   const [data, setData] = useState([]);
+  const [programs, setPrograms] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -25,23 +28,42 @@ export default function AdminMembers() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
 
+  // Program filter state
   const [programFilter, setProgramFilter] = useState("all");
-  const [showProgramFilterDropdown, setShowProgramFilterDropdown] = useState(false);
-  const [programs, setPrograms] = useState([]);
+  const [showProgramDropdown, setShowProgramDropdown] = useState(false);
 
-  // Pagination state
+  // Helper function to get program name by ID
+  const getProgramName = (programId) => {
+    if (!programId) return "N/A";
+    const program = programs.find(p => p.id === programId || String(p.id) === String(programId));
+    return program?.program_name || program?.name || programId;
+  };
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = () => {
+      setShowProgramDropdown(false);
+    };
+
+    if (showProgramDropdown) {
+      document.addEventListener("click", handleClickOutside);
+      return () => document.removeEventListener("click", handleClickOutside);
+    }
+  }, [showProgramDropdown]);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 4;
 
-  const fetchMembers = async () => {
+  const fetchStudents = async () => {
     try {
-      const response = await getAllMembers();
+      const response = await getAllStudents();
       const newData = response.data;
       setData(newData);
 
       // Adjust current page if it becomes invalid after deletion
-      // Need to recalculate filtered data to get correct pagination
-      const newFilteredData = newData;
+      let newFilteredData = newData;
+      if (programFilter !== 'all') {
+        newFilteredData = newData.filter(item => String(item.program_id) === String(programFilter));
+      }
       const newTotalPages = Math.ceil(newFilteredData.length / itemsPerPage);
       if (currentPage > newTotalPages && newTotalPages > 0) {
         setCurrentPage(newTotalPages);
@@ -49,53 +71,33 @@ export default function AdminMembers() {
         setCurrentPage(1);
       }
     } catch (err) {
-      console.error("Failed to fetch members:", err);
-      setError("Failed to fetch members");
+      console.error("Failed to fetch students:", err);
+      setError("Failed to fetch students");
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchMembers();
-    fetchPrograms();
-  }, []);
-
-  // Fetch programs for filter
   const fetchPrograms = async () => {
     try {
       const response = await getAllPrograms();
-      setPrograms(response.data);
+      setPrograms(response.data || []);
     } catch (err) {
       console.error("Failed to fetch programs:", err);
     }
   };
 
-  // Close dropdown when clicking outside
   useEffect(() => {
-    const handleClickOutside = () => {
-      setShowProgramFilterDropdown(false);
-    };
+    fetchStudents();
+    fetchPrograms();
+  }, []);
 
-    if (showProgramFilterDropdown) {
-      document.addEventListener("click", handleClickOutside);
-      return () => document.removeEventListener("click", handleClickOutside);
-    }
-  }, [showProgramFilterDropdown]);
-
-  // Filter data by program only
+  // Filter data by program
   const filteredData = useMemo(() => {
-    let result = data;
-
-    // Filter by program
-    if (programFilter !== "all") {
-      result = result.filter(item => {
-        const memberProgramIds = item?.team_member_programs?.map(p => p.programs?.id) || [];
-        return memberProgramIds.includes(parseInt(programFilter));
-      });
+    if (programFilter === "all") {
+      return data;
     }
-
-    return result;
+    return data.filter(item => String(item.program_id) === String(programFilter));
   }, [data, programFilter]);
 
   // Reset page when filter changes
@@ -123,14 +125,28 @@ export default function AdminMembers() {
     setIsModalOpen(true);
   };
 
+  const handleDeleteConfirm = async () => {
+    if (!itemToDelete) return;
+    
+    try {
+      await deleteStudent(itemToDelete.id);
+      await fetchStudents();
+      setIsDeleteModalOpen(false);
+      setItemToDelete(null);
+    } catch (err) {
+      console.error("Failed to delete student:", err);
+      alert("Failed to delete student. Please try again.");
+    }
+  };
+
   if (loading) return (
     <Loading 
       table={{
         columns: [
           { label: 'Image', show: true },
           { label: 'Name', show: true },
-          { label: 'Biography', show: true },
-          { label: 'Role', show: true },
+          { label: 'Email', show: true },
+          { label: 'Program', show: true },
           { label: 'Action', show: true }
         ],
         showPosition: false,
@@ -160,7 +176,7 @@ export default function AdminMembers() {
             : error}
         </p>
         <button 
-          onClick={fetchMembers}
+          onClick={fetchStudents}
           className="px-4 py-2 bg-orange-500 text-white font-medium rounded-lg hover:bg-orange-600 transition focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2"
         >
           Try Again
@@ -175,23 +191,32 @@ export default function AdminMembers() {
       <>
         <div className="p-4 md:p-6 max-w-7xl mx-auto min-h-[60vh] flex flex-col items-center justify-center">
           <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold text-gray-900 mb-6">
-            Members
+            Students
           </h1>
 
           <EmptyState
-            title="No Members Yet"
-            description="Get started by creating your first member. You can add member details, descriptions, and images."
-            buttonText="Create First Member"
+            title="No Students Yet"
+            description="Get started by creating your first student. You can add student details and enroll them in a program."
+            buttonText="Create First Student"
             onButtonClick={handleCreate}
           />
         </div>
 
         {/* Modal - rendered even when empty */}
-        <MemberModal
+        <StudentModal
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
-          onRefresh={fetchMembers}
+          onRefresh={fetchStudents}
           item={selectedItem}
+        />
+
+        {/* Delete Modal */}
+        <DeleteModal
+          isOpen={isDeleteModalOpen}
+          onClose={() => setIsDeleteModalOpen(false)}
+          onConfirm={handleDeleteConfirm}
+          title="Delete Student"
+          message={`Are you sure you want to delete "${itemToDelete?.name}"? This action cannot be undone.`}
         />
       </>
     );
@@ -201,7 +226,7 @@ export default function AdminMembers() {
     <div className="p-4 md:p-6 max-w-7xl mx-auto mb-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
         <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold text-gray-900">
-          Members
+          Students
         </h1>
 
         <button
@@ -209,119 +234,109 @@ export default function AdminMembers() {
           className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3 py-2.5 sm:py-2.5 md:py-2 bg-primary-gradient text-white font-medium text-sm rounded-lg hover:bg-primary-gradient-hover focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2 transition-all duration-200 shadow-sm hover:shadow-md"
         >
           <PlusIcon className="w-4 h-4 sm:w-5 sm:h-5" />
-          <span className="hidden sm:inline">Create Member</span>
+          <span className="hidden sm:inline">Create Student</span>
           <span className="sm:hidden">Create</span>
         </button>
       </div>
 
-      {/* Filters - Custom Dropdown Style */}
+      {/* Program Filter - Custom Dropdown Style */}
       <div className="flex flex-col sm:flex-row gap-3 mb-4">
-        {/* Program Filter */}
-        {programs.length > 0 && (
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-gray-700">Filter:</span>
-            
-            <div className="relative" onClick={(e) => e.stopPropagation()}>
-              {/* Custom dropdown button */}
-              <button
-                type="button"
-                onClick={() => setShowProgramFilterDropdown(!showProgramFilterDropdown)}
-                className="w-full sm:w-auto flex items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 hover:border-orange-300 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-300 transition-all duration-200 min-w-[180px]"
-              >
-                <span className={programFilter !== "all" ? "text-orange-600" : "text-slate-600"}>
-                  {programFilter === "all" 
-                    ? `All Programs (${data.length})` 
-                    : programs.find(p => p.id.toString() === programFilter)?.program_name || "Select Program"}
-                </span>
-                <ChevronDownIcon 
-                  className={`w-5 h-5 text-slate-400 ml-2 transition-transform ${showProgramFilterDropdown ? "rotate-180" : ""}`} 
-                />
-              </button>
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium text-gray-700">Filter:</span>
+          
+          <div className="relative" onClick={(e) => e.stopPropagation()}>
+            {/* Custom dropdown button */}
+            <button
+              type="button"
+              onClick={() => setShowProgramDropdown(!showProgramDropdown)}
+              className="w-full sm:w-auto flex items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 hover:border-orange-300 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-300 transition-all duration-200 min-w-[180px]"
+            >
+              <span className={programFilter !== "all" ? "text-orange-600" : "text-slate-600"}>
+                {programFilter === "all" 
+                  ? `All Programs (${data.length})` 
+                  : getProgramName(programFilter)}
+              </span>
+              <ChevronDownIcon 
+                className={`w-5 h-5 text-slate-400 ml-2 transition-transform ${showProgramDropdown ? "rotate-180" : ""}`} 
+              />
+            </button>
 
-              {/* Dropdown options */}
-              {showProgramFilterDropdown && (
-                <div className="absolute z-20 mt-2 w-full min-w-[220px] rounded-xl border border-slate-200 bg-white shadow-xl max-h-60 overflow-y-auto animate-fadeIn">
-                  {/* All option */}
+            {/* Dropdown options */}
+            {showProgramDropdown && (
+              <div className="absolute z-20 mt-2 w-full min-w-[220px] rounded-xl border border-slate-200 bg-white shadow-xl max-h-60 overflow-y-auto animate-fadeIn">
+                {/* All option */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setProgramFilter("all");
+                    setShowProgramDropdown(false);
+                  }}
+                  className={`w-full px-4 py-3 text-left text-sm transition flex items-center justify-between border-b border-slate-100 ${
+                    programFilter === "all"
+                      ? "bg-orange-50 text-orange-700"
+                      : "text-slate-700 hover:bg-slate-50"
+                  }`}
+                >
+                  <span className="font-medium">All Programs</span>
+                  <span className={`text-xs px-2 py-0.5 rounded-full ${
+                    programFilter === "all"
+                      ? "bg-orange-200 text-orange-800"
+                      : "bg-slate-100 text-slate-600"
+                  }`}>
+                    {data.length}
+                  </span>
+                </button>
+                
+                {/* Program options */}
+                {programs.map((program) => (
                   <button
+                    key={program.id}
                     type="button"
                     onClick={() => {
-                      setProgramFilter("all");
-                      setShowProgramFilterDropdown(false);
+                      setProgramFilter(program.id);
+                      setShowProgramDropdown(false);
                     }}
-                    className={`w-full px-4 py-3 text-left text-sm transition flex items-center justify-between border-b border-slate-100 ${
-                      programFilter === "all"
+                    className={`w-full px-4 py-3 text-left text-sm transition flex items-center justify-between ${
+                      String(programFilter) === String(program.id)
                         ? "bg-orange-50 text-orange-700"
                         : "text-slate-700 hover:bg-slate-50"
                     }`}
                   >
-                    <span className="font-medium">All Programs</span>
+                    <span>{program.program_name || program.name}</span>
                     <span className={`text-xs px-2 py-0.5 rounded-full ${
-                      programFilter === "all"
+                      String(programFilter) === String(program.id)
                         ? "bg-orange-200 text-orange-800"
                         : "bg-slate-100 text-slate-600"
                     }`}>
-                      {data.length}
+                      {data.filter(item => String(item.program_id) === String(program.id)).length}
                     </span>
                   </button>
-                  
-                  {/* Program options */}
-                  {programs.map((program) => {
-                    const count = data.filter(item => {
-                      const memberProgramIds = item?.team_member_programs?.map(p => p.programs?.id) || [];
-                      return memberProgramIds.includes(program.id);
-                    }).length;
-
-                    return (
-                      <button
-                        key={program.id}
-                        type="button"
-                        onClick={() => {
-                          setProgramFilter(program.id.toString());
-                          setShowProgramFilterDropdown(false);
-                        }}
-                        className={`w-full px-4 py-3 text-left text-sm transition flex items-center justify-between ${
-                          programFilter === program.id.toString()
-                            ? "bg-orange-50 text-orange-700"
-                            : "text-slate-700 hover:bg-slate-50"
-                        }`}
-                      >
-                        <span className="truncate">{program.program_name}</span>
-                        <span className={`text-xs px-2 py-0.5 rounded-full ${
-                          programFilter === program.id.toString()
-                            ? "bg-orange-200 text-orange-800"
-                            : "bg-slate-100 text-slate-600"
-                        }`}>
-                          {count}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-
-            {/* Clear Program Filter */}
-            {programFilter !== "all" && (
-              <button
-                onClick={() => setProgramFilter("all")}
-                className="inline-flex items-center px-3 py-2 text-sm font-medium text-orange-600 bg-orange-50 hover:bg-orange-100 rounded-lg transition-colors"
-                title="Clear program filter"
-              >
-                <svg className="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-                Clear
-              </button>
+                ))}
+              </div>
             )}
           </div>
-        )}
+
+          {/* Clear Filter (only show when filter is active) */}
+          {programFilter !== "all" && (
+            <button
+              onClick={() => setProgramFilter("all")}
+              className="inline-flex items-center px-3 py-2 text-sm font-medium text-orange-600 bg-orange-50 hover:bg-orange-100 rounded-lg transition-colors"
+              title="Clear filter"
+            >
+              <svg className="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+              Clear
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Results count */}
-      {(programFilter !== "all") && (
+      {programFilter !== "all" && (
         <div className="mb-4 px-3 py-2 text-sm text-gray-600 bg-gray-50 rounded-lg border border-gray-200">
           <span className="font-medium text-gray-900">
-            {filteredData.length} {filteredData.length === 1 ? 'member' : 'members'}
+            {filteredData.length} {filteredData.length === 1 ? 'student' : 'students'}
           </span>
           {' '}found
         </div>
@@ -336,19 +351,19 @@ export default function AdminMembers() {
                 <tr className="text-sm font-semibold text-gray-600">
                   <th className="px-4 lg:px-8 py-4 text-center">Image</th>
                   <th className="px-4 lg:px-8 py-4 text-center">Name</th>
-                  <th className="px-4 lg:px-8 py-4 text-center">Biography</th>
-                  <th className="px-4 lg:px-8 py-4 text-center">Role</th>
+                  <th className="px-4 lg:px-8 py-4 text-center">Email</th>
+                  <th className="px-4 lg:px-8 py-4 text-center">Program</th>
                   <th className="px-4 lg:px-8 py-4 text-center">Action</th>
                 </tr>
               </thead>
 
               <tbody className="divide-y divide-gray-200">
                 {currentItems.map((item) => (
-                  <tr key={item.id} className={`hover:bg-gray-100 transition ${!item.is_featured ? 'bg-gray-50' : ''}`}>
+                  <tr key={item.id} className="hover:bg-gray-100 transition">
                     <td className="px-4 lg:px-8 py-4 text-center">
                       <div className="w-16 h-16 lg:w-20 lg:h-20 bg-gray-100 rounded-lg overflow-hidden mx-auto">
                         <img
-                          src={item.image_url || item.images?.[0] || "/placeholder.svg"}
+                          src={item.image_url || "/placeholder.svg"}
                           alt={item.name}
                           className="object-cover w-full h-full"
                         />
@@ -359,33 +374,17 @@ export default function AdminMembers() {
                       {item.name}
                     </td>
 
-                    <td className="px-4 lg:px-8 py-4 lg:py-6 text-gray-600 text-left max-w-xs lg:max-w-xl">
-                      <p className="line-clamp-2 lg:line-clamp-2">
-                        {item.bio || "No biography available"}
-                      </p>
+                    <td className="px-4 lg:px-8 py-4 lg:py-6 text-gray-600 text-center">
+                      {item.email || "N/A"}
                     </td>
 
                     <td className="px-4 lg:px-8 py-4 lg:py-6 text-center">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        item.is_founder && item.is_instructor
-                          ? 'bg-orange-100 text-orange-800'
-                          : item.is_founder
-                          ? 'bg-orange-100 text-orange-800'
-                          : item.is_instructor
-                          ? 'bg-orange-100 text-orange-800'
-                          : 'bg-gray-200 text-gray-800'
-                      }`}>
-                        {item.is_founder && item.is_instructor 
-                          ? 'Founder, Instructor' 
-                          : item.is_founder 
-                          ? 'Founder' 
-                          : item.is_instructor 
-                          ? 'Instructor' 
-                          : 'Unknown'}
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                        {getProgramName(item.program_id)}
                       </span>
                     </td>
 
-                    <td className="px-2 sm:px-4 lg:px-8 py-4 lg:py-6 text-center">
+                    <td className="px-4 lg:px-8 py-4 lg:py-6 text-center">
                       <div className="inline-flex items-center justify-center gap-0 rounded-md sm:rounded-lg border border-gray-200 sm:border-gray-300 overflow-hidden">
                         <button
                           onClick={() => {
@@ -459,14 +458,14 @@ export default function AdminMembers() {
             {currentItems.map((item) => (
               <div
                 key={item.id}
-                className={`bg-white rounded-xl border shadow-sm p-4 ${!item.is_featured ? 'border-gray-200 opacity-75' : 'border-gray-200'}`}
+                className="bg-white rounded-xl border border-gray-200 shadow-sm p-4"
               >
                 <div className="flex gap-4">
                   {/* Image */}
                   <div className="flex-shrink-0">
                     <div className="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden">
                       <img
-                        src={item.image_url || item.images?.[0] || "/placeholder.svg"}
+                        src={item.image_url || "/placeholder.svg"}
                         alt={item.name}
                         className="object-cover w-full h-full"
                       />
@@ -476,32 +475,18 @@ export default function AdminMembers() {
                   {/* Content */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between mb-1">
-                      <h3 className={`font-semibold truncate ${item.is_featured ? 'text-gray-900' : 'text-gray-500'}`}>
+                      <h3 className="font-semibold truncate text-gray-900">
                         {item.name}
                       </h3>
-                      <div className="flex gap-1 ml-2">
-                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                          item.is_founder && item.is_instructor
-                            ? 'bg-orange-100 text-orange-800'
-                            : item.is_founder
-                            ? 'bg-orange-100 text-orange-800'
-                            : item.is_instructor
-                            ? 'bg-orange-100 text-orange-800'
-                            : 'bg-gray-200 text-gray-800'
-                        }`}>
-                          {item.is_founder && item.is_instructor 
-                            ? 'Founder, Instructor' 
-                            : item.is_founder 
-                            ? 'Founder' 
-                            : item.is_instructor 
-                            ? 'Instructor' 
-                            : 'Unknown'}
-                        </span>
-                      </div>
                     </div>
-                    <p className="text-sm text-gray-600 line-clamp-2">
-                      {item.bio || "No biography available"}
+                    <p className="text-sm text-gray-600 mb-1">
+                      {item.email || "No email"}
                     </p>
+                    <div className="flex items-center gap-2">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                        {getProgramName(item.program_id)}
+                      </span>
+                    </div>
                   </div>
 
                   {/* Action Buttons */}
@@ -542,17 +527,29 @@ export default function AdminMembers() {
                   <button
                     onClick={() => handlePageChange(currentPage - 1)}
                     disabled={currentPage === 1}
-                    className="p-1.5 sm:p-2 rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                    className="p-1.5 rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <ChevronLeftIcon className="w-4 h-4 text-gray-600" />
                   </button>
-                  <span className="px-2 text-sm font-medium text-gray-600">
-                    {currentPage}/{totalPages}
-                  </span>
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                    (page) => (
+                      <button
+                        key={page}
+                        onClick={() => handlePageChange(page)}
+                        className={`px-2.5 py-1 rounded-lg text-xs font-medium transition ${
+                          currentPage === page
+                            ? "bg-orange-500 text-white"
+                            : "border border-gray-300 text-gray-600 hover:bg-gray-100"
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    ),
+                  )}
                   <button
                     onClick={() => handlePageChange(currentPage + 1)}
                     disabled={currentPage === totalPages}
-                    className="p-1.5 sm:p-2 rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                    className="p-1.5 rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <ChevronRightIcon className="w-4 h-4 text-gray-600" />
                   </button>
@@ -563,25 +560,20 @@ export default function AdminMembers() {
         </>
       )}
 
-      {/* Modal */}
-      <MemberModal
+      {/* Modals */}
+      <StudentModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onRefresh={fetchMembers}
+        onRefresh={fetchStudents}
         item={selectedItem}
       />
 
-      {/* Delete Modal */}
       <DeleteModal
         isOpen={isDeleteModalOpen}
-        onClose={() => {
-          setIsDeleteModalOpen(false);
-          setItemToDelete(null);
-        }}
-        onRefresh={fetchMembers}
-        item={itemToDelete}
-        sectionType="Member"
-        deleteFunction={deleteMember}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleDeleteConfirm}
+        title="Delete Student"
+        message={`Are you sure you want to delete "${itemToDelete?.name}"? This action cannot be undone.`}
       />
     </div>
   );

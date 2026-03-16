@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import logo from "../../assets/logo/logo.svg";
 
 export default function Navbar() {
@@ -22,14 +23,19 @@ export default function Navbar() {
       {/* ================= NAVBAR ================= */}
       <header className="flex justify-between items-center h-[90px] px-8 lg:px-24 relative">
         {/* Logo */}
-        <a href="/" className="flex items-center">
+        <Link to="/" className="flex items-center">
           <img src={logo} alt="logo" className="h-16" />
-        </a>
+        </Link>
 
         {/* ================= DESKTOP MENU ================= */}
         <ul className="hidden lg:flex items-center gap-16 font-medium text-gray-700 text-[17px] relative">
-          <li className="hover:text-red-600 transition cursor-pointer">
-            About
+          <li>
+            <Link
+              to="/about"
+              className="hover:text-red-600 transition cursor-pointer"
+            >
+              About
+            </Link>
           </li>
 
           {/* ================= PROGRAMS ================= */}
@@ -70,30 +76,39 @@ export default function Navbar() {
 
                       <ul className="space-y-6">
                         {/* Program Info */}
-                        <li className="group cursor-pointer">
-                          <div className="text-gray-800 font-medium group-hover:text-red-600 transition">
+                        <li className="group">
+                          <Link
+                            to={`/programs?program=${encodeURIComponent(program)}`}
+                            className="text-gray-800 font-medium group-hover:text-red-600 transition"
+                          >
                             Program Info
-                          </div>
+                          </Link>
                           <div className="text-sm text-gray-400">
                             Overview & students projects
                           </div>
                         </li>
 
                         {/* Projects */}
-                        <li className="group cursor-pointer">
-                          <div className="text-gray-800 font-medium group-hover:text-red-600 transition">
+                        <li className="group">
+                          <Link
+                            to={`/programs?program=${encodeURIComponent(program)}`}
+                            className="text-gray-800 font-medium group-hover:text-red-600 transition"
+                          >
                             Projects
-                          </div>
+                          </Link>
                           <div className="text-sm text-gray-400">
                             List of all projects
                           </div>
                         </li>
 
                         {/* Instructors */}
-                        <li className="group cursor-pointer">
-                          <div className="text-gray-800 font-medium group-hover:text-red-600 transition">
+                        <li className="group">
+                          <Link
+                            to={`/instructors?program=${encodeURIComponent(program)}`}
+                            className="text-gray-800 font-medium group-hover:text-red-600 transition"
+                          >
                             Instructors
-                          </div>
+                          </Link>
                           <div className="text-sm text-gray-400">
                             List of all instructors
                           </div>
@@ -106,12 +121,13 @@ export default function Navbar() {
             </div>
           </li>
 
-          <li className="hover:text-red-600 transition cursor-pointer">
-            <a href="/projects">Projects</a>
-          </li>
-
-          <li className="hover:text-red-600 transition cursor-pointer">
-            Contact
+          <li>
+            <Link
+              to="/contact"
+              className="hover:text-red-600 transition cursor-pointer"
+            >
+              Contact
+            </Link>
           </li>
         </ul>
 
@@ -131,9 +147,9 @@ export default function Navbar() {
         }`}
       >
         <div className="space-y-6 font-medium">
-          <div className="hover:text-red-600 cursor-pointer transition">
+          <Link to="/about" className="hover:text-red-600 cursor-pointer transition">
             About
-          </div>
+          </Link>
 
           <div>
             <div
@@ -158,26 +174,26 @@ export default function Navbar() {
 
                     {activeMobileProgram === program && (
                       <div className="mt-3 pl-4 space-y-4">
-                        <div>
+                        <Link to={`/programs?program=${encodeURIComponent(program)}`}>
                           <div className="font-medium">Program Info</div>
                           <div className="text-sm text-gray-400">
                             Overview & students projects
                           </div>
-                        </div>
+                        </Link>
 
-                        <div>
+                        <Link to={`/programs?program=${encodeURIComponent(program)}`}>
                           <div className="font-medium">Projects</div>
                           <div className="text-sm text-gray-400">
                             List of all projects
                           </div>
-                        </div>
+                        </Link>
 
-                        <div>
+                        <Link to={`/instructors?program=${encodeURIComponent(program)}`}>
                           <div className="font-medium">Instructors</div>
                           <div className="text-sm text-gray-400">
                             List of all instructors
                           </div>
-                        </div>
+                        </Link>
                       </div>
                     )}
                   </div>
@@ -186,13 +202,9 @@ export default function Navbar() {
             )}
           </div>
 
-          <div className="hover:text-red-600 cursor-pointer transition">
-            <a href="/projects">Projects</a>
-          </div>
-
-          <div className="hover:text-red-600 cursor-pointer transition">
+          <Link to="/contact" className="hover:text-red-600 cursor-pointer transition">
             Contact
-          </div>
+          </Link>
         </div>
       </div>
     </div>

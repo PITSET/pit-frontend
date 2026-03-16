@@ -1,6 +1,11 @@
+
 import React, { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import logoImage from "../../assets/logo/logo_image.svg";
+
+import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+
 import api from "../../lib/api";
 import resolveAssetUrl from "../../lib/resolveAssetUrl";
 import ProjectsCarousel from "../../components/ui/ProjectsCarousel";
@@ -241,18 +246,27 @@ export default function Home() {
                 "Through practical education and innovative programs, we prepare students to meet real-world challenges and lead in a rapidly evolving technological landscape."}
             </p>
 
+
             <button className="bg-red-600 text-white hover:bg-white hover:text-red-600 transition px-6 py-3 rounded-md font-semibold shadow-lg">
               Explore Our Programs →
             </button>
 
-          </div>
-        </div>
+            <Link
+              to="/programs"
+              className="inline-block bg-red-600 text-white hover:bg-white hover:text-red-600 transition px-6 py-3 rounded-md font-semibold shadow-lg"
+            >
+              Explore Our Programs →
+            </Link>
 
-      </section>
+
+          </div >
+        </div >
+
+      </section >
 
 
       {/* ABOUT SECTION */}
-      <section className="relative min-h-[90vh] md:min-h-[95vh] w-full flex items-center">
+      < section className="relative min-h-[90vh] md:min-h-[95vh] w-full flex items-center" >
 
         <div
           className="absolute inset-0 bg-cover bg-center"
@@ -276,14 +290,23 @@ export default function Home() {
                 "Prometheus Institute of Technology is dedicated to providing quality technology education that builds strong foundations, practical skills, and innovative thinking for future professionals."}
             </p>
 
+
             <button className="border border-white px-6 py-3 rounded-md text-white transition hover:bg-red-600 hover:border-red-600">
               DISCOVER OUR MISSION →
             </button>
 
-          </div>
-        </div>
+            <Link
+              to="/about"
+              className="inline-block border border-white px-6 py-3 rounded-md text-white transition hover:bg-red-600 hover:border-red-600"
+            >
+              DISCOVER OUR MISSION →
+            </Link>
 
-      </section>
+
+          </div >
+        </div >
+
+      </section >
 
 
       <section className="w-full bg-gray-100 py-16 md:py-24">
@@ -387,15 +410,23 @@ export default function Home() {
               VIEW ALL PROGRAMS →
             </button>
 
-          </div>
+            <Link
+              to="/programs"
+              className="inline-block text-sm md:text-base bg-red-600 text-white px-6 py-3 rounded-md border border-red-600 hover:bg-white hover:text-red-600 transition"
+            >
+              VIEW ALL PROGRAMS →
+            </Link>
 
-        </div>
 
-      </section>
+          </div >
+
+        </div >
+
+      </section >
 
       {/* PROJECTS */}
-      <ProjectsCarousel projects={projects} isLoadingProjects={isLoadingProjects} />
+      < ProjectsCarousel projects={projects} isLoadingProjects={isLoadingProjects} />
 
-    </main>
+    </main >
   );
 }
