@@ -1,5 +1,4 @@
 
-import React, { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import logoImage from "../../assets/logo/logo_image.svg";
 
