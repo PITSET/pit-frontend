@@ -1,9 +1,7 @@
-
+﻿
 import React, { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import logoImage from "../../assets/logo/logo_image.svg";
-
-import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 import api from "../../lib/api";
@@ -247,10 +245,6 @@ export default function Home() {
             </p>
 
 
-            <button className="bg-red-600 text-white hover:bg-white hover:text-red-600 transition px-6 py-3 rounded-md font-semibold shadow-lg">
-              Explore Our Programs →
-            </button>
-
             <Link
               to="/programs"
               className="inline-block bg-red-600 text-white hover:bg-white hover:text-red-600 transition px-6 py-3 rounded-md font-semibold shadow-lg"
@@ -290,10 +284,6 @@ export default function Home() {
                 "Prometheus Institute of Technology is dedicated to providing quality technology education that builds strong foundations, practical skills, and innovative thinking for future professionals."}
             </p>
 
-
-            <button className="border border-white px-6 py-3 rounded-md text-white transition hover:bg-red-600 hover:border-red-600">
-              DISCOVER OUR MISSION →
-            </button>
 
             <Link
               to="/about"
@@ -406,9 +396,6 @@ export default function Home() {
                 "Our programs are designed to provide strong technical foundations, practical skills, and industry-relevant knowledge to prepare students for future careers in technology."}
             </p>
 
-            <button className="text-sm md:text-base bg-red-600 text-white px-6 py-3 rounded-md border border-red-600 hover:bg-white hover:text-red-600 transition">
-              VIEW ALL PROGRAMS →
-            </button>
 
             <Link
               to="/programs"
