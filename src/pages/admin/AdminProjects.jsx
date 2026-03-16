@@ -309,7 +309,7 @@ export default function AdminProjects() {
               className="flex items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 hover:border-orange-300 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-300 transition-all duration-200 min-w-[140px]"
             >
               <span className={statusFilter !== "all" ? "text-orange-600" : "text-slate-600"}>
-                {statusFilter === "all" ? "All Status" : statusFilter === "active" ? "Active" : "Inactive"}
+                {statusFilter === "all" ? `All Status (${data.length})` : statusFilter === "active" ? "Active" : "Inactive"}
               </span>
               <ChevronDownIcon className={`h-5 w-5 text-slate-400 ml-2 transition-transform ${showStatusDropdown ? 'rotate-180' : ''}`} />
             </button>
