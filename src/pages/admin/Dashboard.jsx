@@ -1,5 +1,6 @@
-import { useEffect, useState, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import {
   AcademicCapIcon,
   FolderIcon,
@@ -30,7 +31,6 @@ import { getAllMembers } from "../../lib/services/memberService";
 import { getAllPrograms } from "../../lib/services/programService";
 import { getAllProjects } from "../../lib/services/projectService";
 import { getAllStudents } from "../../lib/services/studentService";
-import { getFetchErrorMessage } from "../../lib/httpErrorHandler";
 import Loader from "../../components/ui/Loader";
 
 // Animated Number Counter
@@ -468,55 +468,64 @@ function processProjectsByProgram(programs, projects) {
 }
 
 export default function Dashboard() {
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [data, setData] = useState({
-    programs: [],
-    projects: [],
-    members: [],
-    students: [],
-  });
   const [isPageVisible, setIsPageVisible] = useState(false);
   const [isQuickActionsVisible, setIsQuickActionsVisible] = useState(false);
   const [isTitleVisible, setIsTitleVisible] = useState(false);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
 
-  const fetchDashboardData = async () => {
-    try {
-      setLoading(true);
-      setError("");
+  // Query for all data with caching - dramatically reduces API calls
+  // Each query is cached for 10 minutes, so navigating between pages won't refetch
+  const { data: membersData = [], isLoading: isMembersLoading } = useQuery({
+    queryKey: ["members"],
+    queryFn: async () => {
+      const res = await getAllMembers();
+      return res?.data || res || [];
+    },
+    staleTime: 1000 * 60 * 10, // 10 minutes
+    cacheTime: 1000 * 60 * 30, // 30 minutes
+  });
 
-      // Fetch all data in parallel
-      const [membersRes, programsRes, projectsRes, studentsRes] = await Promise.all([
-        getAllMembers(),
-        getAllPrograms(),
-        getAllProjects(),
-        getAllStudents(),
-      ]);
+  const { data: programsData = [], isLoading: isProgramsLoading } = useQuery({
+    queryKey: ["programs"],
+    queryFn: async () => {
+      const res = await getAllPrograms();
+      return res?.data || res || [];
+    },
+    staleTime: 1000 * 60 * 10, // 10 minutes
+    cacheTime: 1000 * 60 * 30, // 30 minutes
+  });
 
-      // Extract data from response - services return res.data
-      const membersData = membersRes?.data || membersRes || [];
-      const programsData = programsRes?.data || programsRes || [];
-      const projectsData = projectsRes?.data || projectsRes || [];
-      const studentsData = studentsRes?.data || studentsRes || [];
+  const { data: projectsData = [], isLoading: isProjectsLoading } = useQuery({
+    queryKey: ["projects"],
+    queryFn: async () => {
+      const res = await getAllProjects();
+      return res?.data || res || [];
+    },
+    staleTime: 1000 * 60 * 10, // 10 minutes
+    cacheTime: 1000 * 60 * 30, // 30 minutes
+  });
 
-      setData({
-        members: Array.isArray(membersData) ? membersData : [],
-        programs: Array.isArray(programsData) ? programsData : [],
-        projects: Array.isArray(projectsData) ? projectsData : [],
-        students: Array.isArray(studentsData) ? studentsData : [],
-      });
-    } catch (err) {
-      console.error("Failed to fetch dashboard data:", err);
-      setError(getFetchErrorMessage(err, 'fetch dashboard data'));
-    } finally {
-      setLoading(false);
-    }
+  const { data: studentsData = [], isLoading: isStudentsLoading } = useQuery({
+    queryKey: ["students"],
+    queryFn: async () => {
+      const res = await getAllStudents();
+      return res?.data || res || [];
+    },
+    staleTime: 1000 * 60 * 10, // 10 minutes
+    cacheTime: 1000 * 60 * 30, // 30 minutes
+  });
+
+  const isLoading = isMembersLoading || isProgramsLoading || isProjectsLoading || isStudentsLoading;
+
+  const data = {
+    programs: programsData,
+    projects: projectsData,
+    members: membersData,
+    students: studentsData,
   };
 
+  // Page load animations with staggered timing
   useEffect(() => {
-    fetchDashboardData();
-    // Page load animations with staggered timing
     const titleTimer = setTimeout(() => setIsTitleVisible(true), 0);
     const timer = setTimeout(() => setIsPageVisible(true), 100);
     // Quick Actions sidebar animation - starts after charts, at same time as first item
@@ -569,7 +578,7 @@ export default function Dashboard() {
     return processProjectsByProgram(data.programs, data.projects);
   }, [data.programs, data.projects]);
 
-  if (loading) {
+  if (isLoading) {
     return <Loader />;
   }
 
@@ -580,20 +589,7 @@ export default function Dashboard() {
         Dashboard
       </h1>
 
-      {error && (
-        <div className="mb-6 bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3 animate-pulse">
-          <ExclamationCircleIcon className="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" />
-          <div>
-            <p className="text-sm font-medium text-red-800">{error}</p>
-            <button 
-              onClick={fetchDashboardData} 
-              className="mt-2 text-sm text-red-600 hover:text-red-700 underline"
-            >
-              Try again
-            </button>
-          </div>
-        </div>
-      )}
+      {/* Stats Grid */}
 
       <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 sm:gap-6">
         {/* MAIN CONTENT */}

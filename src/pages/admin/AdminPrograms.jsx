@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getAllPrograms, deleteProgram, getProgramStudents, updateStudent } from "../../lib/services/programService";
-import { getFetchErrorMessage, ErrorType, getErrorTitle } from "../../lib/httpErrorHandler";
+import { ErrorType, getErrorTitle } from "../../lib/httpErrorHandler";
 import {
   PencilSquareIcon,
   ChevronLeftIcon,
@@ -15,10 +16,7 @@ import EmptyState from "../../components/admin_ui/EmptyState";
 import Loader from "../../components/ui/Loader";
 
 export default function AdminPrograms() {
-  const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-
+  const queryClient = useQueryClient();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -28,30 +26,23 @@ export default function AdminPrograms() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 4;
 
-  const fetchPrograms = async () => {
-    try {
+  // Query with caching - data is cached for 30 minutes
+  const { data: response, isLoading, error, refetch } = useQuery({
+    queryKey: ["programs"],
+    queryFn: async () => {
       const response = await getAllPrograms();
-      const newData = response.data;
-      setData(newData);
+      return response.data;
+    },
+    staleTime: 1000 * 60 * 10, // 10 minutes
+    cacheTime: 1000 * 60 * 30, // 30 minutes
+  });
 
-      // Adjust current page if it becomes invalid after deletion
-      const newTotalPages = Math.ceil(newData.length / itemsPerPage);
-      if (currentPage > newTotalPages && newTotalPages > 0) {
-        setCurrentPage(newTotalPages);
-      } else if (newData.length === 0) {
-        setCurrentPage(1);
-      }
-    } catch (err) {
-      console.error("Failed to fetch programs:", err);
-      setError(getFetchErrorMessage(err, 'fetch programs'));
-    } finally {
-      setLoading(false);
-    }
+  const data = response || []
+
+  // Invalidate cache after mutations
+  const invalidateProgramsCache = () => {
+    queryClient.invalidateQueries({ queryKey: ["programs"] });
   };
-
-  useEffect(() => {
-    fetchPrograms();
-  }, []);
 
   // Calculate pagination
   const totalPages = Math.ceil(data.length / itemsPerPage);
@@ -145,10 +136,10 @@ export default function AdminPrograms() {
     return { type: ErrorType.UNKNOWN, title: 'Unable to Load' };
   };
 
-  if (loading) return <Loader />;
+  if (isLoading) return <Loader />;
 
   // Handle different error types with appropriate UI
-  const errorInfo = getErrorInfo(error);
+  const errorInfo = getErrorInfo(error?.message || error);
   const errorType = errorInfo.type;
   const errorTitle = errorInfo.title;
   const isRateLimited = errorType === ErrorType.RATE_LIMIT;
@@ -173,10 +164,10 @@ export default function AdminPrograms() {
             ? 'Unable to connect to the server. Please check your internet connection.'
             : isServerError
             ? 'Server is experiencing issues. Please try again later.'
-            : error}
+            : error?.message || error}
         </p>
         <button 
-          onClick={fetchPrograms}
+          onClick={() => refetch()}
           className="px-4 py-2 bg-orange-500 text-white font-medium rounded-lg hover:bg-orange-600 transition focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2"
         >
           Try Again
@@ -206,7 +197,7 @@ export default function AdminPrograms() {
         <ProgramModal
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
-          onRefresh={fetchPrograms}
+          onRefresh={invalidateProgramsCache}
           item={selectedItem}
         />
       </>
@@ -444,7 +435,7 @@ export default function AdminPrograms() {
       <ProgramModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onRefresh={fetchPrograms}
+        onRefresh={invalidateProgramsCache}
         item={selectedItem}
       />
 
@@ -455,7 +446,7 @@ export default function AdminPrograms() {
           setIsDeleteModalOpen(false);
           setItemToDelete(null);
         }}
-        onRefresh={fetchPrograms}
+        onRefresh={invalidateProgramsCache}
         item={itemToDelete}
         sectionType="Program"
         deleteFunction={handleProgramDelete}

@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getAboutSections, deleteAboutSection } from "../../lib/services/aboutService";
-import { getFetchErrorMessage, ErrorType, getErrorTitle } from "../../lib/httpErrorHandler";
+import { ErrorType, getErrorTitle } from "../../lib/httpErrorHandler";
 import {
   PencilSquareIcon,
   ChevronLeftIcon,
@@ -15,43 +16,32 @@ import EmptyState from "../../components/admin_ui/EmptyState";
 import Loader from "../../components/ui/Loader";
 
 export default function AboutPage() {
-  const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const queryClient = useQueryClient();
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 4;
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
 
-  // Pagination state
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 4;
-
-  const fetchAbout = async () => {
-    try {
+  // Query with caching - data is cached for 30 minutes
+  const { data: response, isLoading, error, refetch } = useQuery({
+    queryKey: ["about-sections"],
+    queryFn: async () => {
       const response = await getAboutSections();
-      const newData = response.data;
-      setData(newData);
+      return response.data;
+    },
+    staleTime: 1000 * 60 * 10, // 10 minutes
+    cacheTime: 1000 * 60 * 30, // 30 minutes
+  });
 
-      // Adjust current page if it becomes invalid after deletion
-      const newTotalPages = Math.ceil(newData.length / itemsPerPage);
-      if (currentPage > newTotalPages && newTotalPages > 0) {
-        setCurrentPage(newTotalPages);
-      } else if (newData.length === 0) {
-        setCurrentPage(1);
-      }
-    } catch (err) {
-      console.error("Failed to fetch about data:", err);
-      setError(getFetchErrorMessage(err, 'fetch about data'));
-    } finally {
-      setLoading(false);
-    }
+  const data = response || [];
+
+  // Invalidate cache after mutations to refetch fresh data
+  const invalidateAboutCache = () => {
+    queryClient.invalidateQueries({ queryKey: ["about-sections"] });
   };
-
-  useEffect(() => {
-    fetchAbout();
-  }, []);
 
   // Calculate pagination
   const totalPages = Math.ceil(data.length / itemsPerPage);
@@ -103,16 +93,16 @@ export default function AboutPage() {
     return { type: ErrorType.UNKNOWN, title: 'Unable to Load' };
   };
 
-  if (loading) return <Loader />;
+  if (isLoading) return <Loader />;
 
   // Handle different error types with appropriate UI
-  const errorInfo = getErrorInfo(error);
+  const errorInfo = getErrorInfo(error?.message || error);
   const errorType = errorInfo.type;
   const errorTitle = errorInfo.title;
   const isRateLimited = errorType === ErrorType.RATE_LIMIT;
   const isNetworkError = errorType === ErrorType.NETWORK;
   const isServerError = errorType === ErrorType.SERVER;
-  
+
   if (error) return (
     <div className="p-4 md:p-6 max-w-7xl mx-auto min-h-[60vh] flex flex-col items-center justify-center">
       <div className="text-center max-w-md">
@@ -131,10 +121,10 @@ export default function AboutPage() {
             ? 'Unable to connect to the server. Please check your internet connection.'
             : isServerError
             ? 'Server is experiencing issues. Please try again later.'
-            : error}
+            : error?.message || error}
         </p>
         <button 
-          onClick={fetchAbout}
+          onClick={() => refetch()}
           className="px-4 py-2 bg-orange-500 text-white font-medium rounded-lg hover:bg-orange-600 transition focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2"
         >
           Try Again
@@ -164,7 +154,7 @@ export default function AboutPage() {
         <AboutModal
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
-          onRefresh={fetchAbout}
+          onRefresh={invalidateAboutCache}
           item={selectedItem}
           existingSectionTypes={[]}
           existingOrderPositions={[]}
@@ -415,7 +405,7 @@ export default function AboutPage() {
       <AboutModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onRefresh={fetchAbout}
+        onRefresh={invalidateAboutCache}
         item={selectedItem}
         existingSectionTypes={Object.values(
           data.reduce((acc, item) => {
@@ -440,7 +430,7 @@ export default function AboutPage() {
           setIsDeleteModalOpen(false);
           setItemToDelete(null);
         }}
-        onRefresh={fetchAbout}
+        onRefresh={invalidateAboutCache}
         item={itemToDelete}
         sectionType="About Section"
         deleteFunction={deleteAboutSection}
