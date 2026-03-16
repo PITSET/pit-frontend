@@ -188,7 +188,7 @@ export default function Navbar() {
                         </Link>
 
                         <Link to={`/projects?program=${encodeURIComponent(program)}`}>
-  <div className="font-medium">Projects</div>
+                          <div className="font-medium">Projects</div>
                           <div className="text-sm text-gray-400">
                             List of all projects
                           </div>
@@ -211,7 +211,6 @@ export default function Navbar() {
           <Link to="/projects" className="hover:text-red-600 cursor-pointer transition">
             Projects
           </Link>
-
           <Link to="/contact" className="hover:text-red-600 cursor-pointer transition">
             Contact
           </Link>
