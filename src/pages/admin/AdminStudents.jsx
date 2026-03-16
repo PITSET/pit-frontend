@@ -1,8 +1,6 @@
-import { useState, useMemo, useEffect } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useState, useMemo } from "react";
 import { getAllStudents, deleteStudent } from "../../lib/services/studentService";
 import { getAllPrograms } from "../../lib/services/programService";
-import { ErrorType, getErrorTitle } from "../../lib/httpErrorHandler";
 import {
   PencilSquareIcon,
   ChevronLeftIcon,
@@ -17,10 +15,14 @@ import {
 import StudentModal from "../../components/admin_ui/StudentModal";
 import DeleteModal from "../../components/admin_ui/DeleteModal";
 import EmptyState from "../../components/admin_ui/EmptyState";
-import Loader from "../../components/ui/Loader";
+import Loading from "../../components/ui/Loading";
 
 export default function AdminStudents() {
-  const queryClient = useQueryClient();
+  const [data, setData] = useState([]);
+  const [programs, setPrograms] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -51,38 +53,44 @@ export default function AdminStudents() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 4;
 
-  // Query for students with caching
-  const { data: studentsResponse, isLoading: isStudentsLoading, error: studentsError, refetch: refetchStudents } = useQuery({
-    queryKey: ["students"],
-    queryFn: async () => {
+  const fetchStudents = async () => {
+    try {
       const response = await getAllStudents();
-      return response.data;
-    },
-    staleTime: 1000 * 60 * 10, // 10 minutes
-    cacheTime: 1000 * 60 * 30, // 30 minutes
-  });
+      const newData = response.data;
+      setData(newData);
 
-  // Query for programs with caching
-  const { data: programsResponse, isLoading: isProgramsLoading } = useQuery({
-    queryKey: ["programs"],
-    queryFn: async () => {
-      const response = await getAllPrograms();
-      return response.data || [];
-    },
-    staleTime: 1000 * 60 * 10, // 10 minutes
-    cacheTime: 1000 * 60 * 30, // 30 minutes
-  });
-
-  const data = studentsResponse || [];
-  const programs = programsResponse || [];
-
-  const isLoading = isStudentsLoading || isProgramsLoading;
-  const error = studentsError;
-
-  // Invalidate cache after mutations
-  const invalidateStudentsCache = () => {
-    queryClient.invalidateQueries({ queryKey: ["students"] });
+      // Adjust current page if it becomes invalid after deletion
+      let newFilteredData = newData;
+      if (programFilter !== 'all') {
+        newFilteredData = newData.filter(item => String(item.program_id) === String(programFilter));
+      }
+      const newTotalPages = Math.ceil(newFilteredData.length / itemsPerPage);
+      if (currentPage > newTotalPages && newTotalPages > 0) {
+        setCurrentPage(newTotalPages);
+      } else if (newFilteredData.length === 0) {
+        setCurrentPage(1);
+      }
+    } catch (err) {
+      console.error("Failed to fetch students:", err);
+      setError("Failed to fetch students");
+    } finally {
+      setLoading(false);
+    }
   };
+
+  const fetchPrograms = async () => {
+    try {
+      const response = await getAllPrograms();
+      setPrograms(response.data || []);
+    } catch (err) {
+      console.error("Failed to fetch programs:", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchStudents();
+    fetchPrograms();
+  }, []);
 
   // Filter data by program
   const filteredData = useMemo(() => {
@@ -117,59 +125,26 @@ export default function AdminStudents() {
     setIsModalOpen(true);
   };
 
-  const handleDeleteConfirm = async () => {
-    if (!itemToDelete) return;
-    
-    try {
-      await deleteStudent(itemToDelete.id);
-      invalidateStudentsCache();
-      setIsDeleteModalOpen(false);
-      setItemToDelete(null);
-    } catch (err) {
-      console.error("Failed to delete student:", err);
-      alert("Failed to delete student. Please try again.");
-    }
-  };
+  if (loading) return (
+    <Loading 
+      table={{
+        columns: [
+          { label: 'Image', show: true },
+          { label: 'Name', show: true },
+          { label: 'Email', show: true },
+          { label: 'Program', show: true },
+          { label: 'Action', show: true }
+        ],
+        showPosition: false,
+        showImage: true,
+        showStatus: true,
+        rows: 4
+      }}
+    />
+  );
 
-  // Helper to determine error type from error message for UI display
-  const getErrorInfo = (errorMsg) => {
-    if (!errorMsg) return { type: ErrorType.UNKNOWN, title: 'Something Went Wrong' };
-    
-    if (errorMsg.includes('429') || errorMsg.toLowerCase().includes('rate limit')) {
-      return { type: ErrorType.RATE_LIMIT, title: getErrorTitle(ErrorType.RATE_LIMIT) };
-    }
-    if (errorMsg.toLowerCase().includes('network') || errorMsg.toLowerCase().includes('connection')) {
-      return { type: ErrorType.NETWORK, title: getErrorTitle(ErrorType.NETWORK) };
-    }
-    if (errorMsg.includes('500') || errorMsg.includes('502') || errorMsg.includes('503') || errorMsg.toLowerCase().includes('server error')) {
-      return { type: ErrorType.SERVER, title: getErrorTitle(ErrorType.SERVER) };
-    }
-    if (errorMsg.includes('404') || errorMsg.toLowerCase().includes('not found')) {
-      return { type: ErrorType.NOT_FOUND, title: getErrorTitle(ErrorType.NOT_FOUND) };
-    }
-    if (errorMsg.includes('401') || errorMsg.toLowerCase().includes('unauthorized') || errorMsg.toLowerCase().includes('session')) {
-      return { type: ErrorType.AUTH, title: getErrorTitle(ErrorType.AUTH) };
-    }
-    if (errorMsg.includes('403') || errorMsg.toLowerCase().includes('forbidden') || errorMsg.toLowerCase().includes('access denied')) {
-      return { type: ErrorType.FORBIDDEN, title: getErrorTitle(ErrorType.FORBIDDEN) };
-    }
-    if (errorMsg.includes('timeout') || errorMsg.toLowerCase().includes('timed out')) {
-      return { type: ErrorType.TIMEOUT, title: getErrorTitle(ErrorType.TIMEOUT) };
-    }
-    
-    return { type: ErrorType.UNKNOWN, title: 'Unable to Load' };
-  };
-
-  if (isLoading) return <Loader />;
-
-  // Handle different error types with appropriate UI
-  const errorInfo = getErrorInfo(error?.message || error);
-  const errorType = errorInfo.type;
-  const errorTitle = errorInfo.title;
-  const isRateLimited = errorType === ErrorType.RATE_LIMIT;
-  const isNetworkError = errorType === ErrorType.NETWORK;
-  const isServerError = errorType === ErrorType.SERVER;
-
+  // Handle rate limiting (429) specifically
+  const isRateLimited = error.includes('429');
   if (error) return (
     <div className="p-4 md:p-6 max-w-7xl mx-auto min-h-[60vh] flex flex-col items-center justify-center">
       <div className="text-center max-w-md">
@@ -179,19 +154,15 @@ export default function AdminStudents() {
           </svg>
         </div>
         <h3 className="text-lg font-semibold text-gray-900 mb-2">
-          {errorTitle}
+          {isRateLimited ? 'Too Many Requests' : 'Unable to Load'}
         </h3>
         <p className="text-gray-600 mb-4">
           {isRateLimited 
-            ? 'Too many requests. Please wait a moment and try again.'
-            : isNetworkError
-            ? 'Unable to connect to the server. Please check your internet connection.'
-            : isServerError
-            ? 'Server is experiencing issues. Please try again later.'
-            : error?.message || error}
+            ? 'Please wait a moment and try again. We\'re experiencing high traffic.'
+            : error}
         </p>
         <button 
-          onClick={() => refetchStudents()}
+          onClick={fetchStudents}
           className="px-4 py-2 bg-orange-500 text-white font-medium rounded-lg hover:bg-orange-600 transition focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2"
         >
           Try Again
@@ -221,7 +192,7 @@ export default function AdminStudents() {
         <StudentModal
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
-          onRefresh={invalidateStudentsCache}
+          onRefresh={fetchStudents}
           item={selectedItem}
         />
 
@@ -229,9 +200,10 @@ export default function AdminStudents() {
         <DeleteModal
           isOpen={isDeleteModalOpen}
           onClose={() => setIsDeleteModalOpen(false)}
-          onConfirm={handleDeleteConfirm}
-          title="Delete Student"
-          message={`Are you sure you want to delete "${itemToDelete?.name}"? This action cannot be undone.`}
+          deleteFunction={deleteStudent}
+          onRefresh={fetchStudents}
+          item={itemToDelete}
+          sectionType="student"
         />
       </>
     );
@@ -579,16 +551,17 @@ export default function AdminStudents() {
       <StudentModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onRefresh={invalidateStudentsCache}
+        onRefresh={fetchStudents}
         item={selectedItem}
       />
 
       <DeleteModal
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
-        onConfirm={handleDeleteConfirm}
-        title="Delete Student"
-        message={`Are you sure you want to delete "${itemToDelete?.name}"? This action cannot be undone.`}
+        deleteFunction={deleteStudent}
+        onRefresh={fetchStudents}
+        item={itemToDelete}
+        sectionType="student"
       />
     </div>
   );
