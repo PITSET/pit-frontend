@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+﻿﻿import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import api from "../../lib/api";
 import resolveAssetUrl from "../../lib/resolveAssetUrl";
 import ProjectsCarousel from "../../components/ui/ProjectsCarousel";
@@ -204,9 +205,12 @@ Empowering Future <br /> Technologists
 "Through practical education and innovative programs, we prepare students to meet real-world challenges and lead in a rapidly evolving technological landscape."}
 </p>
 
-<button className="bg-red-600 text-white hover:bg-white hover:text-red-600 transition px-6 py-3 rounded-md font-semibold shadow-lg">
+<Link
+to="/programs"
+className="inline-block bg-red-600 text-white hover:bg-white hover:text-red-600 transition px-6 py-3 rounded-md font-semibold shadow-lg"
+>
 Explore Our Programs →
-</button>
+</Link>
 
 </div>
 </div>
@@ -239,9 +243,12 @@ backgroundImage: `url('${resolveAssetUrl(aboutSection?.image_url)}')`,
 "Prometheus Institute of Technology is dedicated to providing quality technology education that builds strong foundations, practical skills, and innovative thinking for future professionals."}
 </p>
 
-<button className="border border-white px-6 py-3 rounded-md text-white transition hover:bg-red-600 hover:border-red-600">
+<Link
+to="/about"
+className="inline-block border border-white px-6 py-3 rounded-md text-white transition hover:bg-red-600 hover:border-red-600"
+>
 DISCOVER OUR MISSION →
-</button>
+</Link>
 
 </div>
 </div>
@@ -346,9 +353,12 @@ backgroundImage: `url('${resolveAssetUrl(programSection?.image_url)}')`,
 "Our programs are designed to provide strong technical foundations, practical skills, and industry-relevant knowledge to prepare students for future careers in technology."}
 </p>
 
-<button className="text-sm md:text-base bg-red-600 text-white px-6 py-3 rounded-md border border-red-600 hover:bg-white hover:text-red-600 transition">
+<Link
+to="/programs"
+className="inline-block text-sm md:text-base bg-red-600 text-white px-6 py-3 rounded-md border border-red-600 hover:bg-white hover:text-red-600 transition"
+>
 VIEW ALL PROGRAMS →
-</button>
+</Link>
 
 </div>
 
