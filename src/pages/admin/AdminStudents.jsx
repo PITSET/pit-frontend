@@ -1,7 +1,8 @@
-import { useEffect, useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getAllStudents, deleteStudent } from "../../lib/services/studentService";
 import { getAllPrograms } from "../../lib/services/programService";
-import { getFetchErrorMessage, ErrorType, getErrorTitle } from "../../lib/httpErrorHandler";
+import { ErrorType, getErrorTitle } from "../../lib/httpErrorHandler";
 import {
   PencilSquareIcon,
   ChevronLeftIcon,
@@ -19,11 +20,7 @@ import EmptyState from "../../components/admin_ui/EmptyState";
 import Loader from "../../components/ui/Loader";
 
 export default function AdminStudents() {
-  const [data, setData] = useState([]);
-  const [programs, setPrograms] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-
+  const queryClient = useQueryClient();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -54,44 +51,38 @@ export default function AdminStudents() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 4;
 
-  const fetchStudents = async () => {
-    try {
+  // Query for students with caching
+  const { data: studentsResponse, isLoading: isStudentsLoading, error: studentsError, refetch: refetchStudents } = useQuery({
+    queryKey: ["students"],
+    queryFn: async () => {
       const response = await getAllStudents();
-      const newData = response.data;
-      setData(newData);
+      return response.data;
+    },
+    staleTime: 1000 * 60 * 10, // 10 minutes
+    cacheTime: 1000 * 60 * 30, // 30 minutes
+  });
 
-      // Adjust current page if it becomes invalid after deletion
-      let newFilteredData = newData;
-      if (programFilter !== 'all') {
-        newFilteredData = newData.filter(item => String(item.program_id) === String(programFilter));
-      }
-      const newTotalPages = Math.ceil(newFilteredData.length / itemsPerPage);
-      if (currentPage > newTotalPages && newTotalPages > 0) {
-        setCurrentPage(newTotalPages);
-      } else if (newFilteredData.length === 0) {
-        setCurrentPage(1);
-      }
-    } catch (err) {
-      console.error("Failed to fetch students:", err);
-      setError(getFetchErrorMessage(err, 'fetch students'));
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchPrograms = async () => {
-    try {
+  // Query for programs with caching
+  const { data: programsResponse, isLoading: isProgramsLoading } = useQuery({
+    queryKey: ["programs"],
+    queryFn: async () => {
       const response = await getAllPrograms();
-      setPrograms(response.data || []);
-    } catch (err) {
-      console.error("Failed to fetch programs:", err);
-    }
-  };
+      return response.data || [];
+    },
+    staleTime: 1000 * 60 * 10, // 10 minutes
+    cacheTime: 1000 * 60 * 30, // 30 minutes
+  });
 
-  useEffect(() => {
-    fetchStudents();
-    fetchPrograms();
-  }, []);
+  const data = studentsResponse || [];
+  const programs = programsResponse || [];
+
+  const isLoading = isStudentsLoading || isProgramsLoading;
+  const error = studentsError;
+
+  // Invalidate cache after mutations
+  const invalidateStudentsCache = () => {
+    queryClient.invalidateQueries({ queryKey: ["students"] });
+  };
 
   // Filter data by program
   const filteredData = useMemo(() => {
@@ -131,7 +122,7 @@ export default function AdminStudents() {
     
     try {
       await deleteStudent(itemToDelete.id);
-      await fetchStudents();
+      invalidateStudentsCache();
       setIsDeleteModalOpen(false);
       setItemToDelete(null);
     } catch (err) {
@@ -169,10 +160,10 @@ export default function AdminStudents() {
     return { type: ErrorType.UNKNOWN, title: 'Unable to Load' };
   };
 
-  if (loading) return <Loader />;
+  if (isLoading) return <Loader />;
 
   // Handle different error types with appropriate UI
-  const errorInfo = getErrorInfo(error);
+  const errorInfo = getErrorInfo(error?.message || error);
   const errorType = errorInfo.type;
   const errorTitle = errorInfo.title;
   const isRateLimited = errorType === ErrorType.RATE_LIMIT;
@@ -197,10 +188,10 @@ export default function AdminStudents() {
             ? 'Unable to connect to the server. Please check your internet connection.'
             : isServerError
             ? 'Server is experiencing issues. Please try again later.'
-            : error}
+            : error?.message || error}
         </p>
         <button 
-          onClick={fetchStudents}
+          onClick={() => refetchStudents()}
           className="px-4 py-2 bg-orange-500 text-white font-medium rounded-lg hover:bg-orange-600 transition focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2"
         >
           Try Again
@@ -230,7 +221,7 @@ export default function AdminStudents() {
         <StudentModal
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
-          onRefresh={fetchStudents}
+          onRefresh={invalidateStudentsCache}
           item={selectedItem}
         />
 
@@ -588,7 +579,7 @@ export default function AdminStudents() {
       <StudentModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onRefresh={fetchStudents}
+        onRefresh={invalidateStudentsCache}
         item={selectedItem}
       />
 

@@ -1,7 +1,8 @@
-import { useEffect, useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getAllMembers, deleteMember } from "../../lib/services/memberService";
 import { getAllPrograms } from "../../lib/services/programService";
-import { getFetchErrorMessage, ErrorType, getErrorTitle } from "../../lib/httpErrorHandler";
+import { ErrorType, getErrorTitle } from "../../lib/httpErrorHandler";
 import {
   PencilSquareIcon,
   ChevronLeftIcon,
@@ -17,10 +18,7 @@ import EmptyState from "../../components/admin_ui/EmptyState";
 import Loader from "../../components/ui/Loader";
 
 export default function AdminMembers() {
-  const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-
+  const queryClient = useQueryClient();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -28,48 +26,42 @@ export default function AdminMembers() {
 
   const [programFilter, setProgramFilter] = useState("all");
   const [showProgramFilterDropdown, setShowProgramFilterDropdown] = useState(false);
-  const [programs, setPrograms] = useState([]);
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 4;
 
-  const fetchMembers = async () => {
-    try {
+  // Query for members with caching
+  const { data: membersResponse, isLoading: isMembersLoading, error: membersError, refetch: refetchMembers } = useQuery({
+    queryKey: ["members"],
+    queryFn: async () => {
       const response = await getAllMembers();
-      const newData = response.data;
-      setData(newData);
+      return response.data;
+    },
+    staleTime: 1000 * 60 * 10, // 10 minutes
+    cacheTime: 1000 * 60 * 30, // 30 minutes
+  });
 
-      // Adjust current page if it becomes invalid after deletion
-      // Need to recalculate filtered data to get correct pagination
-      const newFilteredData = newData;
-      const newTotalPages = Math.ceil(newFilteredData.length / itemsPerPage);
-      if (currentPage > newTotalPages && newTotalPages > 0) {
-        setCurrentPage(newTotalPages);
-      } else if (newFilteredData.length === 0) {
-        setCurrentPage(1);
-      }
-    } catch (err) {
-      console.error("Failed to fetch members:", err);
-      setError(getFetchErrorMessage(err, 'fetch members'));
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchMembers();
-    fetchPrograms();
-  }, []);
-
-  // Fetch programs for filter
-  const fetchPrograms = async () => {
-    try {
+  // Query for programs with caching
+  const { data: programsResponse, isLoading: isProgramsLoading } = useQuery({
+    queryKey: ["programs"],
+    queryFn: async () => {
       const response = await getAllPrograms();
-      setPrograms(response.data);
-    } catch (err) {
-      console.error("Failed to fetch programs:", err);
-    }
+      return response.data;
+    },
+    staleTime: 1000 * 60 * 10, // 10 minutes
+    cacheTime: 1000 * 60 * 30, // 30 minutes
+  });
+
+  const data = membersResponse || [];
+  const programs = programsResponse || [];
+
+  const isLoading = isMembersLoading || isProgramsLoading;
+  const error = membersError;
+
+  // Invalidate cache after mutations
+  const invalidateMembersCache = () => {
+    queryClient.invalidateQueries({ queryKey: ["members"] });
   };
 
   // Close dropdown when clicking outside
@@ -153,10 +145,10 @@ export default function AdminMembers() {
     return { type: ErrorType.UNKNOWN, title: 'Unable to Load' };
   };
 
-  if (loading) return <Loader />;
+  if (isLoading) return <Loader />;
 
   // Handle different error types with appropriate UI
-  const errorInfo = getErrorInfo(error);
+  const errorInfo = getErrorInfo(error?.message || error);
   const errorType = errorInfo.type;
   const errorTitle = errorInfo.title;
   const isRateLimited = errorType === ErrorType.RATE_LIMIT;
@@ -181,10 +173,10 @@ export default function AdminMembers() {
             ? 'Unable to connect to the server. Please check your internet connection.'
             : isServerError
             ? 'Server is experiencing issues. Please try again later.'
-            : error}
+            : error?.message || error}
         </p>
         <button 
-          onClick={fetchMembers}
+          onClick={() => refetchMembers()}
           className="px-4 py-2 bg-orange-500 text-white font-medium rounded-lg hover:bg-orange-600 transition focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2"
         >
           Try Again
@@ -214,7 +206,7 @@ export default function AdminMembers() {
         <MemberModal
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
-          onRefresh={fetchMembers}
+          onRefresh={invalidateMembersCache}
           item={selectedItem}
         />
       </>
@@ -591,7 +583,7 @@ export default function AdminMembers() {
       <MemberModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onRefresh={fetchMembers}
+        onRefresh={invalidateMembersCache}
         item={selectedItem}
       />
 
@@ -602,7 +594,7 @@ export default function AdminMembers() {
           setIsDeleteModalOpen(false);
           setItemToDelete(null);
         }}
-        onRefresh={fetchMembers}
+        onRefresh={invalidateMembersCache}
         item={itemToDelete}
         sectionType="Member"
         deleteFunction={deleteMember}
