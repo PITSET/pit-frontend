@@ -10,7 +10,7 @@ import {
 import ContactModal from "../../components/admin_ui/ContactModal";
 import DeleteModal from "../../components/admin_ui/DeleteModal";
 import EmptyState from "../../components/admin_ui/EmptyState";
-import Loading from "../../components/ui/Loading";
+import Loader from "../../components/ui/Loader";
 
 export default function Contact() {
   const [contacts, setContacts] = useState([]);
@@ -82,22 +82,7 @@ export default function Contact() {
     setIsDeleteModalOpen(true);
   };
 
-  if (loading) return (
-    <Loading 
-      table={{
-        columns: [
-          { label: 'Email', show: true },
-          { label: 'Phone', show: true },
-          { label: 'Address', show: true },
-          { label: 'Action', show: true }
-        ],
-        showPosition: false,
-        showImage: false,
-        showStatus: false,
-        rows: 4
-      }}
-    />
-  );
+  if (loading) return <Loader />;
 
   // Handle rate limiting (429) specifically
   const isRateLimited = error.includes('429');
