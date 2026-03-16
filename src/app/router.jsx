@@ -17,6 +17,7 @@ import InstructorDetail from "../pages/public/InstructorDetail";
 
 
 
+
 // Admin Pages
 import Dashboard from "../pages/admin/Dashboard";
 import AdminHome from "../pages/admin/AdminHome";
@@ -49,7 +50,7 @@ const router = createBrowserRouter([
       { path: "/instructors", element: <Instructor /> },
       { path: "/instructors/:id", element: <InstructorDetail /> },
       { path: "/instructor", element: <Navigate to="/instructors" replace /> },
-      { path: "/instructor/:id", element: <RedirectInstructorDetail /> },
+      { path: "/instructor/:id", element: <InstructorDetail /> },
 
     ],
   },
