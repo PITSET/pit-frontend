@@ -1,15 +1,15 @@
-import { useEffect, useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getAllStudents, deleteStudent } from "../../lib/services/studentService";
 import { getAllPrograms } from "../../lib/services/programService";
+import { ErrorType, getErrorTitle, parseHttpError } from "../../lib/httpErrorHandler";
 import {
   PencilSquareIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
   PlusIcon,
   TrashIcon,
-  FunnelIcon,
   ChevronDownIcon,
-  CheckIcon,
 } from "@heroicons/react/24/outline";
 
 import StudentModal from "../../components/admin_ui/StudentModal";
@@ -18,11 +18,7 @@ import EmptyState from "../../components/admin_ui/EmptyState";
 import Loading from "../../components/ui/Loading";
 
 export default function AdminStudents() {
-  const [data, setData] = useState([]);
-  const [programs, setPrograms] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-
+  const queryClient = useQueryClient();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -31,6 +27,46 @@ export default function AdminStudents() {
   // Program filter state
   const [programFilter, setProgramFilter] = useState("all");
   const [showProgramDropdown, setShowProgramDropdown] = useState(false);
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 4;
+
+  // Query for students with caching
+  const { 
+    data: studentsResponse, 
+    isLoading: isStudentsLoading, 
+    error: studentsError, 
+    refetch: refetchStudents 
+  } = useQuery({
+    queryKey: ["students"],
+    queryFn: async () => {
+      const response = await getAllStudents();
+      return response.data;
+    },
+    staleTime: 1000 * 60 * 10, // 10 minutes
+    cacheTime: 1000 * 60 * 30, // 30 minutes
+  });
+
+  // Query for programs with caching
+  const { 
+    data: programsResponse, 
+    isLoading: isProgramsLoading 
+  } = useQuery({
+    queryKey: ["programs"],
+    queryFn: async () => {
+      const response = await getAllPrograms();
+      return response.data || [];
+    },
+    staleTime: 1000 * 60 * 10, // 10 minutes
+    cacheTime: 1000 * 60 * 30, // 30 minutes
+  });
+
+  const data = studentsResponse || [];
+  const programs = programsResponse || [];
+
+  const isLoading = isStudentsLoading || isProgramsLoading;
+  const error = studentsError;
 
   // Helper function to get program name by ID
   const getProgramName = (programId) => {
@@ -50,47 +86,6 @@ export default function AdminStudents() {
       return () => document.removeEventListener("click", handleClickOutside);
     }
   }, [showProgramDropdown]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 4;
-
-  const fetchStudents = async () => {
-    try {
-      const response = await getAllStudents();
-      const newData = response.data;
-      setData(newData);
-
-      // Adjust current page if it becomes invalid after deletion
-      let newFilteredData = newData;
-      if (programFilter !== 'all') {
-        newFilteredData = newData.filter(item => String(item.program_id) === String(programFilter));
-      }
-      const newTotalPages = Math.ceil(newFilteredData.length / itemsPerPage);
-      if (currentPage > newTotalPages && newTotalPages > 0) {
-        setCurrentPage(newTotalPages);
-      } else if (newFilteredData.length === 0) {
-        setCurrentPage(1);
-      }
-    } catch (err) {
-      console.error("Failed to fetch students:", err);
-      setError("Failed to fetch students");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchPrograms = async () => {
-    try {
-      const response = await getAllPrograms();
-      setPrograms(response.data || []);
-    } catch (err) {
-      console.error("Failed to fetch programs:", err);
-    }
-  };
-
-  useEffect(() => {
-    fetchStudents();
-    fetchPrograms();
-  }, []);
 
   // Filter data by program
   const filteredData = useMemo(() => {
@@ -125,7 +120,28 @@ export default function AdminStudents() {
     setIsModalOpen(true);
   };
 
-  if (loading) return (
+  // Invalidate cache after mutations
+  const invalidateStudentsCache = () => {
+    queryClient.invalidateQueries({ queryKey: ["students"] });
+  };
+
+  // Helper to determine error type from error object for UI display
+  const getErrorInfo = (error) => {
+    if (!error) return { type: ErrorType.UNKNOWN, title: 'Something Went Wrong', message: 'An unexpected error occurred' };
+    
+    // Use the parsed error from httpErrorHandler
+    const parsedError = parseHttpError(error);
+    
+    return { 
+      type: parsedError.type, 
+      title: getErrorTitle(parsedError.type), 
+      message: parsedError.message,
+      isRetryable: parsedError.isRetryable,
+      needsReauth: parsedError.needsReauth
+    };
+  };
+
+  if (isLoading) return (
     <Loading 
       table={{
         columns: [
@@ -143,26 +159,64 @@ export default function AdminStudents() {
     />
   );
 
-  // Handle rate limiting (429) specifically
-  const isRateLimited = error.includes('429');
+  // Handle different error types with appropriate UI
+  const errorInfo = getErrorInfo(error);
+  const errorType = errorInfo.type;
+  const errorTitle = errorInfo.title;
+  const errorMessage = errorInfo.message;
+  const isRateLimited = errorType === ErrorType.RATE_LIMIT;
+  const isNetworkError = errorType === ErrorType.NETWORK;
+  const isServerError = errorType === ErrorType.SERVER;
+  const isAuthError = errorType === ErrorType.AUTH || errorType === ErrorType.FORBIDDEN;
+
   if (error) return (
     <div className="p-4 md:p-6 max-w-7xl mx-auto min-h-[60vh] flex flex-col items-center justify-center">
       <div className="text-center max-w-md">
-        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-orange-100 flex items-center justify-center">
-          <svg className="w-8 h-8 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
+        {/* Error icon based on error type */}
+        <div className={`w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center ${
+          isRateLimited ? 'bg-orange-100' : 
+          isNetworkError ? 'bg-blue-100' : 
+          isServerError ? 'bg-red-100' : 
+          isAuthError ? 'bg-red-100' : 'bg-gray-100'
+        }`}>
+          {isRateLimited ? (
+            <svg className="w-8 h-8 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          ) : isNetworkError ? (
+            <svg className="w-8 h-8 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.14 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0" />
+            </svg>
+          ) : isAuthError ? (
+            <svg className="w-8 h-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+          ) : isServerError ? (
+            <svg className="w-8 h-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            </svg>
+          ) : (
+            <svg className="w-8 h-8 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+          )}
         </div>
         <h3 className="text-lg font-semibold text-gray-900 mb-2">
-          {isRateLimited ? 'Too Many Requests' : 'Unable to Load'}
+          {errorTitle}
         </h3>
         <p className="text-gray-600 mb-4">
           {isRateLimited 
-            ? 'Please wait a moment and try again. We\'re experiencing high traffic.'
-            : error}
+            ? 'Too many requests. Please wait a moment and try again.'
+            : isNetworkError
+            ? 'Unable to connect to the server. Please check your internet connection.'
+            : isServerError
+            ? 'Server is experiencing issues. Please try again later.'
+            : isAuthError
+            ? 'You do not have permission to access this resource. Please contact an administrator.'
+            : errorMessage}
         </p>
         <button 
-          onClick={fetchStudents}
+          onClick={() => refetchStudents()}
           className="px-4 py-2 bg-orange-500 text-white font-medium rounded-lg hover:bg-orange-600 transition focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2"
         >
           Try Again
@@ -192,7 +246,7 @@ export default function AdminStudents() {
         <StudentModal
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
-          onRefresh={fetchStudents}
+          onRefresh={invalidateStudentsCache}
           item={selectedItem}
         />
 
@@ -201,7 +255,7 @@ export default function AdminStudents() {
           isOpen={isDeleteModalOpen}
           onClose={() => setIsDeleteModalOpen(false)}
           deleteFunction={deleteStudent}
-          onRefresh={fetchStudents}
+          onRefresh={invalidateStudentsCache}
           item={itemToDelete}
           sectionType="student"
         />
@@ -551,7 +605,7 @@ export default function AdminStudents() {
       <StudentModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onRefresh={fetchStudents}
+        onRefresh={invalidateStudentsCache}
         item={selectedItem}
       />
 
@@ -559,7 +613,7 @@ export default function AdminStudents() {
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
         deleteFunction={deleteStudent}
-        onRefresh={fetchStudents}
+        onRefresh={invalidateStudentsCache}
         item={itemToDelete}
         sectionType="student"
       />
