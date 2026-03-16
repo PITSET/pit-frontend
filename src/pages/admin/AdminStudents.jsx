@@ -1,6 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { getAllStudents, deleteStudent } from "../../lib/services/studentService";
 import { getAllPrograms } from "../../lib/services/programService";
+import { getFetchErrorMessage, ErrorType, getErrorTitle } from "../../lib/httpErrorHandler";
 import {
   PencilSquareIcon,
   ChevronLeftIcon,
@@ -72,7 +73,7 @@ export default function AdminStudents() {
       }
     } catch (err) {
       console.error("Failed to fetch students:", err);
-      setError("Failed to fetch students");
+      setError(getFetchErrorMessage(err, 'fetch students'));
     } finally {
       setLoading(false);
     }
@@ -139,10 +140,45 @@ export default function AdminStudents() {
     }
   };
 
+  // Helper to determine error type from error message for UI display
+  const getErrorInfo = (errorMsg) => {
+    if (!errorMsg) return { type: ErrorType.UNKNOWN, title: 'Something Went Wrong' };
+    
+    if (errorMsg.includes('429') || errorMsg.toLowerCase().includes('rate limit')) {
+      return { type: ErrorType.RATE_LIMIT, title: getErrorTitle(ErrorType.RATE_LIMIT) };
+    }
+    if (errorMsg.toLowerCase().includes('network') || errorMsg.toLowerCase().includes('connection')) {
+      return { type: ErrorType.NETWORK, title: getErrorTitle(ErrorType.NETWORK) };
+    }
+    if (errorMsg.includes('500') || errorMsg.includes('502') || errorMsg.includes('503') || errorMsg.toLowerCase().includes('server error')) {
+      return { type: ErrorType.SERVER, title: getErrorTitle(ErrorType.SERVER) };
+    }
+    if (errorMsg.includes('404') || errorMsg.toLowerCase().includes('not found')) {
+      return { type: ErrorType.NOT_FOUND, title: getErrorTitle(ErrorType.NOT_FOUND) };
+    }
+    if (errorMsg.includes('401') || errorMsg.toLowerCase().includes('unauthorized') || errorMsg.toLowerCase().includes('session')) {
+      return { type: ErrorType.AUTH, title: getErrorTitle(ErrorType.AUTH) };
+    }
+    if (errorMsg.includes('403') || errorMsg.toLowerCase().includes('forbidden') || errorMsg.toLowerCase().includes('access denied')) {
+      return { type: ErrorType.FORBIDDEN, title: getErrorTitle(ErrorType.FORBIDDEN) };
+    }
+    if (errorMsg.includes('timeout') || errorMsg.toLowerCase().includes('timed out')) {
+      return { type: ErrorType.TIMEOUT, title: getErrorTitle(ErrorType.TIMEOUT) };
+    }
+    
+    return { type: ErrorType.UNKNOWN, title: 'Unable to Load' };
+  };
+
   if (loading) return <Loader />;
 
-  // Handle rate limiting (429) specifically
-  const isRateLimited = error.includes('429');
+  // Handle different error types with appropriate UI
+  const errorInfo = getErrorInfo(error);
+  const errorType = errorInfo.type;
+  const errorTitle = errorInfo.title;
+  const isRateLimited = errorType === ErrorType.RATE_LIMIT;
+  const isNetworkError = errorType === ErrorType.NETWORK;
+  const isServerError = errorType === ErrorType.SERVER;
+
   if (error) return (
     <div className="p-4 md:p-6 max-w-7xl mx-auto min-h-[60vh] flex flex-col items-center justify-center">
       <div className="text-center max-w-md">
@@ -152,11 +188,15 @@ export default function AdminStudents() {
           </svg>
         </div>
         <h3 className="text-lg font-semibold text-gray-900 mb-2">
-          {isRateLimited ? 'Too Many Requests' : 'Unable to Load'}
+          {errorTitle}
         </h3>
         <p className="text-gray-600 mb-4">
           {isRateLimited 
-            ? 'Please wait a moment and try again. We\'re experiencing high traffic.'
+            ? 'Too many requests. Please wait a moment and try again.'
+            : isNetworkError
+            ? 'Unable to connect to the server. Please check your internet connection.'
+            : isServerError
+            ? 'Server is experiencing issues. Please try again later.'
             : error}
         </p>
         <button 

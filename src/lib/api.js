@@ -1,11 +1,13 @@
 import axios from "axios";
 import { toast } from "react-hot-toast";
+import { parseHttpError, ErrorType } from "./httpErrorHandler";
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api";
 
 const api = axios.create({
   baseURL: apiBaseUrl,
   withCredentials: false,
+  timeout: 30000, // 30 second timeout
 });
 
 // Attach token automatically to every request
@@ -26,12 +28,11 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+    // Parse the error for structured handling
+    const parsedError = parseHttpError(error);
+    
     // Handle 401 Unauthorized
-    if (
-      error.response &&
-      error.response.status === 401 &&
-      !error.config.url.includes("/auth/login")
-    ) {
+    if (parsedError.type === ErrorType.AUTH) {
       console.warn("Unauthorized. Logging out...");
       
       // Show session expired toast
@@ -46,11 +47,13 @@ api.interceptors.response.use(
       setTimeout(() => {
         window.location.href = "/admin/login";
       }, 2000);
+      
+      return Promise.reject(error);
     }
 
     // Handle 403 Forbidden (admin access denied)
-    if (error.response && error.response.status === 403) {
-      const errorMessage = error.response.data?.error || "Access denied";
+    if (parsedError.type === ErrorType.FORBIDDEN) {
+      const errorMessage = error.response?.data?.error || "Access denied";
       
       // Show error toast
       toast.error(errorMessage);
@@ -65,6 +68,43 @@ api.interceptors.response.use(
           window.location.href = "/admin/login";
         }, 2000);
       }
+      
+      return Promise.reject(error);
+    }
+
+    // Handle 404 Not Found - could indicate deleted resources
+    if (parsedError.type === ErrorType.NOT_FOUND) {
+      console.warn("Resource not found:", error.config?.url);
+      // Don't show toast automatically for 404 - let the component handle it
+      return Promise.reject(error);
+    }
+
+    // Handle 429 Rate Limiting
+    if (parsedError.type === ErrorType.RATE_LIMIT) {
+      console.warn("Rate limit exceeded");
+      toast.error("Too many requests. Please wait a moment and try again.");
+      return Promise.reject(error);
+    }
+
+    // Handle 500+ Server Errors
+    if (parsedError.type === ErrorType.SERVER) {
+      console.error("Server error:", error.response?.status, error.response?.data);
+      toast.error("Server error. Please try again later.");
+      return Promise.reject(error);
+    }
+
+    // Handle Network Errors
+    if (parsedError.type === ErrorType.NETWORK) {
+      console.error("Network error:", error.message);
+      toast.error("Unable to connect to the server. Please check your internet connection.");
+      return Promise.reject(error);
+    }
+
+    // Handle Timeout Errors
+    if (parsedError.type === ErrorType.TIMEOUT) {
+      console.error("Request timeout:", error.message);
+      toast.error("The request took too long. Please try again.");
+      return Promise.reject(error);
     }
 
     return Promise.reject(error);
