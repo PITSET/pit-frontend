@@ -30,6 +30,7 @@ import { getAllMembers } from "../../lib/services/memberService";
 import { getAllPrograms } from "../../lib/services/programService";
 import { getAllProjects } from "../../lib/services/projectService";
 import { getAllStudents } from "../../lib/services/studentService";
+import { getFetchErrorMessage } from "../../lib/httpErrorHandler";
 import Loader from "../../components/ui/Loader";
 
 // Animated Number Counter
@@ -507,7 +508,7 @@ export default function Dashboard() {
       });
     } catch (err) {
       console.error("Failed to fetch dashboard data:", err);
-      setError("Failed to load dashboard data. Please try again.");
+      setError(getFetchErrorMessage(err, 'fetch dashboard data'));
     } finally {
       setLoading(false);
     }
