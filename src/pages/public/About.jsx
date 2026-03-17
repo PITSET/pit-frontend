@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import api from "../../lib/api";
 import resolveAssetUrl from "../../lib/resolveAssetUrl";
-import Loader from "../../components/ui/Loader";
 
 const defaultInstructors = [
   {
@@ -131,11 +130,15 @@ export default function About() {
   const line2 = titleParts.slice(1).join(" ");
 
   if (loading) {
-    return <Loader label="Loading About Us..." />;
+    return (
+      <div className="flex justify-center items-center h-[40vh]">
+        Loading...
+      </div>
+    );
   }
 
   return (
-    <div className="bg-[#E9E9EB] py-0 px-4 md:px-0 font-roboto">
+    <div className="bg-[#E9E9EB] py-0 px-4 md:px-0 pb-16 md:pb-10 font-roboto">
       <div className="max-w-[1248px] mx-auto">
 
         {/* WHO WE ARE */}
@@ -176,32 +179,32 @@ export default function About() {
           </div>
 
         </div>
-        {/* HISTORY */}
-        <div className="max-w-[950px] mx-auto grid grid-cols-1 md:grid-cols-2 items-center gap-1 mt-[300px]">
+{/* HISTORY */}
+<div className="max-w-[950px] mx-auto grid grid-cols-1 md:grid-cols-2 items-center gap-1 mt-[300px]">
 
-          {/* IMAGE */}
-          <div className="flex justify-center md:justify-start">
-            <img
-              src={resolveAssetUrl(history.image_url)}
-              alt="history"
-              className="w-[400px] h-[400px] object-cover rounded-xl"
-            />
-          </div>
+  {/* IMAGE */}
+  <div className="flex justify-center md:justify-start">
+    <img
+      src={resolveAssetUrl(history.image_url)}
+      alt="history"
+      className="w-[400px] h-[400px] object-cover rounded-xl"
+    />
+  </div>
 
-          {/* TEXT */}
-          <div className="max-w-[480px]">
+  {/* TEXT */}
+  <div className="max-w-[480px]">
 
-            <h2 className="font-roboto-condensed font-bold text-[56px] text-brand-primary mb-4">
-              {history.title}
-            </h2>
+    <h2 className="font-roboto-condensed font-bold text-[56px] text-brand-primary mb-4">
+      {history.title}
+    </h2>
 
-            <p className="text-gray-600 text-[16px] leading-relaxed">
-              {history.content}
-            </p>
+    <p className="text-gray-600 text-[16px] leading-relaxed">
+      {history.content}
+    </p>
 
-          </div>
+  </div>
 
-        </div>
+</div>
         {/* MISSION (UNCHANGED) */}
         <div className="mx-0 grid grid-cols-1 md:grid-cols-2 items-center gap-10 mt-[330px]">
 
@@ -233,91 +236,45 @@ export default function About() {
 
         </div>
 
-        {/* VISION */}
-        <div className="mx-4 md:mx-16 lg:mx-32 grid grid-cols-1 md:grid-cols-2 items-center gap-10 mt-[120px] md:mt-[50px]">
+   {/* VISION */}
+<div className="mx-4 md:mx-16 lg:mx-32 grid grid-cols-1 md:grid-cols-2 items-center gap-10 mt-[120px] md:mt-[50px]">
 
-          {/* TEXT SECTION */}
-          <div className="flex items-start gap-6">
+{/* TEXT SECTION */}
+<div className="flex items-start gap-6">
 
-            {/* Text */}
-            <div className="flex flex-col">
+  {/* Text */}
+  <div className="flex flex-col">
 
-              <h2 className="font-roboto-condensed font-bold text-[28px] md:text-[40px] text-brand-primary mb-3 md:ml-20">
-                {vision.title}
-              </h2>
+    <h2 className="font-roboto-condensed font-bold text-[28px] md:text-[40px] text-brand-primary mb-3 md:ml-20">
+      {vision.title}
+    </h2>
 
-              <p className="font-roboto text-[16px] text-gray-600 max-w-md leading-relaxed md:ml-20">
-                {vision.content}
-              </p>
+    <p className="font-roboto text-[16px] text-gray-600 max-w-md leading-relaxed md:ml-20">
+      {vision.content}
+    </p>
 
-            </div>
+  </div>
 
-            {/* Gradient Line */}
-            <div className="w-[3px] h-[137px] bg-linear-to-b from-brand-primary via-brand-accent to-brand-primary-dark" />
+  {/* Gradient Line */}
+  <div className="w-[3px] h-[137px] bg-linear-to-b from-brand-primary via-brand-accent to-brand-primary-dark" />
 
-          </div>
+</div>
 
-          {/* IMAGE SECTION */}
-          <div className="flex justify-center md:justify-start">
-            <img
-              src={resolveAssetUrl(vision.image_url)}
-              alt="vision"
-              className="w-[400px] h-[400px] object-cover rounded-[16px]"
-            />
-          </div>
+{/* IMAGE SECTION */}
+<div className="flex justify-center md:justify-start">
+  <img
+    src={resolveAssetUrl(vision.image_url)}
+    alt="vision"
+    className="w-[400px] h-[400px] object-cover rounded-[16px]"
+  />
+</div>
 
-        </div>
+</div>
 
-        {/* INSTRUCTORS */}
-        <div className="mt-24">
-
-          <h2 className="font-roboto-condensed font-bold text-[64px] text-brand-primary mb-8">
-            Instructors
-          </h2>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 mt-10">
-            {displayInstructors.map((inst, i) => {
-              const program =
-                inst?.team_member_programs?.[0]?.programs?.program_name || "";
-              const name = inst?.full_name ?? inst?.name ?? "Instructor";
-              const imageUrl =
-                inst?.profile_image_url ?? inst?.image_url ?? "";
-              const memberId = inst?.id ?? inst?.team_member_id ?? inst?._id;
-
-              return (
-                <Link
-                  key={memberId ?? `${name}-${i}`}
-                  to={memberId ? `/instructors/${memberId}` : "/instructors"}
-                  className="group w-full md:w-[312px] transition-all duration-300 hover:-translate-y-2 hover:shadow-xl cursor-pointer"
-                >
-                  {/* IMAGE */}
-                  <div className="overflow-hidden">
-                    <img
-                      src={resolveAssetUrl(imageUrl)}
-                      alt={name}
-                      className="w-full md:w-[312px] h-[390px] object-cover object-top transition-transform duration-500 group-hover:scale-110"
-                    />
-                  </div>
-
-                  {/* INFO */}
-                  <div className="bg-white w-full md:w-[312px] h-[108px] px-4 pt-4 transition-colors duration-300 group-hover:bg-gray-50">
-                    <p className="text-gray-500 text-[12px]">
-                      {inst?.position_title}
-                      {program ? `, ${program}` : ""}
-                    </p>
-
-                    <p className="text-brand-primary font-bold text-[14px] mt-1 transition-colors duration-300 group-hover:text-black">
-                      {name}
-                    </p>
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
+      
 
         </div>
 
-      </div>
     </div>
   );
 }

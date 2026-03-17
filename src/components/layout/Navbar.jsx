@@ -18,6 +18,12 @@ export default function Navbar() {
     setActiveMobileProgram(activeMobileProgram === program ? null : program);
   };
 
+  const closeMobileMenu = () => {
+    setIsMenuOpen(false);
+    setIsProgramOpen(false);
+    setActiveMobileProgram(null);
+  };
+
   return (
     <div className="w-full bg-white shadow-md sticky top-0 z-50">
       {/* ================= NAVBAR ================= */}
@@ -153,7 +159,15 @@ export default function Navbar() {
           }`}
       >
         <div className="space-y-6 font-medium">
-          <Link to="/about" className="hover:text-brand-primary cursor-pointer transition">
+
+          <Link
+            to="/about"
+            onClick={closeMobileMenu}
+            className="block hover:text-red-600 cursor-pointer transition"
+          >
+
+          
+
             About
           </Link>
 
@@ -180,21 +194,37 @@ export default function Navbar() {
 
                     {activeMobileProgram === program && (
                       <div className="mt-3 pl-4 space-y-4">
-                        <Link to={`/programs?program=${encodeURIComponent(program)}`}>
+                        <Link
+                          to={`/programs?program=${encodeURIComponent(program)}`}
+                          onClick={closeMobileMenu}
+                          className="block"
+                        >
                           <div className="font-medium">Program Info</div>
                           <div className="text-sm text-gray-400">
                             Overview & students projects
                           </div>
                         </Link>
 
-                        <Link to={`/projects?program=${encodeURIComponent(program)}`}>
+
+                        <Link
+                          to={`/projects?program=${encodeURIComponent(program)}`}
+                          onClick={closeMobileMenu}
+                          className="block"
+                        >
+
+                      
+ 
                           <div className="font-medium">Projects</div>
                           <div className="text-sm text-gray-400">
                             List of all projects
                           </div>
                         </Link>
 
-                        <Link to={`/instructors?program=${encodeURIComponent(program)}`}>
+                        <Link
+                          to={`/instructors?program=${encodeURIComponent(program)}`}
+                          onClick={closeMobileMenu}
+                          className="block"
+                        >
                           <div className="font-medium">Instructors</div>
                           <div className="text-sm text-gray-400">
                             List of all instructors
@@ -208,10 +238,16 @@ export default function Navbar() {
             )}
           </div>
 
+
+          
+          
+
+
           <Link to="/projects" className="hover:text-brand-primary cursor-pointer transition">
             Projects
           </Link>
           <Link to="/contact" className="hover:text-brand-primary cursor-pointer transition">
+
             Contact
           </Link>
         </div>
