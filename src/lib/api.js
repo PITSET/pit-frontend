@@ -2,7 +2,9 @@ import axios from "axios";
 import { toast } from "react-hot-toast";
 import { parseHttpError, ErrorType } from "./httpErrorHandler";
 
-const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api";
+// Prefer same-origin relative `/api` so Vite's dev proxy can connect frontend ↔ backend
+// without CORS configuration. Override with `VITE_API_BASE_URL` when deploying.
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || "/api";
 
 const api = axios.create({
   baseURL: apiBaseUrl,
