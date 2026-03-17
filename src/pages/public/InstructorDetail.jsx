@@ -2,6 +2,7 @@ import { Link, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import api from "../../lib/api";
 import resolveAssetUrl from "../../lib/resolveAssetUrl";
+import Loader from "../../components/ui/Loader";
 
 export default function InstructorDetail() {
   const { id } = useParams();
@@ -44,7 +45,7 @@ export default function InstructorDetail() {
     };
   }, [id]);
 
-  if (loading) return <div className="p-10">Loading...</div>;
+  if (loading) return <Loader label="Loading Instructor Profile..." />;
 
   if (error) {
     return (

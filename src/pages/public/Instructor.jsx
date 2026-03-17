@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import api from "../../lib/api";
 import resolveAssetUrl from "../../lib/resolveAssetUrl";
+import Loader from "../../components/ui/Loader";
 import { Button } from "../../components/ui/Button";
 
 const TABS = [
@@ -28,6 +29,8 @@ export default function Instructor() {
   const [activeTab, setActiveTab] = useState("All");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [isNavigating, setIsNavigating] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const program = (searchParams.get("program") || "").trim();
@@ -139,8 +142,14 @@ export default function Instructor() {
           )}
 
           {loading && !error && (
-            <div className="col-span-full text-center text-gray-600">
-              Loading...
+            <div className="col-span-full py-20">
+              <Loader label="Loading Instructors..." />
+            </div>
+          )}
+
+          {isNavigating && (
+            <div className="fixed inset-0 z-50">
+              <Loader label="Opening Profile..." />
             </div>
           )}
 
@@ -149,10 +158,13 @@ export default function Instructor() {
             const memberId = inst?.id ?? inst?.team_member_id ?? inst?._id;
 
             return (
-              <Link
+              <div
                 key={memberId ?? inst?.id ?? inst?.name}
-                to={memberId ? `/instructors/${memberId}` : "/instructors"}
-                className="group relative bg-[#262626] rounded-[40px] overflow-hidden flex flex-col h-full transition-all duration-500 hover:shadow-2xl hover:-translate-y-2"
+                onClick={() => {
+                  setIsNavigating(true);
+                  navigate(memberId ? `/instructors/${memberId}` : "/instructors");
+                }}
+                className="group relative bg-[#262626] rounded-[40px] overflow-hidden flex flex-col h-full transition-all duration-500 hover:shadow-2xl hover:-translate-y-2 cursor-pointer"
               >
                 {/* ── IMAGE ─────────────────────────────── */}
                 <div className="relative h-[380px] md:h-[480px] overflow-hidden">
@@ -161,7 +173,7 @@ export default function Instructor() {
                     alt={inst.name}
                     className="w-full h-full object-cover object-top transition-transform duration-700 group-hover:scale-110"
                   />
-                  
+
                   {/* Hover Cover with Button */}
                   <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-all duration-400 flex items-center justify-center backdrop-blur-sm">
                     <div className="bg-white text-[#1A1A1A] px-10 py-4 rounded-full font-bold text-[16px] shadow-2xl transform translate-y-6 group-hover:translate-y-0 transition-all duration-500 ease-out">
@@ -182,7 +194,7 @@ export default function Instructor() {
                     {inst.name}
                   </h3>
                 </div>
-              </Link>
+              </div>
             );
           })}
         </div>
