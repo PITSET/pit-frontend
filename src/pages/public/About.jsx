@@ -271,56 +271,10 @@ export default function About() {
 
 </div>
 
-        {/* INSTRUCTORS */}
-        <div className="mt-24">
-
-          <h2 className="font-roboto-condensed font-bold text-[64px] text-brand-primary mb-8">
-            Instructors
-          </h2>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 mt-10">
-            {displayInstructors.map((inst, i) => {
-              const program =
-                inst?.team_member_programs?.[0]?.programs?.program_name || "";
-              const name = inst?.full_name ?? inst?.name ?? "Instructor";
-              const imageUrl =
-                inst?.profile_image_url ?? inst?.image_url ?? "";
-              const memberId = inst?.id ?? inst?.team_member_id ?? inst?._id;
-
-              return (
-                <Link
-                  key={memberId ?? `${name}-${i}`}
-                  to={memberId ? `/instructors/${memberId}` : "/instructors"}
-                  className="group w-full md:w-[312px] transition-all duration-300 hover:-translate-y-2 hover:shadow-xl cursor-pointer"
-                >
-                  {/* IMAGE */}
-                  <div className="overflow-hidden">
-                    <img
-                      src={resolveAssetUrl(imageUrl)}
-                      alt={name}
-                      className="w-full md:w-[312px] h-[390px] object-cover transition-transform duration-500 group-hover:scale-110"
-                    />
-                  </div>
-
-                  {/* INFO */}
-                  <div className="bg-white w-full md:w-[312px] h-[108px] px-4 pt-4 transition-colors duration-300 group-hover:bg-gray-50">
-                    <p className="text-gray-500 text-[12px]">
-                      {inst?.position_title}
-                      {program ? `, ${program}` : ""}
-                    </p>
-
-                    <p className="text-brand-primary font-bold text-[14px] mt-1 transition-colors duration-300 group-hover:text-black">
-                      {name}
-                    </p>
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
+      
 
         </div>
 
-      </div>
     </div>
   );
 }
