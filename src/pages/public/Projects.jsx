@@ -2,8 +2,6 @@ import React, { useEffect, useState } from "react";
 import api from "../../lib/api";
 import resolveAssetUrl from "../../lib/resolveAssetUrl";
 import ProjectsCollection from "../../components/ui/ProjectsCollection";
-import Breadcrumbs from "../../components/ui/Breadcrumbs";
-
 const formatProjectDate = (value) => {
   if (!value) return "";
   const date = new Date(value);
@@ -31,7 +29,7 @@ export default function Projects() {
       try {
         const res = await api.get("/projects");
         const raw = Array.isArray(res.data) ? res.data : res.data?.data || res.data?.projects || [];
-        
+
         const mapped = (Array.isArray(raw) ? raw : [])
           .filter((p) => p.is_active !== false)
           .map((item) => {
@@ -80,9 +78,6 @@ export default function Projects() {
 
   return (
     <div className="min-h-screen bg-white pb-20 pt-10">
-      <div className="max-w-7xl mx-auto px-6 mb-8">
-        <Breadcrumbs items={[{ label: "Projects", path: "/projects" }]} />
-      </div>
       <ProjectsCollection projects={projects} isLoading={loading} />
     </div>
   );

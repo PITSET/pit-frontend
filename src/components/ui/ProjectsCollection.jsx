@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useRef, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { BsSearch } from "react-icons/bs";
 import { HiAdjustmentsHorizontal, HiUsers } from "react-icons/hi2";
 import Loader from "../ui/Loader";
@@ -11,8 +11,18 @@ import Loader from "../ui/Loader";
  * @param {Boolean} isLoading - Loading state.
  */
 export default function ProjectsCollection({ projects = [], isLoading = false }) {
-  const [activeTab, setActiveTab] = useState("All");
+  const [searchParams] = useSearchParams();
+  const initialProgram = searchParams.get("program") || "All";
+  const [activeTab, setActiveTab] = useState(initialProgram);
   const [searchQuery, setSearchQuery] = useState("");
+
+  // Sync activeTab with URL parameter when it changes
+  useEffect(() => {
+    const program = searchParams.get("program");
+    if (program) {
+      setActiveTab(program);
+    }
+  }, [searchParams]);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [filters, setFilters] = useState({
     teamSize: "All",
