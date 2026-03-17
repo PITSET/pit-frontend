@@ -6,6 +6,13 @@ import resolveAssetUrl from "../../lib/resolveAssetUrl";
 import axios from "axios";
 import Breadcrumbs from "../../components/ui/Breadcrumbs";
 
+const programSectionId = (value) => {
+  const name = String(value || "").toLowerCase().trim();
+  if (name.includes("mechatronics")) return "mechatronics-engineering";
+  if (name.includes("software")) return "software-engineering";
+  if (name.includes("mechanical")) return "mechanical-engineering";
+  return name.replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+};
 
 export default function Programs() {
   const [searchParams] = useSearchParams();
@@ -84,6 +91,7 @@ export default function Programs() {
             filteredPrograms.map((program) => (
               <div
                 key={program.id}
+                id={programSectionId(program?.program_name)}
                 className="bg-white rounded-xl shadow-md flex flex-col overflow-hidden"
                 style={{ width: "400px", height: "510px" }}
               >

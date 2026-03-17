@@ -10,8 +10,13 @@ import Loader from "../ui/Loader";
  * @param {Array} projects - Array of project objects.
  * @param {Boolean} isLoading - Loading state.
  */
-export default function ProjectsCollection({ projects = [], isLoading = false }) {
-  const [activeTab, setActiveTab] = useState("All");
+export default function ProjectsCollection({
+  projects = [],
+  isLoading = false,
+  activeTab: controlledActiveTab,
+  onActiveTabChange,
+}) {
+  const [internalActiveTab, setInternalActiveTab] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [filters, setFilters] = useState({
@@ -19,6 +24,12 @@ export default function ProjectsCollection({ projects = [], isLoading = false })
     launchYear: "All",
   });
   const filterRef = useRef(null);
+
+  const isControlled = typeof controlledActiveTab === "string";
+  const activeTab = isControlled ? controlledActiveTab : internalActiveTab;
+  const setActiveTab = isControlled && typeof onActiveTabChange === "function"
+    ? onActiveTabChange
+    : setInternalActiveTab;
 
   const tabs = [
     "All",

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import api from "../../lib/api";
 import resolveAssetUrl from "../../lib/resolveAssetUrl";
 import ProjectsCollection from "../../components/ui/ProjectsCollection";
@@ -15,13 +16,27 @@ const formatProjectDate = (value) => {
 };
 
 export default function Projects() {
+  const location = useLocation();
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("All");
 
-  // Scroll to top on mount
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: "instant" });
-  }, []);
+    const hash = (location.hash || "").toLowerCase();
+    if (hash === "#mechanical-engineering-projects") {
+      setActiveTab("Mechanical Engineering");
+      return;
+    }
+    if (hash === "#mechatronics-engineering-projects") {
+      setActiveTab("Mechatronics Engineering");
+      return;
+    }
+    if (hash === "#software-engineering-projects") {
+      setActiveTab("Software Engineering");
+      return;
+    }
+    setActiveTab("All");
+  }, [location.hash]);
 
   useEffect(() => {
     let isActive = true;
@@ -83,7 +98,18 @@ export default function Projects() {
       <div className="max-w-7xl mx-auto px-6 mb-8">
         <Breadcrumbs items={[{ label: "Projects", path: "/projects" }]} />
       </div>
-      <ProjectsCollection projects={projects} isLoading={loading} />
+
+      {/* Hash anchors (used by ScrollToHash) */}
+      <div id="mechanical-engineering-projects" />
+      <div id="mechatronics-engineering-projects" />
+      <div id="software-engineering-projects" />
+
+      <ProjectsCollection
+        projects={projects}
+        isLoading={loading}
+        activeTab={activeTab}
+        onActiveTabChange={setActiveTab}
+      />
     </div>
   );
 }

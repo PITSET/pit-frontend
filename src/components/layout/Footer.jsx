@@ -1,9 +1,9 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import {
   FaFacebookF,
   FaYoutube,
-  FaInstagram,
-  FaXTwitter,
+  
 } from "react-icons/fa6";
 import logo from "../../assets/logo/logo.svg";
 
@@ -17,9 +17,9 @@ export default function Footer() {
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-10">
           {/* Logo */}
           <div>
-            <a href="/">
+            <Link to="/">
               <img src={logo} alt="logo" className="h-10 cursor-pointer" />
-            </a>
+            </Link>
             <p className="mt-4 text-sm text-gray-600 leading-relaxed max-w-[240px]">
               Shaping future technologists through excellence in education.
             </p>
@@ -30,19 +30,19 @@ export default function Footer() {
             <h3 className="font-bold text-base text-gray-900 mb-4">About</h3>
             <ul className="space-y-2 text-sm uppercase tracking-wide text-gray-700">
               <li>
-                <a href="/about" className="hover:text-black transition cursor-pointer">About</a>
+                <Link to="/about" className="hover:text-black transition cursor-pointer">About</Link>
               </li>
               <li>
-                <a href="/contact" className="hover:text-black transition cursor-pointer">Contact Us</a>
+                <Link to="/contact" className="hover:text-black transition cursor-pointer">Contact Us</Link>
               </li>
               <li>
-                <a href="/history" className="hover:text-black transition cursor-pointer">History</a>
+                <Link to="/about#history" className="hover:text-black transition cursor-pointer">History</Link>
               </li>
               <li>
-                <a href="/vision" className="hover:text-black transition cursor-pointer">Vision</a>
+                <Link to="/about#vision" className="hover:text-black transition cursor-pointer">Vision</Link>
               </li>
               <li>
-                <a href="/mission" className="hover:text-black transition cursor-pointer">Mission</a>
+                <Link to="/about#mission" className="hover:text-black transition cursor-pointer">Mission</Link>
               </li>
             </ul>
           </div>
@@ -52,19 +52,19 @@ export default function Footer() {
             <h3 className="font-bold text-base text-gray-900 mb-4">Programs</h3>
             <ul className="space-y-2 text-sm uppercase tracking-wide text-gray-700">
               <li>
-                <a href="/program" className="hover:text-black transition cursor-pointer">Program</a>
+                <Link to="/programs" className="hover:text-black transition cursor-pointer">Program</Link>
               </li>
               <li>
-                <a href="/program/mechanical-engineering" className="hover:text-black transition cursor-pointer">ME Program</a>
+                <Link to="/programs#mechanical-engineering" className="hover:text-black transition cursor-pointer">ME Program</Link>
               </li>
               <li>
-                <a href="/program/mechatronics-engineering" className="hover:text-black transition cursor-pointer">JME Program</a>
+                <Link to="/programs#mechatronics-engineering" className="hover:text-black transition cursor-pointer">JME Program</Link>
               </li>
               <li>
-                <a href="/program/software-engineering" className="hover:text-black transition cursor-pointer">SE Program</a>
+                <Link to="/programs#software-engineering" className="hover:text-black transition cursor-pointer">SE Program</Link>
               </li>
               <li>
-                <a href="/instructor" className="hover:text-black transition cursor-pointer">Instructor</a>
+                <Link to="/instructors" className="hover:text-black transition cursor-pointer">Instructor</Link>
               </li>
             </ul>
           </div>
@@ -74,16 +74,16 @@ export default function Footer() {
             <h3 className="font-bold text-base text-gray-900 mb-4">Projects</h3>
             <ul className="space-y-2 text-sm uppercase tracking-wide text-gray-700">
               <li>
-                <a href="/projects" className="hover:text-black transition cursor-pointer">Project</a>
+                <Link to="/projects" className="hover:text-black transition cursor-pointer">Project</Link>
               </li>
               <li>
-                <a href="/projects/software-engineering" className="hover:text-black transition cursor-pointer">SE Projects</a>
+                <Link to="/projects#software-engineering-projects" className="hover:text-black transition cursor-pointer">SE Projects</Link>
               </li>
               <li>
-                <a href="/projects/mechatronics-engineering" className="hover:text-black transition cursor-pointer">JME Projects</a>
+                <Link to="/projects#mechatronics-engineering-projects" className="hover:text-black transition cursor-pointer">JME Projects</Link>
               </li>
               <li>
-                <a href="/projects/mechanical-engineering" className="hover:text-black transition cursor-pointer">ME Projects</a>
+                <Link to="/projects#mechanical-engineering-projects" className="hover:text-black transition cursor-pointer">ME Projects</Link>
               </li>
             </ul>
           </div>
