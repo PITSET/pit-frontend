@@ -62,7 +62,7 @@ export default function About() {
       try {
         const [aboutRes, foundersRes] = await Promise.all([
           api.get("/about"),
-          api.get("/founders").catch(() => null),
+          api.get("/team-members/founders").catch(() => null),
         ]);
 
         const allowedTypes = ["hero", "history", "mission", "vision"];
@@ -242,14 +242,7 @@ export default function About() {
 
         {/* FOUNDERS */}
         <div className="mt-24 md:mt-32">
-          <div className="flex items-center gap-3 mb-10">
-            <span className="bg-gradient-to-r from-brand-primary to-brand-accent text-white text-[18px] md:text-[20px] font-bold px-5 py-2 rounded-l-[8px]">
-              FOUNDER
-            </span>
-            <span className="text-gray-700 text-[18px] md:text-[20px] font-bold">
-              & PRINCIPAL
-            </span>
-          </div>
+         
 
           <div className="space-y-16 md:space-y-24">
             {displayFounders.slice(0, 2).map((founder, index) => {
@@ -276,7 +269,7 @@ export default function About() {
                         : "flex justify-center md:justify-start"
                     }
                   >
-                    <div className="w-full max-w-[520px] overflow-hidden rounded-[16px] bg-gray-100 aspect-[4/3] md:aspect-[3/4]">
+                    <div className="w-full max-w-[580px] h-[720px] overflow-hidden rounded-[16px] bg-gray-100">
                       <img
                         src={resolveAssetUrl(imageUrl)}
                         alt={founder.name || "Founder"}
@@ -287,10 +280,10 @@ export default function About() {
                   </div>
 
                   <div className={isReversed ? "md:order-1" : ""}>
-                    <p className="text-[12px] tracking-[0.2em] font-bold text-red-500 mb-3">
-                      {String(role).toUpperCase()}
+                    <p className="font-roboto-condensed font-bold text-[24px] text-red-500 mb-3">
+                      {role}
                     </p>
-                    <h3 className="text-[44px] md:text-[56px] font-bold text-brand-primary leading-none mb-6">
+                    <h3 className="font-roboto-condensed font-bold text-[64px] text-brand-primary leading-none mb-6">
                       {founder.name}
                     </h3>
                     {programName && (
@@ -298,7 +291,7 @@ export default function About() {
                         {programName}
                       </p>
                     )}
-                    <p className="text-gray-600 leading-relaxed max-w-xl">
+                    <p className="font-roboto text-[16px] font-normal text-gray-600 leading-relaxed max-w-xl">
                       {bio}
                     </p>
                   </div>
