@@ -1,19 +1,32 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import logo from "../../assets/logo/logo.svg";
+import api from "../../lib/api";
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDesktopProgramOpen, setIsDesktopProgramOpen] = useState(false);
   const [isProgramOpen, setIsProgramOpen] = useState(false);
   const [activeMobileProgram, setActiveMobileProgram] = useState(null);
+  const [programs, setPrograms] = useState([]);
+  const [loadingPrograms, setLoadingPrograms] = useState(true);
   const location = useLocation();
 
-  const programs = [
-    "Mechatronics Engineering",
-    "Software Engineering",
-    "Mechanical Engineering",
-  ];
+  const fetchPrograms = async () => {
+    try {
+      const res = await api.get("/programs");
+      const data = Array.isArray(res.data) ? res.data : res.data?.data || [];
+      setPrograms(data.filter(p => p.is_active !== false));
+    } catch (err) {
+      console.error("Failed to load nav programs:", err);
+    } finally {
+      setLoadingPrograms(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchPrograms();
+  }, []);
 
   // Close all menus on route change
   useEffect(() => {
@@ -83,16 +96,16 @@ export default function Navbar() {
               <div className="bg-white rounded-b-2xl shadow-2xl border-t border-gray-50 overflow-hidden">
                 <div className="p-8 grid grid-cols-3 gap-8">
                   {programs.map((program) => (
-                    <div key={program} className="space-y-4">
+                    <div key={program.id} className="space-y-4">
                       <h3 className="text-red-600 font-bold text-base tracking-wide uppercase border-b border-gray-100 pb-2">
-                        {program}
+                        {program.program_name}
                       </h3>
 
                       <ul className="space-y-4">
                         {[
-                          { label: "Program Info", sub: "Overview & projects", path: `/programs?program=${encodeURIComponent(program)}` },
-                          { label: "Projects", sub: "List of all projects", path: `/projects?program=${encodeURIComponent(program)}` },
-                          { label: "Instructors", sub: "Meet our faculty", path: `/instructors?program=${encodeURIComponent(program)}` }
+                          { label: "Program Info", sub: "Overview & projects", path: `/programs/${program.id}` },
+                          { label: "Projects", sub: "List of all projects", path: `/projects?program=${encodeURIComponent(program.program_name)}` },
+                          { label: "Instructors", sub: "Meet our faculty", path: `/instructors?program=${encodeURIComponent(program.program_name)}` }
                         ].map((link) => (
                           <li key={link.label} className="group">
                             <Link
@@ -184,20 +197,20 @@ export default function Navbar() {
               <div className={`overflow-hidden transition-all duration-300 ${isProgramOpen ? "max-h-[1000px] mt-4" : "max-h-0"}`}>
                 <div className="flex flex-col gap-6 pl-4 border-l-2 border-red-50">
                   {programs.map((program) => (
-                    <div key={program} className="flex flex-col gap-3">
+                    <div key={program.id} className="flex flex-col gap-3">
                       <button
                         className="flex justify-between items-center text-sm uppercase tracking-wider text-gray-500 font-bold"
-                        onClick={() => toggleMobileProgram(program)}
+                        onClick={() => toggleMobileProgram(program.program_name)}
                       >
-                        {program}
-                        <span className="text-xs">{activeMobileProgram === program ? "−" : "+"}</span>
+                        {program.program_name}
+                        <span className="text-xs">{activeMobileProgram === program.program_name ? "−" : "+"}</span>
                       </button>
 
-                      <div className={`flex flex-col gap-4 pl-4 overflow-hidden transition-all duration-300 ${activeMobileProgram === program ? "max-h-[200px] mt-2" : "max-h-0"}`}>
+                      <div className={`flex flex-col gap-4 pl-4 overflow-hidden transition-all duration-300 ${activeMobileProgram === program.program_name ? "max-h-[200px] mt-2" : "max-h-0"}`}>
                         {[
-                          { label: "Program Info", path: `/programs?program=${encodeURIComponent(program)}` },
-                          { label: "Projects", path: `/projects?program=${encodeURIComponent(program)}` },
-                          { label: "Instructors", path: `/instructors?program=${encodeURIComponent(program)}` }
+                          { label: "Program Info", path: `/programs/${program.id}` },
+                          { label: "Projects", path: `/projects?program=${encodeURIComponent(program.program_name)}` },
+                          { label: "Instructors", path: `/instructors?program=${encodeURIComponent(program.program_name)}` }
                         ].map((link) => (
                           <Link
                             key={link.label}
