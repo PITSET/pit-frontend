@@ -70,7 +70,7 @@ export default function InstructorDetail() {
 
         {/* IMAGE */}
         <div>
-          <div className="w-full overflow-hidden rounded-lg aspect-[4/5] bg-gray-100">
+          <div className="w-full overflow-hidden rounded-lg aspect-4/5 bg-gray-100">
             <img
               src={resolveAssetUrl(instructor.image_url)}
               alt={instructor.name}
