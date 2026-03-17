@@ -146,8 +146,8 @@ export default function ProjectsCollection({ projects = [], isLoading = false })
             <BsSearch className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 text-xl" />
           </div>
 
-          {/* Filter Button - Skeuomorphic Popped Out (Mobile Only) */}
-          <div className="relative lg:hidden" ref={filterRef}>
+          {/* Filter Button - Skeuomorphic Popped Out */}
+          <div className="relative" ref={filterRef}>
             <button
               onClick={() => setIsFilterOpen(!isFilterOpen)}
               className={`w-[56px] h-[56px] flex items-center justify-center rounded-[16px] transition-all bg-white border border-gray-100 text-gray-600 hover:text-[#c92a2a] active:scale-95 ${isFilterOpen
@@ -162,8 +162,8 @@ export default function ProjectsCollection({ projects = [], isLoading = false })
             {isFilterOpen && (
               <div className="absolute right-0 mt-3 w-72 bg-white border border-gray-100 rounded-2xl shadow-2xl p-6 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
                 <div className="space-y-6">
-                  {/* Programs (Mobile Only) */}
-                  <div>
+                  {/* Programs (Visible only when tabs are hidden) */}
+                  <div className="lg:hidden">
                     <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Programs</label>
                     <div className="flex flex-col gap-2">
                       {tabs.map(tab => (
