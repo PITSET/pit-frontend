@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import logoImage from "../../assets/logo/logo_image.svg";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import api from "../../lib/api";
 import resolveAssetUrl from "../../lib/resolveAssetUrl";
@@ -61,6 +61,8 @@ export default function Home() {
   const [founder2Section, setFounder2Section] = useState(null);
   const [projects, setProjects] = useState([]);
   const [isLoadingProjects, setIsLoadingProjects] = useState(true);
+  const [isNavigating, setIsNavigating] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     let isActive = true;
@@ -208,6 +210,10 @@ export default function Home() {
     return <Loader label="Loading Prometheus Institute..." />;
   }
 
+  if (isNavigating) {
+    return <Loader label="Opening Programs..." />;
+  }
+
   return (
     <main className="w-full">
 
@@ -247,14 +253,15 @@ export default function Home() {
 
 
             <Button
-              asChild
               variant="primary"
               size="lg"
               className="font-semibold shadow-lg"
+              onClick={() => {
+                setIsNavigating(true);
+                navigate("/programs");
+              }}
             >
-              <Link to="/programs">
-                Explore Our Programs
-              </Link>
+              Explore Our Programs
             </Button>
 
 

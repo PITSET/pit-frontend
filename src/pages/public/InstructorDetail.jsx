@@ -64,42 +64,6 @@ export default function InstructorDetail() {
   return (
     <div className="max-w-[1248px] mx-auto px-4 py-10">
 
-    {/* BREADCRUMB */}
-<div className="flex items-center gap-3 mb-8 font-roboto text-[16px] font-bold">
-
-  <Link
-    to="/"
-    className="text-gray-700 hover:text-brand-primary transition"
-  >
-    Home
-  </Link>
-
-  <span className="text-gray-500">›</span>
-
-  <Link
-    to="/about"
-    className="text-gray-700 hover:text-brand-primary transition"
-  >
-    About
-  </Link>
-
-  <span className="text-gray-500">›</span>
-
-  <Link
-    to="/instructors"
-    className="text-gray-700 hover:text-brand-primary transition"
-  >
-    Instructors
-  </Link>
-
-  <span className="text-brand-primary">›</span>
-
-  <span className="text-brand-primary">
-    {instructor.name}
-  </span>
-
-</div>
-
       {/* CONTENT */}
       <div className="grid md:grid-cols-2 gap-16">
 
@@ -155,85 +119,85 @@ export default function InstructorDetail() {
           </div>
 
           {/* INFORMATION */}
-        <h3 className="text-brand-primary-dark text-2xl font-semibold mb-6">
-  Information
-</h3>
+          <h3 className="text-brand-primary-dark text-2xl font-semibold mb-6">
+            Information
+          </h3>
 
-<div className="space-y-8">
+          <div className="space-y-8">
 
-  {/* POSITION */}
-  <div className="flex items-center gap-6">
+            {/* POSITION */}
+            <div className="flex items-center gap-6">
 
-    <div className="w-[53px] h-[46px] flex items-center justify-center bg-white border rounded-[4px] shadow-md">
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        className="w-7 h-7 text-brand-primary-dark"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-        strokeWidth="1.8"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          d="M12 12c2.761 0 5-2.462 5-5.5S14.761 1 12 1 7 3.462 7 6.5 9.239 12 12 12z"
-        />
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          d="M3 22c0-4 4-7 9-7s9 3 9 7"
-        />
-      </svg>
-    </div>
+              <div className="w-[53px] h-[46px] flex items-center justify-center bg-white border rounded-[4px] shadow-md">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="w-7 h-7 text-brand-primary-dark"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M12 12c2.761 0 5-2.462 5-5.5S14.761 1 12 1 7 3.462 7 6.5 9.239 12 12 12z"
+                  />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M3 22c0-4 4-7 9-7s9 3 9 7"
+                  />
+                </svg>
+              </div>
 
-    <div>
-      <p className="text-xl font-semibold text-gray-900">
-        Position
-      </p>
-      <p className="text-lg text-gray-700">
-        {instructor.position_title}
-      </p>
-    </div>
+              <div>
+                <p className="text-xl font-semibold text-gray-900">
+                  Position
+                </p>
+                <p className="text-lg text-gray-700">
+                  {instructor.position_title}
+                </p>
+              </div>
 
-  </div>
+            </div>
 
-  {/* EMAIL */}
-  <div className="flex items-center gap-6">
+            {/* EMAIL */}
+            <div className="flex items-center gap-6">
 
-    <div className="w-[53px] h-[46px] flex items-center justify-center bg-white border rounded-[4px] shadow-md">
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        className="w-7 h-7 text-brand-primary-dark"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-        strokeWidth="1.8"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          d="M4 4h16v16H4z"
-        />
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          d="M4 6l8 7 8-7"
-        />
-      </svg>
-    </div>
+              <div className="w-[53px] h-[46px] flex items-center justify-center bg-white border rounded-[4px] shadow-md">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="w-7 h-7 text-brand-primary-dark"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M4 4h16v16H4z"
+                  />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M4 6l8 7 8-7"
+                  />
+                </svg>
+              </div>
 
-    <div>
-      <p className="text-xl font-semibold text-gray-900">
-        Email
-      </p>
-      <p className="text-lg text-gray-700">
-        {instructor.email}
-      </p>
-    </div>
+              <div>
+                <p className="text-xl font-semibold text-gray-900">
+                  Email
+                </p>
+                <p className="text-lg text-gray-700">
+                  {instructor.email}
+                </p>
+              </div>
 
-  </div>
+            </div>
 
-</div>
+          </div>
         </div>
 
       </div>

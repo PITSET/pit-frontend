@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import api from "../../lib/api";
 import resolveAssetUrl from "../../lib/resolveAssetUrl";
 import { Button } from "../../components/ui/Button";
+import Loader from "../../components/ui/Loader";
 
 import axios from "axios";
 
@@ -11,6 +12,8 @@ export default function Programs() {
   const [programs, setPrograms] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isNavigating, setIsNavigating] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchPrograms = async () => {
@@ -36,11 +39,11 @@ export default function Programs() {
   }, []);
 
   if (loading) {
-    return (
-      <div className="text-center py-20 text-lg font-[Roboto]">
-        Loading programs...
-      </div>
-    );
+    return <Loader label="Loading Programs..." />;
+  }
+
+  if (isNavigating) {
+    return <Loader label="Opening Program Details..." />;
   }
 
   if (error) {
@@ -54,10 +57,10 @@ export default function Programs() {
   const filterProgram = (searchParams.get("program") || "").trim();
   const filteredPrograms = filterProgram
     ? programs.filter(
-        (p) =>
-          (p?.program_name || "").toLowerCase() ===
-          filterProgram.toLowerCase(),
-      )
+      (p) =>
+        (p?.program_name || "").toLowerCase() ===
+        filterProgram.toLowerCase(),
+    )
     : programs;
 
   return (
@@ -112,12 +115,15 @@ export default function Programs() {
                     {program.description}
                   </p>
 
-                  {/* Read More Button */}
                   <div className="mt-auto flex justify-end pt-4">
-                    <Button variant="link" asChild>
-                      <Link to={`/programs/${program.id}`}>
-                        Read More
-                      </Link>
+                    <Button
+                      variant="link"
+                      onClick={() => {
+                        setIsNavigating(true);
+                        navigate(`/programs/${program.id}`);
+                      }}
+                    >
+                      Read More
                     </Button>
                   </div>
 

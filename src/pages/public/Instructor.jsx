@@ -80,35 +80,11 @@ export default function Instructor() {
     activeTab === "All"
       ? instructors
       : instructors.filter((i) =>
-          getPrimaryProgramName(i) === activeTab
-        );
+        getPrimaryProgramName(i) === activeTab
+      );
 
   return (
     <div>
-
-      {/* BREADCRUMB */}
-      <div className=" py-10">
-        <div className="max-w-[1248px] mx-auto px-4 flex items-center gap-3 text-lg font-medium">
-
-          <Link to="/" className="text-gray-700 hover:text-brand-primary">
-            Home
-          </Link>
-
-          <span className="text-gray-500">›</span>
-
-          <Link to="/about" className="text-gray-700 hover:text-brand-primary">
-            About
-          </Link>
-
-          <span className="text-brand-primary">›</span>
-
-          <span className="text-brand-primary font-semibold">
-            Instructors
-          </span>
-
-        </div>
-      </div>
-
       <div className="max-w-[1248px] mx-auto py-16 px-4">
 
         {/* TITLE */}
@@ -155,7 +131,7 @@ export default function Instructor() {
         </div>
 
         {/* GRID */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 mt-10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-10 mt-10">
           {error && (
             <div className="col-span-full text-center text-brand-primary">
               {error}
@@ -168,44 +144,47 @@ export default function Instructor() {
             </div>
           )}
 
-         {filtered.map((inst) => {
-  const program = getPrimaryProgramName(inst);
-  const memberId = inst?.id ?? inst?.team_member_id ?? inst?._id;
+          {filtered.map((inst) => {
+            const program = getPrimaryProgramName(inst);
+            const memberId = inst?.id ?? inst?.team_member_id ?? inst?._id;
 
-  return (
-    <Link
-      key={memberId ?? inst?.id ?? inst?.name}
-      to={memberId ? `/instructors/${memberId}` : "/instructors"}
-      className="group block w-full md:w-[312px] transition-all duration-300 hover:-translate-y-2 hover:shadow-xl"
-    >
-      {/* IMAGE */}
-      <div className="overflow-hidden">
-        <img
-          src={resolveAssetUrl(inst.image_url)}
-          alt={inst.name}
-          className="w-full md:w-[312px] h-[390px] object-cover transition-transform duration-500 group-hover:scale-110"
-        />
-      </div>
+            return (
+              <Link
+                key={memberId ?? inst?.id ?? inst?.name}
+                to={memberId ? `/instructors/${memberId}` : "/instructors"}
+                className="group relative bg-[#262626] rounded-[40px] overflow-hidden flex flex-col h-full transition-all duration-500 hover:shadow-2xl hover:-translate-y-2"
+              >
+                {/* ── IMAGE ─────────────────────────────── */}
+                <div className="relative h-[380px] md:h-[480px] overflow-hidden">
+                  <img
+                    src={resolveAssetUrl(inst.image_url)}
+                    alt={inst.name}
+                    className="w-full h-full object-cover object-top transition-transform duration-700 group-hover:scale-110"
+                  />
+                  
+                  {/* Hover Cover with Button */}
+                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-all duration-400 flex items-center justify-center backdrop-blur-sm">
+                    <div className="bg-white text-[#1A1A1A] px-10 py-4 rounded-full font-bold text-[16px] shadow-2xl transform translate-y-6 group-hover:translate-y-0 transition-all duration-500 ease-out">
+                      View Profile
+                    </div>
+                  </div>
 
-      {/* INFO */}
-      <div className="bg-white w-full md:w-[312px] h-[108px] px-4 pt-4 transition-colors duration-300 group-hover:bg-gray-50">
-        <p className="text-gray-500 text-[12px]">
-          {inst.position_title}, {program}
-        </p>
+                  {/* Subtle Top Gradient */}
+                  <div className="absolute inset-x-0 top-0 h-24 bg-linear-to-b from-black/20 to-transparent pointer-events-none" />
+                </div>
 
-        <p className="text-brand-primary font-bold text-[14px] mt-1 transition-colors duration-300 group-hover:text-black">
-          {inst.name}
-        </p>
-
-        <div className="mt-2 text-left">
-          <Button variant="link" size="sm" asChild>
-            <span className="text-[12px] font-bold">View Profile</span>
-          </Button>
-        </div>
-      </div>
-    </Link>
-  );
-})}
+                {/* ── INFO (DARK FOOTER) ────────────────── */}
+                <div className="p-8 pb-10 flex flex-col items-center text-center bg-[#262626]">
+                  <span className="text-[#9FA2A8] text-[9px] md:text-[10px] font-bold tracking-[0.2em] uppercase block mb-2">
+                    INSTRUCTOR
+                  </span>
+                  <h3 className="text-white text-[28px] sm:text-[32px] md:text-[38px] font-bold tracking-tight leading-none truncate w-full">
+                    {inst.name}
+                  </h3>
+                </div>
+              </Link>
+            );
+          })}
         </div>
 
       </div>

@@ -298,7 +298,7 @@ export default function About() {
                     <img
                       src={resolveAssetUrl(imageUrl)}
                       alt={name}
-                      className="w-full md:w-[312px] h-[390px] object-cover transition-transform duration-500 group-hover:scale-110"
+                      className="w-full md:w-[312px] h-[390px] object-cover object-top transition-transform duration-500 group-hover:scale-110"
                     />
                   </div>
 

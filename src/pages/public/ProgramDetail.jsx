@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 
 import api from "../../lib/api";
 import resolveAssetUrl from "../../lib/resolveAssetUrl";
+import Loader from "../../components/ui/Loader";
 
 import axios from "axios";
 
@@ -35,11 +36,7 @@ export default function ProgramDetail() {
   }, [id]);
 
   if (loading) {
-    return (
-      <div className="text-center py-20 text-lg font-[Roboto]">
-        Loading...
-      </div>
-    );
+    return <Loader label="Loading Program Details..." />;
   }
 
   if (error) {
@@ -73,7 +70,7 @@ export default function ProgramDetail() {
         />
 
         {/* Dark Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-r from-[#0b2545]/90 via-[#0b2545]/70 to-transparent"></div>
+        <div className="absolute inset-0 bg-linear-to-r from-[#0b2545]/90 via-[#0b2545]/70 to-transparent"></div>
 
         {/* Content */}
         <div className="relative max-w-[1280px] mx-auto min-h-screen flex items-center px-6">
@@ -101,7 +98,7 @@ export default function ProgramDetail() {
         <div className="absolute inset-0 bg-gray-200"></div>
 
         {/* Optional soft gradient */}
-        <div className="absolute inset-0 bg-gradient-to-b from-gray-200 via-gray-100 to-gray-200"></div>
+        <div className="absolute inset-0 bg-linear-to-b from-gray-200 via-gray-100 to-gray-200"></div>
 
         {/* Content */}
         <div className="relative max-w-[900px] mx-auto text-center px-6">
@@ -147,7 +144,7 @@ export default function ProgramDetail() {
                   className="h-[180px] w-full object-cover"
                 />
 
-                <div className="p-6 flex flex-col flex-grow">
+                <div className="p-6 flex flex-col grow">
                   <h3 className="font-bold text-[22px] mb-3 font-[Roboto_Condensed]">
                     {project.title}
                   </h3>
