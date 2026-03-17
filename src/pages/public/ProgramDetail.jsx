@@ -3,7 +3,9 @@ import { useParams } from "react-router-dom";
 
 import api from "../../lib/api";
 import resolveAssetUrl from "../../lib/resolveAssetUrl";
+import { Button } from "../../components/ui/Button";
 import Loader from "../../components/ui/Loader";
+import { Link } from "react-router-dom";
 
 import axios from "axios";
 
@@ -116,46 +118,58 @@ export default function ProgramDetail() {
       </section>
 
       {/* PROJECTS SECTION */}
-      <section className="max-w-[] mx-auto px-6 pb-20">
-        <div className="flex justify-between items-center mb-8">
-          <h2 className="text-[36px] font-bold text-brand-primary font-[Roboto_Condensed]">
+      <section className="max-w-[1280px] mx-auto px-6 pb-24 mt-16">
+        <div className="flex justify-between items-end mb-12 border-b-2 border-gray-100 pb-6">
+          <h2 className="text-[48px] md:text-[64px] font-bold text-red-600 font-[Roboto_Condensed] uppercase tracking-tight leading-none">
             Projects
           </h2>
 
-          <button className="text-brand-primary font-semibold hover:underline">
-            VIEW MORE →
-          </button>
+          <Link 
+            to="/projects" 
+            className="text-red-600 font-bold uppercase text-sm tracking-[0.2em] flex items-center group transition-colors hover:text-red-700 pb-2"
+          >
+            VIEW MORE <span className="ml-2 group-hover:translate-x-1 transition-transform">›</span>
+          </Link>
         </div>
 
         {projects.length === 0 ? (
-          <p className="text-gray-500 font-[Roboto]">
-            No projects available.
-          </p>
+          <div className="py-20 text-center bg-gray-50 rounded-3xl border-2 border-dashed border-gray-200">
+            <p className="text-gray-500 font-[Roboto] text-xl">
+              No projects available in this program.
+            </p>
+          </div>
         ) : (
-          <div className="grid grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
             {projects.map((project) => (
               <div
                 key={project.id}
-                className="bg-white rounded-lg shadow-md overflow-hidden flex flex-col"
+                className="group bg-white rounded-[32px] shadow-[0_15px_40px_-15px_rgba(0,0,0,0.1)] hover:shadow-[0_20px_50px_-10px_rgba(0,0,0,0.15)] overflow-hidden flex flex-col h-full transition-all duration-500 hover:-translate-y-2"
               >
-                <img
-                  src={resolveAssetUrl(project.image)}
-                  alt={project.title}
-                  className="h-[180px] w-full object-cover"
-                />
+                <div className="relative overflow-hidden h-[260px]">
+                  <img
+                    src={resolveAssetUrl(project.image)}
+                    alt={project.title}
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-black/5 group-hover:bg-transparent transition-colors duration-500" />
+                </div>
 
-                <div className="p-6 flex flex-col grow">
-                  <h3 className="font-bold text-[22px] mb-3 font-[Roboto_Condensed]">
+                <div className="p-8 flex flex-col grow">
+                  <h3 className="font-bold text-[26px] mb-4 font-[Roboto_Condensed] text-gray-900 group-hover:text-red-600 transition-colors leading-tight">
                     {project.title}
                   </h3>
 
-                  <p className="text-gray-600 text-[16px] mb-6 font-[Roboto]">
+                  <p className="text-gray-600 text-[17px] leading-relaxed mb-8 font-[Roboto] line-clamp-3 grow">
                     {project.description}
                   </p>
 
-                  <button className="mt-auto bg-brand-primary hover:opacity-90 text-white w-[108px] h-[38px] rounded transition">
-                    Read More
-                  </button>
+                  <div className="flex justify-start">
+                    <Button variant="link" asChild className="p-0 h-auto text-red-600 font-bold">
+                      <Link to={`/projects/${project.id}`}>
+                        Read More
+                      </Link>
+                    </Button>
+                  </div>
                 </div>
               </div>
             ))}
