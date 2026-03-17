@@ -6,6 +6,13 @@
   --font-family-roboto: "Roboto", sans-serif;
   --font-family-robotoCondensed: "Roboto Condensed", sans-serif;
 
+  /* Brand Colors */
+  --color-brand-primary: #f21d2f;
+  --color-brand-primary-dark: #73192a;
+  --color-brand-accent: #f2784b;
+  --color-brand-surface: #f2f2f2;
+  --color-brand-text-main: #3a0d15;
+
   /* Primary brand gradient stops */
   --color-primary-start: #f98349;
   --color-primary-mid: #f65919;
