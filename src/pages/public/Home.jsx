@@ -1,4 +1,4 @@
-﻿
+
 import React, { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import logoImage from "../../assets/logo/logo_image.svg";
@@ -230,9 +230,9 @@ export default function Home() {
 
         <div className="absolute inset-0 bg-black/40 md:bg-linear-to-r md:from-black/70 md:via-black/40 md:to-transparent z-10"></div>
 
-        <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 w-full">
+        <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 w-full flex justify-center lg:justify-start">
 
-          <div className="max-w-xl md:max-w-2xl text-white">
+          <div className="max-w-xl md:max-w-2xl text-white text-center lg:text-left">
 
             <h1 className="font-bold text-3xl sm:text-4xl md:text-5xl lg:text-6xl leading-tight mb-6">
               {heroSection?.title || (
@@ -279,9 +279,9 @@ export default function Home() {
 
         <div className="absolute inset-0 bg-black/50"></div>
 
-        <div className="relative max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-12 flex justify-end">
+        <div className="relative max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-12 flex justify-center lg:justify-end">
 
-          <div className="max-w-md text-white">
+          <div className="max-w-md text-white text-center lg:text-left">
 
             <h2 className="font-bold text-3xl md:text-5xl mb-4">
               {aboutSection?.title || "About Us"}
@@ -324,9 +324,9 @@ export default function Home() {
         <div className="absolute inset-0 bg-black/40"></div>
 
         {/* Content */}
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 w-full">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 w-full flex justify-center lg:justify-start">
 
-          <div className="max-w-md text-white">
+          <div className="max-w-md text-white text-center lg:text-left">
 
             <h2 className="font-bold text-3xl md:text-5xl mb-4">
               {programSection?.title || "Programs"}
