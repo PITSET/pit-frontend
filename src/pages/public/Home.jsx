@@ -52,6 +52,13 @@ const formatProjectDate = (value) => {
   return formatted.toUpperCase();
 };
 
+const getYoutubeId = (url) => {
+  if (!url) return null;
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+  const match = url.match(regExp);
+  return match && match[2].length === 11 ? match[2] : null;
+};
+
 export default function Home() {
 
   const [heroSection, setHeroSection] = useState(null);
@@ -223,8 +230,9 @@ export default function Home() {
       </Helmet>
 
       {/* HERO */}
-      <section className="relative min-h-[90vh] md:min-h-[95vh] w-full flex items-center">
+      <section className="relative min-h-[90vh] md:min-h-[95vh] w-full flex items-center overflow-hidden">
 
+        {/* Background Image (Fallback or Overlay while loading) */}
         <div
           className="absolute inset-0 bg-cover bg-center"
           style={{
@@ -232,9 +240,21 @@ export default function Home() {
           }}
         />
 
-        <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent"></div>
+        {/* YouTube Video Background */}
+        {heroSection?.video_url && (
+          <div className="absolute inset-0 w-full h-full pointer-events-none overflow-hidden z-0">
+            <iframe
+              className="absolute top-1/2 left-1/2 w-screen h-[56.25vw] min-h-screen min-w-[177.77vh] transform -translate-x-1/2 -translate-y-1/2 scale-110"
+              src={`https://www.youtube.com/embed/${getYoutubeId(heroSection.video_url)}?autoplay=1&mute=1&controls=0&loop=1&playlist=${getYoutubeId(heroSection.video_url)}&showinfo=0&rel=0&iv_load_policy=3&modestbranding=1&disablekb=1`}
+              frameBorder="0"
+              allow="autoplay; encrypted-media"
+            />
+          </div>
+        )}
 
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 w-full">
+        <div className="absolute inset-0 bg-black/40 md:bg-linear-to-r md:from-black/70 md:via-black/40 md:to-transparent z-10"></div>
+
+        <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 w-full">
 
           <div className="max-w-xl md:max-w-2xl text-white">
 
