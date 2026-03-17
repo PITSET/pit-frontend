@@ -2,6 +2,10 @@
 
 @import "tailwindcss";
 
+html {
+  scroll-behavior: smooth;
+}
+
 @theme {
   --font-family-roboto: "Roboto", sans-serif;
   --font-family-robotoCondensed: "Roboto Condensed", sans-serif;

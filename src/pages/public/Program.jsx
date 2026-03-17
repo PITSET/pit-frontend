@@ -1,13 +1,23 @@
 import React, { useEffect, useState } from "react";
-import { Link, useSearchParams, useNavigate } from "react-router-dom";
+import { Link, useLocation, useSearchParams, useNavigate } from "react-router-dom";
 import api from "../../lib/api";
-import resolveAssetUrl from "../../lib/resolveAssetUrl";
-import { Button } from "../../components/ui/Button";
-import Loader from "../../components/ui/Loader";
+import resolveAssetUrl from "../../lib/resolveAssetUrl"; 
+import { Button } from "../../components/ui/Button"; 
+import Loader from "../../components/ui/Loader"; 
 
-import axios from "axios";
+import Breadcrumbs from "../../components/ui/Breadcrumbs"; 
+
+const programSectionId = (value) => {
+  const name = String(value || "").toLowerCase().trim();
+  if (name.includes("mechatronics")) return "mechatronics-engineering";
+  if (name.includes("software")) return "software-engineering";
+  if (name.includes("mechanical")) return "mechanical-engineering";
+  return name.replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+};
+
 
 export default function Programs() {
+  const location = useLocation();
   const [searchParams] = useSearchParams();
   const [programs, setPrograms] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -37,6 +47,16 @@ export default function Programs() {
 
     fetchPrograms();
   }, []);
+
+  useEffect(() => {
+    const id = (location.hash || "").replace(/^#/, "");
+    if (!id) return;
+
+    const el = document.getElementById(id);
+    if (!el) return;
+
+    el.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [location.hash]);
 
   if (loading) {
     return <Loader label="Loading Programs..." />;
@@ -83,7 +103,12 @@ export default function Programs() {
             filteredPrograms.map((program) => (
               <div
                 key={program.id}
+
                 className="bg-white rounded-xl shadow-md flex flex-col overflow-hidden group"
+
+                id={programSectionId(program?.program_name)}
+              
+
                 style={{ width: "400px", height: "510px" }}
               >
 

@@ -1,32 +1,22 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
 import api from "../../lib/api";
 import resolveAssetUrl from "../../lib/resolveAssetUrl";
+import Loader from "../../components/ui/Loader";
 
-const defaultInstructors = [
+const defaultFounders = [
   {
     id: 1,
-    full_name: "John Smith",
-    position_title: "Senior Instructor",
-    profile_image_url: "https://images.unsplash.com/photo-1560250097-0b93528c311a",
+    name: "Sheenyamu",
+    role: "Founder & Principal",
+    bio: "At Prometheus Institute of Technology, our mission is to create a clear pathway for students to succeed in the world of technology. We are committed to equipping learners with strong foundations, practical skills, and the confidence needed to thrive in today's fast-changing digital landscape.",
+    image_url: "https://images.unsplash.com/photo-1560250097-0b93528c311a",
   },
   {
     id: 2,
-    full_name: "Sarah Johnson",
-    position_title: "Lead Developer",
-    profile_image_url: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2",
-  },
-  {
-    id: 3,
-    full_name: "Michael Chen",
-    position_title: "Tech Lead",
-    profile_image_url: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e",
-  },
-  {
-    id: 4,
-    full_name: "Emily Davis",
-    position_title: "Senior Engineer",
-    profile_image_url: "https://images.unsplash.com/photo-1580489944761-15a19d654956",
+    name: "LeyKler",
+    role: "Founder & Principal",
+    bio: "At Prometheus Institute of Technology, we believe education should do more than transfer knowledge—it should ignite curiosity, creativity, and confidence. Our vision is to build an institute where technology education is practical, relevant, and aligned with the needs of the future.",
+    image_url: "https://images.unsplash.com/photo-1527980965255-d3b416303d12",
   },
 ];
 
@@ -59,20 +49,15 @@ const defaultSections = {
 
 export default function About() {
   const [sections, setSections] = useState([]);
-  const [instructors, setInstructors] = useState([]);
+  const [founders, setFounders] = useState([]);
   const [loading, setLoading] = useState(true);
-
-  // Scroll to top on mount
-  useEffect(() => {
-    window.scrollTo({ top: 0, behavior: "instant" });
-  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [aboutRes, programsRes] = await Promise.all([
+        const [aboutRes, foundersRes] = await Promise.all([
           api.get("/about"),
-          api.get("/programs"),
+          api.get("/team-members/founders").catch(() => null),
         ]);
 
         const allowedTypes = ["hero", "history", "mission", "vision"];
@@ -83,29 +68,10 @@ export default function About() {
 
         setSections(aboutSections);
 
-        const programs = programsRes.data?.data || [];
-
-        const instructorPromises = programs.map((program) =>
-          api
-            .get(`/programs/${program.id}/instructors`)
-            .then((res) => res.data?.data || [])
-            .catch(() => []),
-        );
-
-        const instructorsByProgram = await Promise.all(instructorPromises);
-
-        const allInstructors = [];
-        const seen = new Set();
-
-        instructorsByProgram.flat().forEach((inst) => {
-          const key = inst.id || `${inst.full_name}-${inst.email}`;
-          if (!seen.has(key)) {
-            seen.add(key);
-            allInstructors.push(inst);
-          }
-        });
-
-        setInstructors(allInstructors);
+        const foundersData = foundersRes?.data?.data || foundersRes?.data || [];
+        if (Array.isArray(foundersData) && foundersData.length > 0) {
+          setFounders(foundersData);
+        }
       } catch (err) {
         console.log("About page fetch error:", err);
       } finally {
@@ -119,22 +85,18 @@ export default function About() {
   const getSection = (type) =>
     sections.find((s) => s.section_type === type) || defaultSections[type];
 
-  const displayInstructors = instructors.length > 0 ? instructors : defaultInstructors;
   const whoWeAre = getSection("hero");
   const history = getSection("history");
   const mission = getSection("mission");
   const vision = getSection("vision");
+  const displayFounders = founders.length > 0 ? founders : defaultFounders;
 
   const titleParts = whoWeAre.title.split(" ");
   const line1 = titleParts[0];
   const line2 = titleParts.slice(1).join(" ");
 
   if (loading) {
-    return (
-      <div className="flex justify-center items-center h-[40vh]">
-        Loading...
-      </div>
-    );
+    return <Loader label="Loading About..." />;
   }
 
   return (
@@ -180,7 +142,7 @@ export default function About() {
 
         </div>
 {/* HISTORY */}
-<div className="max-w-[950px] mx-auto grid grid-cols-1 md:grid-cols-2 items-center gap-1 mt-[300px]">
+<div id="history" className="max-w-[950px] mx-auto grid grid-cols-1 md:grid-cols-2 items-center gap-1 mt-[300px]">
 
   {/* IMAGE */}
   <div className="flex justify-center md:justify-start">
@@ -206,7 +168,7 @@ export default function About() {
 
 </div>
         {/* MISSION (UNCHANGED) */}
-        <div className="mx-0 grid grid-cols-1 md:grid-cols-2 items-center gap-10 mt-[330px]">
+        <div id="mission" className="mx-0 grid grid-cols-1 md:grid-cols-2 items-center gap-10 mt-[330px]">
 
           <div className="flex justify-center md:justify-end">
             <img
@@ -237,7 +199,7 @@ export default function About() {
         </div>
 
    {/* VISION */}
-<div className="mx-4 md:mx-16 lg:mx-32 grid grid-cols-1 md:grid-cols-2 items-center gap-10 mt-[120px] md:mt-[50px]">
+<div id="vision" className="mx-4 md:mx-16 lg:mx-32 grid grid-cols-1 md:grid-cols-2 items-center gap-10 mt-[120px] md:mt-[50px]">
 
 {/* TEXT SECTION */}
 <div className="flex items-start gap-6">
@@ -272,6 +234,67 @@ export default function About() {
 </div>
 
       
+
+        {/* FOUNDERS */}
+        <div className="mt-24 md:mt-32">
+         
+
+          <div className="space-y-16 md:space-y-24">
+            {displayFounders.slice(0, 2).map((founder, index) => {
+              const isReversed = index % 2 === 1;
+              const imageUrl =
+                founder.profile_image_url ||
+                founder.image_url ||
+                founder.avatar_url ||
+                "";
+              const programName =
+                founder?.team_member_programs?.[0]?.programs?.program_name || "";
+              const role = founder.position_title || founder.role || "Founder & Principal";
+              const bio = founder.bio || founder.description || founder.content || "";
+
+              return (
+                <div
+                  key={founder.id || founder.name || index}
+                  className="grid grid-cols-1 md:grid-cols-2 gap-10 items-start"
+                >
+                  <div
+                    className={
+                      isReversed
+                        ? "md:order-2 flex justify-center md:justify-end"
+                        : "flex justify-center md:justify-start"
+                    }
+                  >
+                    <div className="w-full max-w-[580px] h-[720px] overflow-hidden rounded-[16px] bg-gray-100">
+                      <img
+                        src={resolveAssetUrl(imageUrl)}
+                        alt={founder.name || "Founder"}
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                      />
+                    </div>
+                  </div>
+
+                  <div className={isReversed ? "md:order-1" : ""}>
+                    <p className="font-roboto-condensed font-bold text-[24px] text-red-500 mb-3">
+                      {role}
+                    </p>
+                    <h3 className="font-roboto-condensed font-bold text-[64px] text-brand-primary leading-none mb-6">
+                      {founder.name}
+                    </h3>
+                    {programName && (
+                      <p className="text-gray-500 text-sm font-medium mb-4">
+                        {programName}
+                      </p>
+                    )}
+                    <p className="font-roboto text-[16px] font-normal text-gray-600 leading-relaxed max-w-xl">
+                      {bio}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
 
         </div>
 
