@@ -1,11 +1,25 @@
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 
-const scrollToId = (id, { behavior = "smooth", block = "start" } = {}) => {
+const getDefaultOffset = () => {
+  const header = document.querySelector("header");
+  const headerHeight = header?.getBoundingClientRect?.().height || 0;
+  return headerHeight ? Math.ceil(headerHeight) + 8 : 0;
+};
+
+const scrollToId = (
+  id,
+  { behavior = "smooth", block = "start", offset = getDefaultOffset() } = {},
+) => {
   if (!id) return false;
   const el = document.getElementById(id);
   if (!el) return false;
   el.scrollIntoView({ behavior, block });
+  if (offset) {
+    requestAnimationFrame(() => {
+      window.scrollBy({ top: -offset, left: 0 });
+    });
+  }
   return true;
 };
 

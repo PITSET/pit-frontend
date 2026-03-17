@@ -39,10 +39,10 @@ export default function Footer() {
                 <Link to="/about#history" className="hover:text-black transition cursor-pointer">History</Link>
               </li>
               <li>
-                <Link to="/about#vision" className="hover:text-black transition cursor-pointer">Vision</Link>
+                <Link to="/about#mission" className="hover:text-black transition cursor-pointer">Mission</Link>
               </li>
               <li>
-                <Link to="/about#mission" className="hover:text-black transition cursor-pointer">Mission</Link>
+                <Link to="/about#vision" className="hover:text-black transition cursor-pointer">Vision</Link>
               </li>
             </ul>
           </div>
@@ -52,13 +52,13 @@ export default function Footer() {
             <h3 className="font-bold text-base text-gray-900 mb-4">Programs</h3>
             <ul className="space-y-2 text-sm uppercase tracking-wide text-gray-700">
               <li>
-                <Link to="/programs" className="hover:text-black transition cursor-pointer">Program</Link>
-              </li>
-              <li>
-                <Link to="/programs#mechanical-engineering" className="hover:text-black transition cursor-pointer">ME Program</Link>
+                <Link to="/programs" className="hover:text-black transition cursor-pointer">Programs</Link>
               </li>
               <li>
                 <Link to="/programs#mechatronics-engineering" className="hover:text-black transition cursor-pointer">JME Program</Link>
+              </li>
+              <li>
+                <Link to="/programs#mechanical-engineering" className="hover:text-black transition cursor-pointer">ME Program</Link>
               </li>
               <li>
                 <Link to="/programs#software-engineering" className="hover:text-black transition cursor-pointer">SE Program</Link>
@@ -74,7 +74,7 @@ export default function Footer() {
             <h3 className="font-bold text-base text-gray-900 mb-4">Projects</h3>
             <ul className="space-y-2 text-sm uppercase tracking-wide text-gray-700">
               <li>
-                <Link to="/projects" className="hover:text-black transition cursor-pointer">Project</Link>
+                <Link to="/projects" className="hover:text-black transition cursor-pointer">Projects</Link>
               </li>
               <li>
                 <Link to="/projects#software-engineering-projects" className="hover:text-black transition cursor-pointer">SE Projects</Link>

@@ -3,7 +3,7 @@ import { Outlet } from "react-router-dom";
 
 import Navbar from "./Navbar";
 import Footer from "./Footer";
-import ScrollToHash from "./ScrollToHash";
+import ScrollToHash from "../routing/ScrollToHash";
 
 export default function PublicLayout() {
   return (
