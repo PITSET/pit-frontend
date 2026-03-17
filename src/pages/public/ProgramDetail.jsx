@@ -73,11 +73,11 @@ export default function ProgramDetail() {
         <div className="absolute inset-0 bg-linear-to-r from-[#0b2545]/90 via-[#0b2545]/70 to-transparent"></div>
 
         {/* Content */}
-        <div className="relative max-w-[1280px] mx-auto min-h-screen flex items-center px-6">
+        <div className="relative max-w-[1280px] mx-auto min-h-screen flex items-center justify-center lg:justify-start px-6">
 
-          <div className="max-w-[520px] text-white">
+          <div className="max-w-[520px] text-white text-center lg:text-left mx-auto lg:mx-0">
 
-            <h1 className="text-[48px] leading-[56px] font-bold font-[Roboto_Condensed] mb-6">
+            <h1 className="text-[32px] md:text-[40px] lg:text-[48px] leading-tight font-bold font-[Roboto_Condensed] mb-6">
               {program.program_name}
             </h1>
 
