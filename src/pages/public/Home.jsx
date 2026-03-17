@@ -1,4 +1,4 @@
-
+﻿
 import React, { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import logoImage from "../../assets/logo/logo_image.svg";
@@ -57,8 +57,6 @@ export default function Home() {
   const [heroSection, setHeroSection] = useState(null);
   const [aboutSection, setAboutSection] = useState(null);
   const [programSection, setProgramSection] = useState(null);
-  const [founder1Section, setFounder1Section] = useState(null);
-  const [founder2Section, setFounder2Section] = useState(null);
   const [projects, setProjects] = useState([]);
   const [isLoadingProjects, setIsLoadingProjects] = useState(true);
   const [isNavigating, setIsNavigating] = useState(false);
@@ -104,35 +102,15 @@ export default function Home() {
         const programs = sortedItems.filter(
           (item) => normalizeSectionType(item?.section_type) === "program",
         );
-        const founders = sortedItems.filter((item) =>
-          normalizeSectionType(item?.section_type).startsWith("founder"),
-        );
 
         const hero = pickOne(heroes, "latest_updated");
         const about = pickOne(abouts, "lowest_order_position");
         const program = pickOne(programs, "lowest_order_position");
 
-        const founder1 =
-          pickOne(
-            founders.filter((item) => normalizeSectionType(item?.section_type) === "founder1"),
-            "lowest_order_position",
-          ) ||
-          founders[0] ||
-          null;
-        const founder2 =
-          pickOne(
-            founders.filter((item) => normalizeSectionType(item?.section_type) === "founder2"),
-            "lowest_order_position",
-          ) ||
-          founders[1] ||
-          null;
-
         if (!isActive) return;
         setHeroSection(hero);
         setAboutSection(about);
         setProgramSection(program);
-        setFounder1Section(founder1);
-        setFounder2Section(founder2);
 
         const rawProjects = Array.isArray(projectsRes.data) ? projectsRes.data : projectsRes.data?.data || projectsRes.data?.projects || [];
         const projectItems = rawProjects
@@ -190,8 +168,6 @@ export default function Home() {
         setHeroSection(null);
         setAboutSection(null);
         setProgramSection(null);
-        setFounder1Section(null);
-        setFounder2Section(null);
         setProjects([]);
       }
 
@@ -313,77 +289,6 @@ export default function Home() {
         </div >
 
       </section >
-
-
-      <section className="w-full bg-gray-100 py-16 md:py-24">
-
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-
-          <div>
-            <img
-              src={resolveAssetUrl(founder1Section?.image_url)}
-              alt={founder1Section?.title || "Founder"}
-              className="w-full max-w-[520px] h-[380px] md:h-[620px] object-cover rounded-lg"
-            />
-          </div>
-
-          <div>
-
-            <p className="font-bold text-lg text-brand-primary mb-3">
-              FOUNDER & PRINCIPAL
-            </p>
-
-            <h2 className="font-bold text-3xl md:text-5xl lg:text-6xl text-gray-900 mb-6">
-              {founder1Section?.title || "Sheenaymu"}
-            </h2>
-
-            <p className="text-gray-600 leading-relaxed">
-              {founder1Section?.content ||
-                "At Prometheus Institute of Technology, our mission is to create a clear pathway for students to succeed in the world of technology."}
-            </p>
-
-          </div>
-
-        </div>
-
-      </section>
-
-
-      {/* FOUNDER SECTION 2 */}
-      <section className="w-full bg-gray-100 py-24">
-
-        <div className="max-w-7xl mx-auto px-6 lg:px-12 grid md:grid-cols-2 gap-16 items-center">
-
-          <div>
-
-            <p className="font-bold text-[24px] text-brand-primary mb-3">
-              FOUNDER & PRINCIPAL
-            </p>
-
-            <h2 className="font-bold text-[64px] text-gray-900 mb-6">
-              {founder2Section?.title || "LeyKler"}
-            </h2>
-
-            <p className="text-[16px] text-gray-600 leading-relaxed">
-              {founder2Section?.content ||
-                "We believe education should ignite curiosity, creativity and confidence for the next generation of technologists."}
-            </p>
-
-          </div>
-
-          <div className="flex justify-end">
-            <img
-              src={resolveAssetUrl(founder2Section?.image_url)}
-              alt={founder2Section?.title || "LeyKler"}
-              className="w-[580px] h-[720px] object-cover"
-            />
-          </div>
-
-
-        </div>
-
-      </section>
-
 
       <section className="relative w-full min-h-[90vh] md:min-h-[95vh] flex items-center">
 
