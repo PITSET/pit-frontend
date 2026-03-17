@@ -147,7 +147,7 @@ export default function About() {
           <div>
 
             <div className="flex items-center gap-3 mb-4">
-              <span className="bg-gradient-to-r from-[#FB1E28] to-[#FF8950] text-white text-[24px] font-bold px-6 py-2 rounded-l-[8px]">
+              <span className="bg-gradient-to-r from-brand-primary to-brand-accent text-white text-[24px] font-bold px-6 py-2 rounded-l-[8px]">
                 WHO
               </span>
 
@@ -156,11 +156,11 @@ export default function About() {
               </span>
             </div>
 
-            <h1 className="text-[64px] font-bold text-red-600 leading-none">
+            <h1 className="text-[64px] font-bold text-brand-primary leading-none">
               {line1}
             </h1>
 
-            <h1 className="text-[64px] font-bold text-red-600 mb-6 leading-none">
+            <h1 className="text-[64px] font-bold text-brand-primary mb-6 leading-none">
               {line2}
             </h1>
 
@@ -194,7 +194,7 @@ export default function About() {
   {/* TEXT */}
   <div className="max-w-[480px]">
 
-    <h2 className="font-roboto-condensed font-bold text-[56px] text-[#D32F2F] mb-4">
+    <h2 className="font-roboto-condensed font-bold text-[56px] text-brand-primary mb-4">
       {history.title}
     </h2>
 
@@ -218,11 +218,11 @@ export default function About() {
 
           <div className="flex items-start gap-6">
 
-            <div className="w-[3px] h-[137px] bg-gradient-to-b from-[#FD1722] via-[#FF884D] to-[#76191F]" />
+            <div className="w-[3px] h-[137px] bg-gradient-to-b from-brand-primary via-brand-accent to-brand-primary-dark" />
 
             <div>
 
-              <h2 className="font-roboto-condensed font-bold text-[40px] text-[#FD1722] mb-3">
+              <h2 className="font-roboto-condensed font-bold text-[40px] text-brand-primary mb-3">
                 {mission.title}
               </h2>
 
@@ -245,7 +245,7 @@ export default function About() {
   {/* Text */}
   <div className="flex flex-col">
 
-    <h2 className="font-roboto-condensed font-bold text-[28px] md:text-[40px] text-[#FD1722] mb-3 md:ml-20">
+    <h2 className="font-roboto-condensed font-bold text-[28px] md:text-[40px] text-brand-primary mb-3 md:ml-20">
       {vision.title}
     </h2>
 
@@ -256,7 +256,7 @@ export default function About() {
   </div>
 
   {/* Gradient Line */}
-  <div className="w-[3px] h-[137px] bg-gradient-to-b from-[#FD1722] via-[#FF884D] to-[#76191F]" />
+  <div className="w-[3px] h-[137px] bg-linear-to-b from-brand-primary via-brand-accent to-brand-primary-dark" />
 
 </div>
 
@@ -274,7 +274,7 @@ export default function About() {
         {/* INSTRUCTORS */}
         <div className="mt-24">
 
-          <h2 className="font-roboto-condensed font-bold text-[64px] text-[#D32F2F] mb-8">
+          <h2 className="font-roboto-condensed font-bold text-[64px] text-brand-primary mb-8">
             Instructors
           </h2>
 
@@ -309,7 +309,7 @@ export default function About() {
                       {program ? `, ${program}` : ""}
                     </p>
 
-                    <p className="text-red-600 font-bold text-[14px] mt-1 transition-colors duration-300 group-hover:text-black">
+                    <p className="text-brand-primary font-bold text-[14px] mt-1 transition-colors duration-300 group-hover:text-black">
                       {name}
                     </p>
                   </div>

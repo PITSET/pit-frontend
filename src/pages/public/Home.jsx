@@ -1,4 +1,4 @@
-﻿
+
 import React, { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import logoImage from "../../assets/logo/logo_image.svg";
@@ -8,6 +8,7 @@ import api from "../../lib/api";
 import resolveAssetUrl from "../../lib/resolveAssetUrl";
 import ProjectsCarousel from "../../components/ui/ProjectsCarousel";
 import Loader from "../../components/ui/Loader";
+import { Button } from "../../components/ui/Button";
 
 const normalizeSectionType = (value) => String(value || "").trim().toLowerCase();
 
@@ -245,12 +246,16 @@ export default function Home() {
             </p>
 
 
-            <Link
-              to="/programs"
-              className="inline-block bg-red-600 text-white hover:bg-white hover:text-red-600 transition px-6 py-3 rounded-md font-semibold shadow-lg"
+            <Button
+              asChild
+              variant="primary"
+              size="lg"
+              className="font-semibold shadow-lg"
             >
-              Explore Our Programs →
-            </Link>
+              <Link to="/programs">
+                Explore Our Programs
+              </Link>
+            </Button>
 
 
           </div >
@@ -284,13 +289,17 @@ export default function Home() {
                 "Prometheus Institute of Technology is dedicated to providing quality technology education that builds strong foundations, practical skills, and innovative thinking for future professionals."}
             </p>
 
-
-            <Link
-              to="/about"
-              className="inline-block border border-white px-6 py-3 rounded-md text-white transition hover:bg-red-600 hover:border-red-600"
+            <Button
+              asChild
+              variant="secondary"
+              size="lg"
+              className="font-semibold shadow-lg"
             >
-              DISCOVER OUR MISSION →
-            </Link>
+              <Link to="/about">
+                DISCOVER OUR MISSION
+              </Link>
+            </Button>
+
 
 
           </div >
@@ -313,7 +322,7 @@ export default function Home() {
 
           <div>
 
-            <p className="font-bold text-lg text-red-600 mb-3">
+            <p className="font-bold text-lg text-brand-primary mb-3">
               FOUNDER & PRINCIPAL
             </p>
 
@@ -340,7 +349,7 @@ export default function Home() {
 
           <div>
 
-            <p className="font-bold text-[24px] text-red-600 mb-3">
+            <p className="font-bold text-[24px] text-brand-primary mb-3">
               FOUNDER & PRINCIPAL
             </p>
 
@@ -396,14 +405,9 @@ export default function Home() {
                 "Our programs are designed to provide strong technical foundations, practical skills, and industry-relevant knowledge to prepare students for future careers in technology."}
             </p>
 
-
-            <Link
-              to="/programs"
-              className="inline-block text-sm md:text-base bg-red-600 text-white px-6 py-3 rounded-md border border-red-600 hover:bg-white hover:text-red-600 transition"
-            >
-              VIEW ALL PROGRAMS →
-            </Link>
-
+            <Button asChild variant="primary" size="lg">
+              <Link to="/programs">VIEW ALL PROGRAMS</Link>
+            </Button>
 
           </div >
 

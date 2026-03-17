@@ -24,7 +24,7 @@ export default function Loader({
       <div className="relative flex items-center justify-center w-32 h-32">
 
         {/* Outer rotating ring */}
-        <span className="absolute inset-0 rounded-full border-4 border-transparent border-t-[#FF4500] border-r-[#c92a2a] animate-spin opacity-70" />
+        <span className="absolute inset-0 rounded-full border-4 border-transparent border-t-brand-accent border-r-brand-primary animate-spin opacity-70" />
 
         {/* Logo image */}
         <img

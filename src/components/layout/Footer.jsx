@@ -103,7 +103,7 @@ export default function Footer() {
               </li>
               <li>
                 <a href="https://www.youtube.com/@PrometheusInstituteofTechnolog" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-gray-700 hover:text-red-600 transition cursor-pointer">
-                  <FaYoutube className="text-red-600" />
+                  <FaYoutube className="text-brand-primary" />
                   Youtube
                 </a>
               </li>

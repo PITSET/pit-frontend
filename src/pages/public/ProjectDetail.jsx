@@ -173,7 +173,7 @@ export default function ProjectDetail() {
       <div className="max-w-7xl mx-auto px-6 py-12 lg:py-16">
 
         {/* PAGE TITLE */}
-        <h1 className="text-4xl md:text-[44px] font-bold text-[#c92a2a] mb-10 tracking-tight">
+        <h1 className="text-4xl md:text-[44px] font-bold text-brand-primary mb-10 tracking-tight">
           Project Detail
         </h1>
 
@@ -195,7 +195,7 @@ export default function ProjectDetail() {
                   <button
                     key={idx}
                     onClick={() => setActiveImageIndex(idx)}
-                    className={`h-[8px] rounded-full transition-all ${idx === activeImageIndex ? 'w-8 bg-white' : 'w-2 bg-red-600/80 hover:bg-red-500'}`}
+                    className={`h-[8px] rounded-full transition-all ${idx === activeImageIndex ? 'w-8 bg-white' : 'w-2 bg-brand-primary/80 hover:bg-brand-primary'}`}
                     aria-label={`View image ${idx + 1}`}
                   />
                 ))}
@@ -206,7 +206,7 @@ export default function ProjectDetail() {
           {/* RIGHT: Stats Details */}
           <div className="lg:col-span-4 text-white p-8 lg:p-12 flex flex-col justify-center">
 
-            <h2 className="text-3xl lg:text-[38px] font-bold text-[#FF6B52] mb-10 leading-snug">
+            <h2 className="text-3xl lg:text-[38px] font-bold text-brand-accent mb-10 leading-snug">
               {project.name || project.title || "Unnamed Project"}
             </h2>
 
@@ -225,7 +225,7 @@ export default function ProjectDetail() {
                     {programNames.map((name, i) => (
                       <span
                         key={i}
-                        className="bg-red-600/20 text-red-300 border border-red-500/40 text-xs font-semibold px-3 py-1 rounded-full shadow-sm"
+                        className="bg-brand-primary/20 text-red-200 border border-brand-primary/40 text-xs font-semibold px-3 py-1 rounded-full shadow-sm"
                       >
                         {name}
                       </span>
@@ -257,7 +257,7 @@ export default function ProjectDetail() {
                     {studentNames.map((name, i) => (
                       <span
                         key={i}
-                        className="bg-orange-600/20 text-orange-200 border border-orange-500/40 text-xs font-semibold px-3 py-1 rounded-full shadow-sm"
+                        className="bg-brand-accent/20 text-orange-100 border border-brand-accent/40 text-xs font-semibold px-3 py-1 rounded-full shadow-sm"
                       >
                         {name}
                       </span>
@@ -287,7 +287,7 @@ export default function ProjectDetail() {
                   href={project.github_url || "#"}
                   target="_blank"
                   rel="noreferrer"
-                  className={`bg-[#FF4500] hover:bg-[#E03E00] text-white p-3 rounded-r transition-colors flex items-center justify-center shrink-0 border border-[#FF4500] ${!project.github_url ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  className={`bg-brand-accent hover:opacity-90 text-white p-3 rounded-r transition-colors flex items-center justify-center shrink-0 border border-brand-accent ${!project.github_url ? 'opacity-50 cursor-not-allowed' : ''}`}
                   onClick={(e) => !project.github_url && e.preventDefault()}
                 >
                   <BsArrowUpRightSquare className="text-xl" />
@@ -314,7 +314,7 @@ export default function ProjectDetail() {
           {/* Objectives Card */}
           <div className="bg-white rounded-[20px] shadow-[0_8px_30px_rgb(0,0,0,0.06)] overflow-hidden border border-gray-100 flex flex-col h-full">
             <div className="bg-[#1A1A1A] py-5 px-8 flex items-center gap-4">
-              <BsCheckCircleFill className="text-[#FF4500] text-2xl" />
+              <BsCheckCircleFill className="text-brand-accent text-2xl" />
               <h3 className="text-white text-2xl font-bold">Objectives</h3>
             </div>
             <div className="p-8 grow">
@@ -336,7 +336,7 @@ export default function ProjectDetail() {
           {/* Tasks & Activities Card */}
           <div className="bg-white rounded-[20px] shadow-[0_8px_30px_rgb(0,0,0,0.06)] overflow-hidden border border-gray-100 flex flex-col h-full">
             <div className="bg-[#1A1A1A] py-5 px-8 flex items-center gap-4">
-              <BsListCheck className="text-[#FF4500] text-[28px]" />
+              <BsListCheck className="text-brand-accent text-[28px]" />
               <h3 className="text-white text-2xl font-bold">Tasks & Activities</h3>
             </div>
             <div className="p-8 grow">

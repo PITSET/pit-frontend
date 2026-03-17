@@ -49,7 +49,7 @@ export default function InstructorDetail() {
   if (error) {
     return (
       <div className="max-w-[1248px] mx-auto px-4 py-10">
-        <div className="p-6 border rounded text-center text-red-600">
+        <div className="p-6 border rounded text-center text-brand-primary">
           {error}
         </div>
       </div>
@@ -69,7 +69,7 @@ export default function InstructorDetail() {
 
   <Link
     to="/"
-    className="text-gray-700 hover:text-red-600 transition"
+    className="text-gray-700 hover:text-brand-primary transition"
   >
     Home
   </Link>
@@ -78,7 +78,7 @@ export default function InstructorDetail() {
 
   <Link
     to="/about"
-    className="text-gray-700 hover:text-red-600 transition"
+    className="text-gray-700 hover:text-brand-primary transition"
   >
     About
   </Link>
@@ -87,14 +87,14 @@ export default function InstructorDetail() {
 
   <Link
     to="/instructors"
-    className="text-gray-700 hover:text-red-600 transition"
+    className="text-gray-700 hover:text-brand-primary transition"
   >
     Instructors
   </Link>
 
-  <span className="text-red-600">›</span>
+  <span className="text-brand-primary">›</span>
 
-  <span className="text-red-600">
+  <span className="text-brand-primary">
     {instructor.name}
   </span>
 
@@ -118,7 +118,7 @@ export default function InstructorDetail() {
         <div>
 
           {/* NAME */}
-          <h1 className="text-red-600 text-4xl font-bold">
+          <h1 className="text-brand-primary text-4xl font-bold">
             {instructor.name}
           </h1>
 
@@ -127,16 +127,16 @@ export default function InstructorDetail() {
           </p>
 
           {/* PROGRAM */}
-          <h3 className="text-red-600 font-semibold mb-2">
+          <h3 className="text-brand-primary font-semibold mb-2">
             Program
           </h3>
 
-          <span className="bg-red-100 text-red-600 px-3 py-1 rounded-full text-sm">
+          <span className="bg-brand-primary/10 text-brand-primary px-3 py-1 rounded-full text-sm">
             {program}
           </span>
 
           {/* ACADEMIC */}
-          <h3 className="text-red-600 font-semibold mt-8 mb-2">
+          <h3 className="text-brand-primary font-semibold mt-8 mb-2">
             Academic achievement
           </h3>
 
@@ -155,7 +155,7 @@ export default function InstructorDetail() {
           </div>
 
           {/* INFORMATION */}
-        <h3 className="text-red-700 text-2xl font-semibold mb-6">
+        <h3 className="text-brand-primary-dark text-2xl font-semibold mb-6">
   Information
 </h3>
 
@@ -167,7 +167,7 @@ export default function InstructorDetail() {
     <div className="w-[53px] h-[46px] flex items-center justify-center bg-white border rounded-[4px] shadow-md">
       <svg
         xmlns="http://www.w3.org/2000/svg"
-        className="w-7 h-7 text-red-700"
+        className="w-7 h-7 text-brand-primary-dark"
         fill="none"
         viewBox="0 0 24 24"
         stroke="currentColor"
@@ -203,7 +203,7 @@ export default function InstructorDetail() {
     <div className="w-[53px] h-[46px] flex items-center justify-center bg-white border rounded-[4px] shadow-md">
       <svg
         xmlns="http://www.w3.org/2000/svg"
-        className="w-7 h-7 text-red-700"
+        className="w-7 h-7 text-brand-primary-dark"
         fill="none"
         viewBox="0 0 24 24"
         stroke="currentColor"

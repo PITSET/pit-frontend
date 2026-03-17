@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { BsArrowLeft, BsArrowRight } from "react-icons/bs";
+import { Button } from "./Button";
 
 export default function ProjectsCarousel({ projects = [], isLoadingProjects = false }) {
   const [index, setIndex] = useState(0);
@@ -63,7 +64,7 @@ export default function ProjectsCarousel({ projects = [], isLoadingProjects = fa
                   {projects[index].programNames.map((name, i) => (
                     <span
                       key={i}
-                      className="bg-red-50 text-red-600 text-[11px] md:text-xs font-bold px-3 py-1 rounded-full border border-red-100 shadow-sm transition-transform hover:scale-105"
+                      className="bg-brand-primary/10 text-brand-primary text-[11px] md:text-xs font-bold px-3 py-1 rounded-full border border-brand-primary/20 shadow-sm transition-transform hover:scale-105"
                     >
                       {name}
                     </span>
@@ -71,12 +72,11 @@ export default function ProjectsCarousel({ projects = [], isLoadingProjects = fa
                 </div>
               )}
 
-              <Link
-                to={`/projects/${projects[index]?.id}`}
-                className="bg-[#1a1a1a] text-white font-medium px-7 py-3 rounded-lg w-max transition duration-300 hover:bg-black hover:shadow-lg mb-10 inline-block"
-              >
-                Read More
-              </Link>
+              <Button variant="link" asChild>
+                <Link to={`/projects/${projects[index]?.id}`}>
+                  Read More
+                </Link>
+              </Button>
 
               {/* Bottom Controls row: Indicators + Navigation */}
               <div className="flex items-center justify-between w-full mt-auto">
@@ -86,8 +86,8 @@ export default function ProjectsCarousel({ projects = [], isLoadingProjects = fa
                     <span
                       key={i}
                       className={`rounded-full transition-all duration-300 ${i === index
-                        ? "bg-red-600 w-10 h-[10px]"
-                        : "bg-[#5A3838] w-[10px] h-[10px]"
+                        ? "bg-brand-primary w-10 h-[10px]"
+                        : "bg-brand-primary-dark w-[10px] h-[10px]"
                         }`}
                     ></span>
                   ))}
@@ -98,14 +98,14 @@ export default function ProjectsCarousel({ projects = [], isLoadingProjects = fa
                   <button
                     onClick={prevProject}
                     disabled={!projects.length || isLoadingProjects}
-                    className="w-12 h-12 rounded-full border border-gray-300 bg-transparent flex items-center justify-center text-red-600 text-xl transition-all duration-300 hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed group"
+                    className="w-12 h-12 rounded-full border border-gray-300 bg-transparent flex items-center justify-center text-brand-primary text-xl transition-all duration-300 hover:bg-brand-primary/10 disabled:opacity-50 disabled:cursor-not-allowed group"
                   >
                     <BsArrowLeft className="group-hover:-translate-x-1 transition-transform" />
                   </button>
                   <button
                     onClick={nextProject}
                     disabled={!projects.length || isLoadingProjects}
-                    className="w-12 h-12 rounded-full border border-gray-300 bg-transparent flex items-center justify-center text-red-600 text-xl transition-all duration-300 hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed group"
+                    className="w-12 h-12 rounded-full border border-gray-300 bg-transparent flex items-center justify-center text-brand-primary text-xl transition-all duration-300 hover:bg-brand-primary/10 disabled:opacity-50 disabled:cursor-not-allowed group"
                   >
                     <BsArrowRight className="group-hover:translate-x-1 transition-transform" />
                   </button>
@@ -117,12 +117,9 @@ export default function ProjectsCarousel({ projects = [], isLoadingProjects = fa
 
         {/* View All Projects Button */}
         <div className="flex justify-center mt-12 md:mt-24">
-          <Link
-            to="/projects"
-            className="border border-red-600 text-red-600 text-sm font-semibold tracking-wider px-8 py-4 rounded-lg transition-colors duration-300 hover:bg-red-600 hover:text-white flex items-center gap-2"
-          >
-            VIEW ALL PROJECTS <BsArrowRight className="text-lg" />
-          </Link>
+          <Button asChild variant="primary" size="lg">
+            <Link to="/projects">VIEW ALL PROJECTS</Link>
+          </Button>
         </div>
       </div>
     </section>

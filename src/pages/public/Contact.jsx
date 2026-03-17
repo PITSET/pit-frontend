@@ -89,7 +89,7 @@ export default function ContactPage() {
         <div className="absolute inset-0 bg-white/60"></div>
 
         <div className="relative max-w-7xl mx-auto px-6 pt-24">
-          <h1 className="text-5xl font-bold text-red-600">
+          <h1 className="text-5xl font-bold text-brand-primary">
             Prometheus Institute of Technology
           </h1>
 
@@ -115,13 +115,13 @@ export default function ContactPage() {
 
         {/* CONTACT FORM */}
         <div className="flex flex-col h-full">
-          <p className="text-sm font-semibold uppercase text-[#BC1924]">
+          <p className="text-sm font-semibold uppercase text-brand-primary">
             GET IN TOUCH
           </p>
 
           <h2 className="text-4xl font-bold mt-1">
             <span className="text-[#5B616E]">Contact </span>
-            <span className="text-[#BC1924]">Us</span>
+            <span className="text-brand-primary">Us</span>
           </h2>
 
           <p className="text-gray-500 mt-3">
@@ -132,19 +132,19 @@ export default function ContactPage() {
           {/* CONTACT INFO */}
           <div className="bg-white shadow-md rounded-lg p-5 mt-6 space-y-4 text-sm">
             <div className="flex items-center gap-3">
-              <FaMapMarkerAlt className="text-[#BC1924]" />
+              <FaMapMarkerAlt className="text-brand-primary" />
               <p>
                 351, Moo 3, District Phop Phra, Province Tak, Postcode 63150
               </p>
             </div>
 
             <div className="flex items-center gap-3">
-              <FaEnvelope className="text-[#BC1924]" />
+              <FaEnvelope className="text-brand-primary" />
               <p>pit@technology.com</p>
             </div>
 
             <div className="flex items-center gap-3">
-              <FaPhone className="text-[#BC1924]" />
+              <FaPhone className="text-brand-primary" />
               <p>123-456-789-0</p>
             </div>
           </div>
@@ -183,7 +183,7 @@ export default function ContactPage() {
               <p
                 className={`text-center text-sm font-medium ${
                   statusType === "error"
-                    ? "text-red-600"
+                    ? "text-brand-primary"
                     : statusType === "success"
                     ? "text-green-600"
                     : "text-gray-700"
@@ -196,7 +196,7 @@ export default function ContactPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-[#E73F0F] text-white py-3 rounded-md font-semibold flex items-center justify-center gap-2 hover:opacity-90 transition"
+              className="w-full bg-brand-primary text-white py-3 rounded-md font-semibold flex items-center justify-center gap-2 hover:opacity-90 transition"
             >
               {loading ? (
                 <>
