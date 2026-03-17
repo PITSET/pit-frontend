@@ -5,8 +5,6 @@ import api from "../../lib/api";
 import resolveAssetUrl from "../../lib/resolveAssetUrl";
 
 import axios from "axios";
-import Breadcrumbs from "../../components/ui/Breadcrumbs";
-
 
 export default function ProgramDetail() {
   const { id } = useParams();
@@ -63,12 +61,6 @@ export default function ProgramDetail() {
   return (
     <div className="bg-gray-100">
       <div className="max-w-[1280px] mx-auto px-6 pt-8">
-        <Breadcrumbs
-          items={[
-            { label: "Programs", path: "/programs" },
-            { label: program.program_name, path: `/programs/${id}` }
-          ]}
-        />
       </div>
       {/* HERO SECTION */}
       <div className="relative w-full min-h-screen overflow-hidden">

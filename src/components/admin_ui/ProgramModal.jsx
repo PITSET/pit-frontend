@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 
 // heroicons
@@ -11,15 +12,34 @@ import {
 // api
 import { createProgram, updateProgram } from "../../lib/services/programService";
 import { supabase } from "../../lib/supabaseClient";
+import { getOperationErrorMessage } from "../../lib/httpErrorHandler";
 
 export default function ProgramModal({ isOpen, onClose, onRefresh, item }) {
   const isCreate = !item;
-  const [programName, setProgramName] = useState("");
-  const [description, setDescription] = useState("");
-  const [overview, setOverview] = useState("");
-  const [image, setImage] = useState(null);
+  
+  // React Hook Form
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+    watch,
+  } = useForm({
+    defaultValues: {
+      programName: "",
+      description: "",
+      overview: "",
+      isActive: true,
+    },
+  });
+
+  // Watch isActive for toggle display
+  const watchIsActive = watch("isActive");
+
+  // Non-form state
   const [loading, setLoading] = useState(false);
-  const [isActive, setIsActive] = useState(true);
+  const [image, setImage] = useState(null);
+  const fileInputRef = useRef(null);
 
   // Handle image select
   const handleImageChange = (e) => {
@@ -77,8 +97,31 @@ export default function ProgramModal({ isOpen, onClose, onRefresh, item }) {
     });
   };
 
-  // Save changes
-  const handleSave = async () => {
+  // Reset form when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      if (item) {
+        reset({
+          programName: item.program_name || "",
+          description: item.description || "",
+          overview: item.overview || "",
+          isActive: item.is_active ?? true,
+        });
+        setImage(null);
+      } else {
+        reset({
+          programName: "",
+          description: "",
+          overview: "",
+          isActive: true,
+        });
+        setImage(null);
+      }
+    }
+  }, [isOpen, item, reset]);
+
+  // Form submission
+  const onSubmit = async (data) => {
     const toastId = toast.loading(isCreate ? "Creating program..." : "Saving changes...");
 
     try {
@@ -100,7 +143,7 @@ export default function ProgramModal({ isOpen, onClose, onRefresh, item }) {
       }
 
       if (image) {
-        const safeProgram = (item?.program_name || "new-program")
+        const safeProgram = (data.programName || "new-program")
           .replace(/\s+/g, "-")
           .toLowerCase();
 
@@ -122,36 +165,26 @@ export default function ProgramModal({ isOpen, onClose, onRefresh, item }) {
           throw uploadError;
         }
 
-        const { data } = supabase.storage
+        const { data: uploadData } = supabase.storage
           .from("program_images")
           .getPublicUrl(fileName);
 
         // prevent browser cache
-        imageUrl = `${data.publicUrl}?t=${Date.now()}`;
+        imageUrl = `${uploadData.publicUrl}?t=${Date.now()}`;
       }
 
       const programData = {
-        program_name: programName,
-        description,
-        overview,
+        program_name: data.programName,
+        description: data.description,
+        overview: data.overview,
         image_url: imageUrl,
-        is_active: isActive,
+        is_active: data.isActive,
       };
 
       if (isCreate) {
-        // Validate required fields
-        if (!programName || !programName.trim()) {
-          toast.error("Program name is required", { id: toastId });
-          setLoading(false);
-          return;
-        }
-
-        // Create new program
         await createProgram(programData);
-
-        toast.success("Program created successfully!");
+        toast.success("Program created successfully!", { id: toastId });
       } else {
-        // Update existing program
         await updateProgram(item.id, programData);
         toast.success("Program updated successfully!", { id: toastId });
       }
@@ -164,36 +197,19 @@ export default function ProgramModal({ isOpen, onClose, onRefresh, item }) {
       onClose();
     } catch (error) {
       console.error("Failed to save:", error);
-      toast.error(isCreate ? "Failed to create program" : "Failed to update program", { id: toastId });
+      
+      // Use the improved error handler to get backend message with fallback
+      const errorMessage = getOperationErrorMessage(
+        error,
+        isCreate ? 'create' : 'update',
+        'program'
+      );
+      
+      toast.error(errorMessage, { id: toastId });
     } finally {
       setLoading(false);
     }
   };
-
-  // Reset form
-  const resetForm = () => {
-    setProgramName(item?.program_name || "");
-    setDescription(item?.description || "");
-    setOverview(item?.overview || "");
-    setImage(null);
-    setIsActive(item?.is_active ?? true);
-  };
-
-  // Load initial data when modal opens
-  useEffect(() => {
-    if (isOpen) {
-      if (item) {
-        resetForm();
-      } else {
-        // Reset form for create mode
-        setProgramName("");
-        setDescription("");
-        setOverview("");
-        setImage(null);
-        setIsActive(true);
-      }
-    }
-  }, [isOpen, item]);
 
   if (!isOpen) return null;
 
@@ -211,7 +227,7 @@ export default function ProgramModal({ isOpen, onClose, onRefresh, item }) {
 
               <div>
                 <h2 className="text-lg sm:text-2xl font-bold">
-                  {isCreate ? "Create Program" : `Update Program (${item.program_name})`}
+                  {isCreate ? "Create Program" : `Update Program (${item?.program_name})`}
                 </h2>
 
                 <p className="text-xs sm:text-sm text-gray-500 hidden sm:block">
@@ -221,8 +237,9 @@ export default function ProgramModal({ isOpen, onClose, onRefresh, item }) {
             </div>
 
             <button
+              type="button"
               onClick={() => {
-                resetForm();
+                reset();
                 onClose();
               }}
               className="rounded-lg p-2 text-gray-400 hover:text-red-500 hover:bg-red-200 transition-colors"
@@ -233,7 +250,7 @@ export default function ProgramModal({ isOpen, onClose, onRefresh, item }) {
         </div>
 
         {/* Body - Scrollable */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 sm:space-y-5">
+        <form onSubmit={handleSubmit(onSubmit)} className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 sm:space-y-5">
           {/* Program Name */}
           <div className="space-y-2">
             <label className="text-sm font-medium text-gray-700">
@@ -242,9 +259,10 @@ export default function ProgramModal({ isOpen, onClose, onRefresh, item }) {
 
             <input
               type="text"
-              value={programName}
+              {...register("programName", {
+                required: "Program name is required",
+              })}
               placeholder="Enter program name..."
-              onChange={(e) => setProgramName(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
                   e.target.blur();
@@ -253,27 +271,33 @@ export default function ProgramModal({ isOpen, onClose, onRefresh, item }) {
               className="w-full rounded-lg border border-gray-300 bg-white px-3 sm:px-4 py-2 sm:py-2.5 text-sm shadow-sm
               focus:outline-none focus:ring-2 focus:ring-orange-400 transition"
             />
+            {errors.programName && (
+              <p className="text-xs text-red-500">{errors.programName.message}</p>
+            )}
           </div>
 
           {/* Active Status */}
           <div className="flex flex-col space-y-2">
             <label className="text-sm font-medium text-gray-700">Status</label>
             <div className="flex items-center gap-3 py-2">
-              <button
-                type="button"
-                onClick={() => setIsActive(!isActive)}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                  isActive ? "bg-green-500" : "bg-gray-300"
-                }`}
-              >
-                <span
-                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                    isActive ? "translate-x-6" : "translate-x-1"
-                  }`}
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  {...register("isActive")}
+                  className="sr-only peer"
                 />
-              </button>
-              <span className={`text-sm font-medium ${isActive ? "text-green-600" : "text-gray-500"}`}>
-                {isActive ? "Active" : "Inactive"}
+                <div className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                  watchIsActive ? "bg-green-500" : "bg-gray-300"
+                }`}>
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      watchIsActive ? "translate-x-6" : "translate-x-1"
+                    }`}
+                  />
+                </div>
+              </label>
+              <span className={`text-sm font-medium ${watchIsActive ? "text-green-600" : "text-gray-500"}`}>
+                {watchIsActive ? "Active" : "Inactive"}
               </span>
             </div>
           </div>
@@ -313,6 +337,7 @@ export default function ProgramModal({ isOpen, onClose, onRefresh, item }) {
                 </div>
 
                 <input
+                  ref={fileInputRef}
                   type="file"
                   accept="image/*"
                   className="hidden"
@@ -328,9 +353,8 @@ export default function ProgramModal({ isOpen, onClose, onRefresh, item }) {
               </label>
 
               <textarea
-                value={description}
+                {...register("description")}
                 placeholder="Enter description..."
-                onChange={(e) => setDescription(e.target.value)}
                 className="flex-1 w-full min-h-[160px] sm:min-h-[200px] md:min-h-[250px] rounded-lg border border-gray-300 bg-white px-3 sm:px-4 py-2 sm:py-3 text-sm
                 focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none transition"
               />
@@ -344,9 +368,8 @@ export default function ProgramModal({ isOpen, onClose, onRefresh, item }) {
             </label>
 
             <textarea
-              value={overview}
+              {...register("overview")}
               placeholder="Enter overview..."
-              onChange={(e) => setOverview(e.target.value)}
               className="w-full min-h-[100px] rounded-lg border border-gray-300 bg-white px-3 sm:px-4 py-2 sm:py-3 text-sm
               focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none transition"
             />
@@ -356,8 +379,9 @@ export default function ProgramModal({ isOpen, onClose, onRefresh, item }) {
           <div className="flex-shrink-0 bg-[#FEF2F3] rounded-b-2xl px-4 sm:px-6 py-3 sm:py-4 border-t border-gray-200">
             <div className="flex justify-end gap-2 sm:gap-3">
               <button
+                type="button"
                 onClick={() => {
-                  resetForm();
+                  reset();
                   onClose();
                 }}
                 className="px-4 sm:px-6 py-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-white transition"
@@ -366,8 +390,8 @@ export default function ProgramModal({ isOpen, onClose, onRefresh, item }) {
               </button>
 
               <button
+                type="submit"
                 disabled={loading}
-                onClick={handleSave}
                 className="px-4 sm:px-5 py-2 rounded-lg text-white font-medium bg-primary-gradient hover:bg-primary-gradient-hover
                 active:scale-95 focus:outline-none focus:ring-2 focus:ring-[#F65919] focus:ring-offset-2 transition disabled:opacity-60"
               >
@@ -375,7 +399,7 @@ export default function ProgramModal({ isOpen, onClose, onRefresh, item }) {
               </button>
             </div>
           </div>
-        </div>
+        </form>
       </div>
     </div>
   );

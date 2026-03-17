@@ -4,8 +4,6 @@ import api from "../../lib/api";
 import resolveAssetUrl from "../../lib/resolveAssetUrl";
 
 import axios from "axios";
-import Breadcrumbs from "../../components/ui/Breadcrumbs";
-
 
 export default function Programs() {
   const [searchParams] = useSearchParams();
@@ -65,8 +63,6 @@ export default function Programs() {
     <div className="bg-gray-100 py-12">
       <div className="max-w-[1280px] mx-auto px-6">
 
-        {/* Breadcrumbs */}
-        <Breadcrumbs items={[{ label: "Programs", path: "/programs" }]} />
 
         {/* Page Title */}
         <h1 className="text-[50px] font-bold text-red-600 mb-10 font-[Roboto_Condensed]">

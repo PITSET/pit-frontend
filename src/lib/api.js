@@ -93,6 +93,14 @@ api.interceptors.response.use(
       return Promise.reject(error);
     }
 
+    // Handle 409 Conflict (Duplicate entries, etc.)
+    // Don't show toast here - let the component handle it with better context
+    if (parsedError.type === ErrorType.CONFLICT) {
+      console.warn("Conflict error:", error.response?.status, error.response?.data);
+      // Reject the error so the component can handle it and show appropriate message
+      return Promise.reject(error);
+    }
+
     // Handle Network Errors
     if (parsedError.type === ErrorType.NETWORK) {
       console.error("Network error:", error.message);

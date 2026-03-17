@@ -201,11 +201,15 @@ export default function Navbar() {
                           </div>
                         </Link>
 
+
                         <Link
                           to={`/projects?program=${encodeURIComponent(program)}`}
                           onClick={closeMobileMenu}
                           className="block"
                         >
+
+                        <Link to={`/projects?program=${encodeURIComponent(program)}`}>
+
                           <div className="font-medium">Projects</div>
                           <div className="text-sm text-gray-400">
                             List of all projects
@@ -237,12 +241,7 @@ export default function Navbar() {
           >
             Projects
           </Link>
-
-          <Link
-            to="/contact"
-            onClick={closeMobileMenu}
-            className="block hover:text-red-600 cursor-pointer transition"
-          >
+          <Link to="/contact" className="hover:text-red-600 cursor-pointer transition">
             Contact
           </Link>
         </div>

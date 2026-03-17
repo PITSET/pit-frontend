@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 
 // heroicons
@@ -7,26 +8,43 @@ import {
   UserIcon,
   ArrowUpTrayIcon,
   ChevronDownIcon,
+  CheckIcon,
 } from "@heroicons/react/24/outline";
 
 // api
 import { createStudent, updateStudent } from "../../lib/services/studentService";
 import { getAllPrograms } from "../../lib/services/programService";
 import { supabase } from "../../lib/supabaseClient";
+import { getOperationErrorMessage } from "../../lib/httpErrorHandler";
 
 export default function StudentModal({ isOpen, onClose, onRefresh, item }) {
   const isCreate = !item;
   
-  // Student fields matching backend
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [emailError, setEmailError] = useState("");
-  const [programId, setProgramId] = useState("");
-  const [showProgramDropdown, setShowProgramDropdown] = useState(false);
+  // React Hook Form
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+    setValue,
+    watch,
+  } = useForm({
+    defaultValues: {
+      name: "",
+      email: "",
+      programId: "",
+    },
+  });
+
+  // Program ID watch for dropdown
+  const programId = watch("programId");
   
+  // Non-form state
   const [loading, setLoading] = useState(false);
   const [programs, setPrograms] = useState([]);
   const [programsLoading, setProgramsLoading] = useState(false);
+  const [showProgramDropdown, setShowProgramDropdown] = useState(false);
+  const [image, setImage] = useState(null);
   
   // Refs
   const fileInputRef = useRef(null);
@@ -85,25 +103,6 @@ export default function StudentModal({ isOpen, onClose, onRefresh, item }) {
     toast.success("Image selected");
   };
 
-  // Validate email format
-  const validateEmail = (emailValue) => {
-    if (!emailValue) return false; // Required field - empty is invalid
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(emailValue);
-  };
-
-  // Handle email change with validation
-  const handleEmailChange = (e) => {
-    const value = e.target.value;
-    setEmail(value);
-    
-    if (value && !validateEmail(value)) {
-      setEmailError("Please enter a valid email address");
-    } else {
-      setEmailError("");
-    }
-  };
-
   // Convert image to WEBP (compression + resize)
   const convertToWebp = (file) => {
     return new Promise((resolve) => {
@@ -139,8 +138,33 @@ export default function StudentModal({ isOpen, onClose, onRefresh, item }) {
     });
   };
 
-  // Save changes
-  const handleSave = async () => {
+  // Reset form when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      if (item) {
+        reset({
+          name: item.name || "",
+          email: item.email || "",
+          programId: item.program_id || "",
+        });
+        setImage(null);
+      } else {
+        reset({
+          name: "",
+          email: "",
+          programId: "",
+        });
+        setImage(null);
+      }
+    }
+  }, [isOpen, item, reset]);
+
+  // Get selected program name
+  const selectedProgram = programs.find(p => p.id === programId);
+  const selectedProgramName = selectedProgram?.program_name || selectedProgram?.name || "";
+
+  // Form submission
+  const onSubmit = async (data) => {
     const toastId = toast.loading(isCreate ? "Creating..." : "Saving...");
 
     try {
@@ -151,7 +175,7 @@ export default function StudentModal({ isOpen, onClose, onRefresh, item }) {
 
       // Upload new image if selected
       if (image) {
-        const safeName = (name || "new-student")
+        const safeName = (data.name || "new-student")
           .replace(/\s+/g, "-")
           .toLowerCase();
 
@@ -177,11 +201,11 @@ export default function StudentModal({ isOpen, onClose, onRefresh, item }) {
           throw uploadError;
         }
 
-        const { data } = supabase.storage
+        const { data: uploadData } = supabase.storage
           .from("student_images")
           .getPublicUrl(fileName);
 
-        imageUrlToSave = `${data.publicUrl}?t=${Date.now()}`;
+        imageUrlToSave = `${uploadData.publicUrl}?t=${Date.now()}`;
 
         // Delete old image if replacing an existing student's image
         if (item?.image_url) {
@@ -205,65 +229,18 @@ export default function StudentModal({ isOpen, onClose, onRefresh, item }) {
       }
 
       const studentData = {
-        name: name?.trim() || null,
-        email: email?.trim() || null,
+        name: data.name?.trim() || null,
+        email: data.email?.trim() || null,
         image_url: imageUrlToSave || null,
-        program_id: programId || null,
+        program_id: data.programId || null,
       };
 
       if (isCreate) {
-        // Validate required fields for create
-        if (!name || !name.trim()) {
-          toast.error("Please enter a name", { id: toastId });
-          setLoading(false);
-          return;
-        }
-
-        if (!email || !email.trim()) {
-          toast.error("Please enter an email address", { id: toastId });
-          setLoading(false);
-          return;
-        }
-
-        if (!validateEmail(email)) {
-          toast.error("Please enter a valid email address", { id: toastId });
-          setLoading(false);
-          return;
-        }
-
-        if (!programId) {
-          toast.error("Please select a program", { id: toastId });
-          setLoading(false);
-          return;
-        }
-
-        // Create new student
         await createStudent(studentData);
-
-        toast.success("Created successfully!");
+        toast.success("Created successfully!", { id: toastId });
       } else {
-        // Validate required fields for update
-        if (!name || !name.trim()) {
-          toast.error("Please enter a name", { id: toastId });
-          setLoading(false);
-          return;
-        }
-
-        if (!email || !email.trim()) {
-          toast.error("Please enter an email address", { id: toastId });
-          setLoading(false);
-          return;
-        }
-
-        if (!validateEmail(email)) {
-          toast.error("Please enter a valid email address", { id: toastId });
-          setLoading(false);
-          return;
-        }
-
-        // Update existing student
         await updateStudent(item.id, studentData);
-        toast.success(isCreate ? "Created successfully!" : "Saved successfully!");
+        toast.success("Saved successfully!", { id: toastId });
       }
 
       // auto-refresh parent data
@@ -275,35 +252,12 @@ export default function StudentModal({ isOpen, onClose, onRefresh, item }) {
     } catch (error) {
       console.error("Failed to save:", error);
       
-      // Provide more specific error messages based on the error type
-      let errorMessage = isCreate ? "Failed to create student" : "Failed to update student";
-      
-      // Check for RLS policy violations
-      const errorStr = JSON.stringify(error).toLowerCase();
-      if (errorStr.includes("row-level security") || errorStr.includes("rls") || errorStr.includes("row-level security policy")) {
-        errorMessage = "Permission denied. Storage upload failed. Please login again or contact administrator.";
-      } else if (error.response) {
-        const status = error.response.status;
-        const data = error.response.data;
-        
-        if (status === 400) {
-          errorMessage = data?.message || "Invalid request. Please check your input.";
-        } else if (status === 401) {
-          errorMessage = "Unauthorized. Please login again.";
-        } else if (status === 404) {
-          errorMessage = "Student not found. It may have been deleted.";
-        } else if (status === 409) {
-          errorMessage = data?.error || "Student with this email already exists";
-        } else if (status === 500) {
-          errorMessage = "Server error. Please try again later.";
-        } else {
-          errorMessage = data?.message || errorMessage;
-        }
-      } else if (error.request) {
-        errorMessage = "Network error. Please check your connection.";
-      } else if (error.message) {
-        errorMessage = error.message;
-      }
+      // Use the improved error handler to get backend message with fallback
+      const errorMessage = getOperationErrorMessage(
+        error,
+        isCreate ? 'create' : 'update',
+        'student'
+      );
       
       toast.error(errorMessage, { id: toastId });
     } finally {
@@ -311,39 +265,7 @@ export default function StudentModal({ isOpen, onClose, onRefresh, item }) {
     }
   };
 
-  // Reset form
-  const resetForm = () => {
-    setName(item?.name || "");
-    setEmail(item?.email || "");
-    setImage(null);
-    setProgramId(item?.program_id || "");
-    setShowProgramDropdown(false);
-  };
-
-  // Load initial data when modal opens
-  useEffect(() => {
-    if (isOpen) {
-      if (item) {
-        resetForm();
-      } else {
-        // Reset form for create mode
-        setName("");
-        setEmail("");
-        setImage(null);
-        setProgramId("");
-        setShowProgramDropdown(false);
-      }
-    }
-  }, [isOpen, item]);
-
-  // Image state
-  const [image, setImage] = useState(null);
-
   if (!isOpen) return null;
-
-  // Get selected program name
-  const selectedProgram = programs.find(p => p.id === programId);
-  const selectedProgramName = selectedProgram?.program_name || selectedProgram?.name || "";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/40 backdrop-blur-sm overflow-y-auto">
@@ -369,8 +291,9 @@ export default function StudentModal({ isOpen, onClose, onRefresh, item }) {
             </div>
 
             <button
+              type="button"
               onClick={() => {
-                resetForm();
+                reset();
                 onClose();
               }}
               className="rounded-lg p-2 text-gray-400 hover:text-red-500 hover:bg-red-200 transition-colors"
@@ -381,7 +304,7 @@ export default function StudentModal({ isOpen, onClose, onRefresh, item }) {
         </div>
 
         {/* Body - Scrollable */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 sm:space-y-8">
+        <form onSubmit={handleSubmit(onSubmit)} className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 sm:space-y-8">
           {/* Two-column layout */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Left column - Image upload */}
@@ -439,11 +362,15 @@ export default function StudentModal({ isOpen, onClose, onRefresh, item }) {
                 </label>
                 <input
                   type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  {...register("name", {
+                    required: "Name is required",
+                  })}
                   placeholder="Enter student name"
                   className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-shadow"
                 />
+                {errors.name && (
+                  <p className="mt-1 text-xs text-red-500">{errors.name.message}</p>
+                )}
               </div>
 
               {/* Email */}
@@ -453,15 +380,20 @@ export default function StudentModal({ isOpen, onClose, onRefresh, item }) {
                 </label>
                 <input
                   type="email"
-                  value={email}
-                  onChange={handleEmailChange}
+                  {...register("email", {
+                    required: "Email is required",
+                    pattern: {
+                      value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                      message: "Please enter a valid email address",
+                    },
+                  })}
                   placeholder="Enter email address"
                   className={`w-full px-3 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-shadow ${
-                    emailError ? 'border-red-500' : 'border-gray-300'
+                    errors.email ? 'border-red-500' : 'border-gray-300'
                   }`}
                 />
-                {emailError && (
-                  <p className="mt-1 text-xs text-red-500">{emailError}</p>
+                {errors.email && (
+                  <p className="mt-1 text-xs text-red-500">{errors.email.message}</p>
                 )}
               </div>
 
@@ -499,7 +431,7 @@ export default function StudentModal({ isOpen, onClose, onRefresh, item }) {
                             key={program.id}
                             type="button"
                             onClick={() => {
-                              setProgramId(program.id);
+                              setValue("programId", program.id);
                               setShowProgramDropdown(false);
                             }}
                             className={`w-full px-3 sm:px-4 py-2 text-left text-sm transition flex items-center justify-between ${
@@ -518,45 +450,47 @@ export default function StudentModal({ isOpen, onClose, onRefresh, item }) {
                     )}
                   </>
                 )}
+                {errors.programId && (
+                  <p className="mt-1 text-xs text-red-500">{errors.programId.message}</p>
+                )}
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Footer - Fixed */}
-        <div className="flex-shrink-0 bg-white rounded-b-2xl px-4 sm:px-6 py-3 sm:py-4 border-t border-gray-200">
-          <div className="flex flex-col sm:flex-row gap-3 sm:justify-end">
-            <button
-              type="button"
-              onClick={() => {
-                resetForm();
-                onClose();
-              }}
-              className="w-full sm:w-auto px-4 py-2.5 text-gray-700 font-medium rounded-lg border border-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 transition-colors"
-            >
-              Cancel
-            </button>
+          {/* Footer - Fixed */}
+          <div className="flex-shrink-0 bg-white rounded-b-2xl px-4 sm:px-6 py-3 sm:py-4 border-t border-gray-200">
+            <div className="flex flex-col sm:flex-row gap-3 sm:justify-end">
+              <button
+                type="button"
+                onClick={() => {
+                  reset();
+                  onClose();
+                }}
+                className="w-full sm:w-auto px-4 py-2.5 text-gray-700 font-medium rounded-lg border border-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 transition-colors"
+              >
+                Cancel
+              </button>
 
-            <button
-              type="button"
-              onClick={handleSave}
-              disabled={loading}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-primary-gradient text-white font-medium rounded-lg hover:bg-primary-gradient-hover focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? (
-                <>
-                  <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  <span>Saving...</span>
-                </>
-              ) : (
-                <span>{isCreate ? "Create" : "Save"}</span>
-              )}
-            </button>
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-primary-gradient text-white font-medium rounded-lg hover:bg-primary-gradient-hover focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading ? (
+                  <>
+                    <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span>Saving...</span>
+                  </>
+                ) : (
+                  <span>{isCreate ? "Create" : "Save"}</span>
+                )}
+              </button>
+            </div>
           </div>
-        </div>
+        </form>
       </div>
     </div>
   );

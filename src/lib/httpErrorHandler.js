@@ -54,6 +54,65 @@ const defaultMessages = {
 };
 
 /**
+ * Extracts more specific information from database constraint errors
+ */
+function extractConstraintDetails(data) {
+  if (!data) return null;
+  
+  // Try to get the detailed error message from the backend
+  const message = data.message || data.error || data.msg;
+  
+  if (!message) return null;
+  
+  // Check for unique constraint violations (code 23505)
+  // Pattern: duplicate key value violates unique constraint "table_column_key"
+  // This can come from Supabase directly (data.code) or in the message
+  const uniqueMatch = message.match(/unique constraint ["']([\w_]+)["']/);
+  if (uniqueMatch || data.code === '23505') {
+    const constraintName = uniqueMatch ? uniqueMatch[1] : (data.message?.match(/unique constraint ["']([\w_]+)["']/)?.[1]);
+    if (constraintName) {
+      // Extract field name from constraint (e.g., "team_members_email_key" -> "email")
+      const fieldMatch = constraintName.match(/_(\w+)_?key?$/);
+      const fieldName = fieldMatch ? fieldMatch[1] : null;
+      
+      // Map common constraint names to readable field names
+      const fieldNameMap = {
+        email: 'email',
+        name: 'name',
+        title: 'title',
+        phone: 'phone',
+      };
+      
+      const readableField = fieldNameMap[fieldName] || fieldName || 'record';
+      return {
+        type: 'UNIQUE_VIOLATION',
+        field: readableField,
+        message: `This ${readableField} already exists in the system.`,
+      };
+    }
+    // If we have code 23505 but couldn't parse the constraint, still return a message
+    if (data.code === '23505') {
+      return {
+        type: 'UNIQUE_VIOLATION',
+        field: 'record',
+        message: 'A record with this information already exists.',
+      };
+    }
+  }
+  
+  // Check for foreign key violations (code 23503)
+  const fkMatch = message.match(/foreign key/i) || data.code === '23503';
+  if (fkMatch) {
+    return {
+      type: 'FOREIGN_KEY_VIOLATION',
+      message: 'Cannot process this request. Related data may not exist.',
+    };
+  }
+  
+  return null;
+}
+
+/**
  * Parses an axios error and returns structured error information
  * @param {Error} error - The error object from axios
  * @returns {Object} Structured error object with type, message, status, and details
@@ -62,6 +121,27 @@ export function parseHttpError(error) {
   // Handle case where error is not an axios error
   if (!error) {
     return createErrorObject(ErrorType.UNKNOWN, defaultMessages[ErrorType.UNKNOWN], null);
+  }
+
+  // Check if it's a Supabase error with direct properties (not wrapped in axios response)
+  // Supabase errors often have: code, details, hint, message
+  if (error.code && error.message) {
+    // This is likely a Supabase/PostgreSQL error
+    // Check for specific error codes
+    if (error.code === '23505') {
+      // Unique constraint violation
+      const constraintDetails = extractConstraintDetails(error);
+      if (constraintDetails) {
+        return createErrorObject(ErrorType.CONFLICT, constraintDetails.message, { code: error.code });
+      }
+      return createErrorObject(ErrorType.CONFLICT, 'A record with this information already exists.', { code: error.code });
+    }
+    if (error.code === '23503') {
+      // Foreign key violation
+      return createErrorObject(ErrorType.VALIDATION, 'Cannot process this request. Related data may not exist.', { code: error.code });
+    }
+    // For other Supabase errors, return the message
+    return createErrorObject(ErrorType.UNKNOWN, error.message, { code: error.code });
   }
 
   // Check if it's an axios error with response
@@ -74,6 +154,12 @@ export function parseHttpError(error) {
     
     // Try to extract message from response data
     let message = extractErrorMessage(data) || defaultMessages[errorType];
+    
+    // Check for specific constraint violations and get more detailed message
+    const constraintDetails = extractConstraintDetails(data);
+    if (constraintDetails) {
+      message = constraintDetails.message;
+    }
     
     // Add status code to message for debugging (but not shown to user by default)
     const details = { status, data };
@@ -215,10 +301,53 @@ export function getOperationErrorMessage(error, operation, resource) {
   }
   
   if (parsed.type === ErrorType.CONFLICT) {
+    // Try to get the backend message first
+    const backendMessage = error?.response?.data?.error || error?.response?.data?.message;
+    
+    if (backendMessage) {
+      // Provide more contextual messages based on resource type
+      const normalizedResource = resource?.toLowerCase();
+      
+      // For member/team member operations, provide email-specific context
+      if (normalizedResource === 'member' || normalizedResource === 'team member') {
+        if (backendMessage.includes('already exists')) {
+          return "A member with this email address already exists. Please use a different email.";
+        }
+      }
+      
+      // For student operations
+      if (normalizedResource === 'student') {
+        if (backendMessage.includes('already exists')) {
+          return "A student with this information already exists. Please check the email or student ID.";
+        }
+      }
+      
+      // For program operations
+      if (normalizedResource === 'program') {
+        if (backendMessage.includes('already exists')) {
+          return "A program with this name already exists. Please use a different name.";
+        }
+      }
+      
+      // For project operations
+      if (normalizedResource === 'project') {
+        if (backendMessage.includes('already exists')) {
+          return "A project with this name already exists. Please use a different name.";
+        }
+      }
+      
+      // Return the backend message as-is if no specific context
+      return backendMessage;
+    }
     return `Cannot ${operationText} ${resource}. There may be a conflict with existing data.`;
   }
   
   if (parsed.type === ErrorType.VALIDATION) {
+    // Try to get the backend message first
+    const backendMessage = error?.response?.data?.error || error?.response?.data?.message;
+    if (backendMessage) {
+      return backendMessage;
+    }
     return `Cannot ${operationText} ${resource}. Please check your input.`;
   }
   
@@ -236,6 +365,12 @@ export function getOperationErrorMessage(error, operation, resource) {
   
   if (parsed.type === ErrorType.NETWORK) {
     return `Unable to ${operationText} ${resource}. Please check your internet connection.`;
+  }
+  
+  // Try to get the backend message as fallback
+  const backendMessage = error?.response?.data?.error || error?.response?.data?.message;
+  if (backendMessage) {
+    return backendMessage;
   }
   
   return `Failed to ${operationText} ${resource}. ${parsed.message}`;

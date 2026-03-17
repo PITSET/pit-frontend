@@ -475,12 +475,12 @@ export default function AdminMembers() {
             {currentItems.map((item) => (
               <div
                 key={item.id}
-                className={`bg-white rounded-xl border shadow-sm p-4 ${!item.is_featured ? 'border-gray-200 opacity-75' : 'border-gray-200'}`}
+                className={`rounded-xl border shadow-sm p-4 ${!item.is_featured ? 'border-gray-200 bg-gray-50' : 'bg-white border-gray-200'}`}
               >
                 <div className="flex gap-4">
                   {/* Image */}
                   <div className="flex-shrink-0">
-                    <div className="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden">
+                    <div className="w-20 h-20 bg-white rounded-lg overflow-hidden border border-gray-200 shadow-sm">
                       <img
                         src={item.image_url || item.images?.[0] || "/placeholder.svg"}
                         alt={item.name}
@@ -492,7 +492,7 @@ export default function AdminMembers() {
                   {/* Content */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between mb-1">
-                      <h3 className={`font-semibold truncate ${item.is_featured ? 'text-gray-900' : 'text-gray-500'}`}>
+                      <h3 className="font-semibold truncate text-gray-900">
                         {item.name}
                       </h3>
                       <div className="flex gap-1 ml-2">
@@ -503,7 +503,7 @@ export default function AdminMembers() {
                             ? 'bg-orange-100 text-orange-800'
                             : item.is_instructor
                             ? 'bg-orange-100 text-orange-800'
-                            : 'bg-gray-200 text-gray-800'
+                            : 'bg-gray-100 text-gray-700'
                         }`}>
                           {item.is_founder && item.is_instructor 
                             ? 'Founder, Instructor' 

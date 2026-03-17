@@ -9,6 +9,7 @@ import {
 
 // supabase
 import { supabase } from "../../lib/supabaseClient";
+import { getOperationErrorMessage } from "../../lib/httpErrorHandler";
 
 export default function DeleteModal({ 
   isOpen, 
@@ -118,29 +119,12 @@ export default function DeleteModal({
     } catch (error) {
       console.error("Failed to delete:", error);
       
-      // Provide more specific error messages based on the error type
-      let errorMessage = `Failed to delete ${sectionType}`;
-      
-      if (error.response) {
-        // Server responded with error status
-        const status = error.response.status;
-        const data = error.response.data;
-        
-        if (status === 400) {
-          errorMessage = data?.message || "Invalid request. Please check your input.";
-        } else if (status === 401) {
-          errorMessage = "Unauthorized. Please login again.";
-        } else if (status === 404) {
-          errorMessage = `${sectionType} not found. It may have been already deleted.`;
-        } else if (status === 500) {
-          errorMessage = "Server error. Please try again later.";
-        } else {
-          errorMessage = data?.message || errorMessage;
-        }
-      } else if (error.request) {
-        // Network error
-        errorMessage = "Network error. Please check your connection.";
-      }
+      // Use the improved error handler to get backend message with fallback
+      const errorMessage = getOperationErrorMessage(
+        error,
+        'delete',
+        sectionType
+      );
       
       toast.error(errorMessage, { id: toastId });
     } finally {

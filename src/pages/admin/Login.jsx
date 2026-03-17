@@ -1,5 +1,6 @@
 // React Hooks
 import { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
 
 // Heroicons (password show/hide)
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
@@ -25,11 +26,17 @@ export default function Login() {
      FORM STATE
      =============================== */
 
-  // User email input
-  const [email, setEmail] = useState("");
-
-  // User password input
-  const [password, setPassword] = useState("");
+  // React Hook Form
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
 
   // Toggle password visibility
   const [showPassword, setShowPassword] = useState(false);
@@ -103,15 +110,13 @@ export default function Login() {
      LOGIN FORM SUBMISSION
      =============================== */
 
-  const handleSubmit = async (e) => {
-    e.preventDefault(); // prevent page refresh
-
+  const onSubmit = async (data) => {
     // Start loading state
     setLoading(true);
 
     try {
       // Call login API using Supabase auth
-      await login(email, password);
+      await login(data.email, data.password);
 
       // Show success message (toast notification)
       toast.success("Login successful! Redirecting...");
@@ -235,32 +240,37 @@ export default function Login() {
           {/* ===============================
         LOGIN FORM
         =============================== */}
-          <form onSubmit={handleSubmit} className="space-y-6 w-full">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 w-full">
             {/* EMAIL */}
-            <input
-              type="email"
-              placeholder="Email"
-              required
-              autoComplete="username"
-              name="email"
-              id="email"
-              className="w-full px-5 py-3 rounded-full bg-red-200/70 placeholder-gray-700 focus:outline-none focus:ring-2 focus:ring-red-400 shadow-sm"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
+            <div>
+              <input
+                type="email"
+                placeholder="Email"
+                autoComplete="username"
+                {...register("email", {
+                  required: "Email is required",
+                  pattern: {
+                    value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                    message: "Please enter a valid email address",
+                  },
+                })}
+                className="w-full px-5 py-3 rounded-full bg-red-200/70 placeholder-gray-700 focus:outline-none focus:ring-2 focus:ring-red-400 shadow-sm"
+              />
+              {errors.email && (
+                <p className="mt-1 text-xs text-red-500">{errors.email.message}</p>
+              )}
+            </div>
 
             {/* PASSWORD */}
             <div className="relative">
               <input
                 type={showPassword ? "text" : "password"}
                 placeholder="Password"
-                required
                 autoComplete="current-password"
-                name="password"
-                id="password"
+                {...register("password", {
+                  required: "Password is required",
+                })}
                 className="w-full px-5 py-3 rounded-full bg-red-200/70 placeholder-gray-700 focus:outline-none focus:ring-2 focus:ring-red-400 shadow-sm"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
               />
 
               <button
@@ -275,6 +285,9 @@ export default function Login() {
                 )}
               </button>
             </div>
+            {errors.password && (
+              <p className="mt-1 text-xs text-red-500">{errors.password.message}</p>
+            )}
 
             {/* BUTTON */}
             <div className="flex justify-center">
