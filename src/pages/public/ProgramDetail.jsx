@@ -44,7 +44,7 @@ export default function ProgramDetail() {
 
   if (error) {
     return (
-      <div className="text-center py-20 text-red-500 font-[Roboto]">
+      <div className="text-center py-20 text-brand-primary font-[Roboto]">
         {error}
       </div>
     );
@@ -106,7 +106,7 @@ export default function ProgramDetail() {
         {/* Content */}
         <div className="relative max-w-[900px] mx-auto text-center px-6">
 
-          <h2 className="text-red-700 mb-8 font-[Roboto_Condensed] font-bold text-[64px]">
+          <h2 className="text-brand-primary-dark mb-8 font-[Roboto_Condensed] font-bold text-[64px]">
             Program Overview
           </h2>
 
@@ -121,11 +121,11 @@ export default function ProgramDetail() {
       {/* PROJECTS SECTION */}
       <section className="max-w-[] mx-auto px-6 pb-20">
         <div className="flex justify-between items-center mb-8">
-          <h2 className="text-[36px] font-bold text-red-600 font-[Roboto_Condensed]">
+          <h2 className="text-[36px] font-bold text-brand-primary font-[Roboto_Condensed]">
             Projects
           </h2>
 
-          <button className="text-red-600 font-semibold hover:underline">
+          <button className="text-brand-primary font-semibold hover:underline">
             VIEW MORE →
           </button>
         </div>
@@ -156,7 +156,7 @@ export default function ProgramDetail() {
                     {project.description}
                   </p>
 
-                  <button className="mt-auto bg-[#E73F0F] hover:bg-[#cf360b] text-white w-[108px] h-[38px] rounded transition">
+                  <button className="mt-auto bg-brand-primary hover:opacity-90 text-white w-[108px] h-[38px] rounded transition">
                     Read More
                   </button>
                 </div>

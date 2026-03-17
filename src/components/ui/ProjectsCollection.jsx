@@ -117,7 +117,7 @@ export default function ProjectsCollection({ projects = [], isLoading = false })
   return (
     <div className="max-w-7xl mx-auto px-6 py-16 transition-colors duration-300">
       <div className="mb-12 text-center md:text-left">
-        <h2 className="text-4xl md:text-[44px] font-bold text-[#c92a2a] mb-4 tracking-tight">
+        <h2 className="text-4xl md:text-[44px] font-bold text-brand-primary mb-4 tracking-tight">
           Projects Collection
         </h2>
         <p className="text-gray-500 text-lg max-w-2xl">
@@ -134,8 +134,8 @@ export default function ProjectsCollection({ projects = [], isLoading = false })
               key={tab}
               onClick={() => setActiveTab(tab)}
               className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-all border-2 ${activeTab === tab
-                ? "bg-[#c92a2a] text-white border-[#c92a2a] shadow-lg shadow-red-200"
-                : "bg-white text-gray-600 border-gray-100 hover:border-red-200 hover:text-red-600"
+                ? "bg-brand-primary text-white border-brand-primary shadow-lg shadow-brand-primary/20"
+                : "bg-white text-gray-600 border-gray-100 hover:border-brand-primary/20 hover:text-brand-primary"
                 }`}
             >
               {tab}
@@ -152,7 +152,7 @@ export default function ProjectsCollection({ projects = [], isLoading = false })
               placeholder="Search projects..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-[#f8f9fa] border border-gray-100 rounded-[16px] py-4 pl-12 pr-4 text-gray-800 focus:ring-2 focus:ring-[#c92a2a]/20 transition-all outline-none shadow-[inset_4px_4px_8px_rgba(0,0,0,0.05),inset_-4px_-4px_8px_rgba(255,255,255,0.9)]"
+              className="w-full bg-[#f8f9fa] border border-gray-100 rounded-[16px] py-4 pl-12 pr-4 text-gray-800 focus:ring-2 focus:ring-brand-primary/20 transition-all outline-none shadow-[inset_4px_4px_8px_rgba(0,0,0,0.05),inset_-4px_-4px_8px_rgba(255,255,255,0.9)]"
             />
             <BsSearch className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 text-xl" />
           </div>
@@ -161,8 +161,8 @@ export default function ProjectsCollection({ projects = [], isLoading = false })
           <div className="relative" ref={filterRef}>
             <button
               onClick={() => setIsFilterOpen(!isFilterOpen)}
-              className={`w-[56px] h-[56px] flex items-center justify-center rounded-[16px] transition-all bg-white border border-gray-100 text-gray-600 hover:text-[#c92a2a] active:scale-95 ${isFilterOpen
-                ? "shadow-[inset_4px_4px_8px_rgba(0,0,0,0.05),inset_-4px_-4px_8px_rgba(255,255,255,0.9)] text-[#c92a2a]"
+              className={`w-[56px] h-[56px] flex items-center justify-center rounded-[16px] transition-all bg-white border border-gray-100 text-gray-600 hover:text-brand-primary active:scale-95 ${isFilterOpen
+                ? "shadow-[inset_4px_4px_8px_rgba(0,0,0,0.05),inset_-4px_-4px_8px_rgba(255,255,255,0.9)] text-brand-primary"
                 : "shadow-[6px_6px_12px_rgba(0,0,0,0.08),-6px_-6px_12px_rgba(255,255,255,1)]"
                 }`}
             >
@@ -185,7 +185,7 @@ export default function ProjectsCollection({ projects = [], isLoading = false })
                             setIsFilterOpen(false); // Close dropdown on selection
                           }}
                           className={`px-3 py-2 rounded-lg text-left text-sm font-semibold transition-colors ${activeTab === tab
-                            ? "bg-red-50 text-[#c92a2a]"
+                            ? "bg-brand-primary/10 text-brand-primary"
                             : "bg-gray-50 text-gray-600 hover:bg-gray-100"
                             }`}
                         >
@@ -201,7 +201,7 @@ export default function ProjectsCollection({ projects = [], isLoading = false })
                     <select
                       value={filters.launchYear}
                       onChange={(e) => setFilters(prev => ({ ...prev, launchYear: e.target.value }))}
-                      className="w-full bg-gray-50 border-none rounded-lg px-3 py-2 text-sm font-semibold text-gray-800 focus:ring-2 focus:ring-red-100 outline-none"
+                      className="w-full bg-gray-50 border-none rounded-lg px-3 py-2 text-sm font-semibold text-gray-800 focus:ring-2 focus:ring-brand-primary/10 outline-none"
                     >
                       {years.map(year => (
                         <option key={year} value={year}>{year === "All" ? "All Years" : year}</option>
@@ -215,7 +215,7 @@ export default function ProjectsCollection({ projects = [], isLoading = false })
                       setFilters({ teamSize: "All", launchYear: "All" });
                       setIsFilterOpen(false);
                     }}
-                    className="w-full pt-4 border-t border-gray-50 text-xs font-bold text-gray-400 hover:text-[#c92a2a] transition-colors"
+                    className="w-full pt-4 border-t border-gray-50 text-xs font-bold text-gray-400 hover:text-brand-primary transition-colors"
                   >
                     RESET FILTERS
                   </button>
@@ -242,7 +242,7 @@ export default function ProjectsCollection({ projects = [], isLoading = false })
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                 />
                 {project.date && (
-                  <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-lg text-[11px] font-bold text-[#c92a2a] uppercase tracking-wider shadow-sm">
+                  <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-lg text-[11px] font-bold text-brand-primary uppercase tracking-wider shadow-sm">
                     {project.date}
                   </div>
                 )}
@@ -281,7 +281,7 @@ export default function ProjectsCollection({ projects = [], isLoading = false })
               setSearchQuery("");
               setFilters({ teamSize: "All", launchYear: "All" });
             }}
-            className="text-white bg-[#c92a2a] font-bold py-3 px-8 rounded-xl hover:bg-[#b02525] transition-all shadow-lg shadow-red-100"
+            className="text-white bg-brand-primary font-bold py-3 px-8 rounded-xl hover:opacity-90 transition-all shadow-lg shadow-brand-primary/20"
           >
             Clear all filters
           </button>

@@ -322,7 +322,7 @@ export default function Home() {
 
           <div>
 
-            <p className="font-bold text-lg text-red-600 mb-3">
+            <p className="font-bold text-lg text-brand-primary mb-3">
               FOUNDER & PRINCIPAL
             </p>
 
@@ -349,7 +349,7 @@ export default function Home() {
 
           <div>
 
-            <p className="font-bold text-[24px] text-red-600 mb-3">
+            <p className="font-bold text-[24px] text-brand-primary mb-3">
               FOUNDER & PRINCIPAL
             </p>
 

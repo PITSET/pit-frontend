@@ -90,19 +90,19 @@ export default function Instructor() {
       <div className=" py-10">
         <div className="max-w-[1248px] mx-auto px-4 flex items-center gap-3 text-lg font-medium">
 
-          <Link to="/" className="text-gray-700 hover:text-red-600">
+          <Link to="/" className="text-gray-700 hover:text-brand-primary">
             Home
           </Link>
 
           <span className="text-gray-500">›</span>
 
-          <Link to="/about" className="text-gray-700 hover:text-red-600">
+          <Link to="/about" className="text-gray-700 hover:text-brand-primary">
             About
           </Link>
 
-          <span className="text-red-600">›</span>
+          <span className="text-brand-primary">›</span>
 
-          <span className="text-red-600 font-semibold">
+          <span className="text-brand-primary font-semibold">
             Instructors
           </span>
 
@@ -112,7 +112,7 @@ export default function Instructor() {
       <div className="max-w-[1248px] mx-auto py-16 px-4">
 
         {/* TITLE */}
-        <h1 className="text-center text-red-600 font-bold text-[64px] mb-12">
+        <h1 className="text-center text-brand-primary font-bold text-[64px] mb-12">
           Instructors
         </h1>
 
@@ -141,14 +141,14 @@ export default function Instructor() {
             >
               <span
                 className={
-                  activeTab === tab ? "text-red-600" : "text-gray-600"
+                  activeTab === tab ? "text-brand-primary" : "text-gray-600"
                 }
               >
                 {tab}
               </span>
 
               {activeTab === tab && (
-                <span className="absolute bottom-[-4px] left-0 w-full h-[4px] bg-red-600"></span>
+                <span className="absolute bottom-[-4px] left-0 w-full h-[4px] bg-brand-primary"></span>
               )}
             </button>
           ))}
@@ -157,7 +157,7 @@ export default function Instructor() {
         {/* GRID */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 mt-10">
           {error && (
-            <div className="col-span-full text-center text-red-600">
+            <div className="col-span-full text-center text-brand-primary">
               {error}
             </div>
           )}
@@ -193,7 +193,7 @@ export default function Instructor() {
           {inst.position_title}, {program}
         </p>
 
-        <p className="text-red-600 font-bold text-[14px] mt-1 transition-colors duration-300 group-hover:text-black">
+        <p className="text-brand-primary font-bold text-[14px] mt-1 transition-colors duration-300 group-hover:text-black">
           {inst.name}
         </p>
 

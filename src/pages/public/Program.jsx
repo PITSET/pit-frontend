@@ -45,7 +45,7 @@ export default function Programs() {
 
   if (error) {
     return (
-      <div className="text-center py-20 text-red-500 font-[Roboto]">
+      <div className="text-center py-20 text-brand-primary font-[Roboto]">
         {error}
       </div>
     );
@@ -65,8 +65,7 @@ export default function Programs() {
       <div className="max-w-[1280px] mx-auto px-6">
 
 
-        {/* Page Title */}
-        <h1 className="text-[50px] font-bold text-red-600 mb-10 font-[Roboto_Condensed]">
+        <h1 className="text-[50px] font-bold text-brand-primary mb-10 font-[Roboto_Condensed]">
           Programs
         </h1>
 

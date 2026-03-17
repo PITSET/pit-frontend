@@ -32,7 +32,7 @@ export default function Navbar() {
           <li>
             <Link
               to="/about"
-              className="hover:text-red-600 transition cursor-pointer"
+              className="hover:text-brand-primary transition cursor-pointer"
             >
               About
             </Link>
@@ -44,14 +44,14 @@ export default function Navbar() {
             onMouseEnter={() => setIsDesktopProgramOpen(true)}
             onMouseLeave={() => setIsDesktopProgramOpen(false)}
           >
-            <span className="hover:text-red-600 transition flex items-center gap-1 cursor-pointer">
+            <span className="hover:text-brand-primary transition flex items-center gap-1 cursor-pointer">
               Programs
               <span className="text-xs">▼</span>
             </span>
 
             {/* 🔴 Red Underline */}
             <div
-              className={`absolute left-0 -bottom-2 h-[2px] bg-red-600 transition-all duration-300 ${isDesktopProgramOpen ? "w-full" : "w-0"
+              className={`absolute left-0 -bottom-2 h-[2px] bg-brand-primary transition-all duration-300 ${isDesktopProgramOpen ? "w-full" : "w-0"
                 }`}
             />
 
@@ -68,7 +68,7 @@ export default function Navbar() {
                 <div className="p-10 grid grid-cols-3 gap-14">
                   {programs.map((program) => (
                     <div key={program}>
-                      <h3 className="text-red-600 font-semibold text-lg mb-5">
+                      <h3 className="text-brand-primary font-semibold text-lg mb-5">
                         {program}
                       </h3>
 
@@ -77,7 +77,7 @@ export default function Navbar() {
                         <li className="group">
                           <Link
                             to={`/programs?program=${encodeURIComponent(program)}`}
-                            className="text-gray-800 font-medium group-hover:text-red-600 transition"
+                            className="text-gray-800 font-medium group-hover:text-brand-primary transition"
                           >
                             Program Info
                           </Link>
@@ -90,7 +90,7 @@ export default function Navbar() {
                         <li className="group">
                           <Link
                             to={`/projects?program=${encodeURIComponent(program)}`}
-                            className="text-gray-800 font-medium group-hover:text-red-600 transition"
+                            className="text-gray-800 font-medium group-hover:text-brand-primary transition"
                           >
                             Projects
                           </Link>
@@ -122,7 +122,7 @@ export default function Navbar() {
           <li>
             <Link
               to="/projects"
-              className="hover:text-red-600 transition cursor-pointer"
+              className="hover:text-brand-primary transition cursor-pointer"
             >
               Projects
             </Link>
@@ -131,7 +131,7 @@ export default function Navbar() {
           <li>
             <Link
               to="/contact"
-              className="hover:text-red-600 transition cursor-pointer"
+              className="hover:text-brand-primary transition cursor-pointer"
             >
               Contact
             </Link>
@@ -153,7 +153,7 @@ export default function Navbar() {
           }`}
       >
         <div className="space-y-6 font-medium">
-          <Link to="/about" className="hover:text-red-600 cursor-pointer transition">
+          <Link to="/about" className="hover:text-brand-primary cursor-pointer transition">
             About
           </Link>
 
@@ -162,7 +162,7 @@ export default function Navbar() {
               className="flex justify-between items-center cursor-pointer"
               onClick={() => setIsProgramOpen(!isProgramOpen)}
             >
-              <span className="hover:text-red-600 transition">Programs</span>
+              <span className="hover:text-brand-primary transition">Programs</span>
               <span>{isProgramOpen ? "−" : "+"}</span>
             </div>
 
@@ -208,10 +208,10 @@ export default function Navbar() {
             )}
           </div>
 
-          <Link to="/projects" className="hover:text-red-600 cursor-pointer transition">
+          <Link to="/projects" className="hover:text-brand-primary cursor-pointer transition">
             Projects
           </Link>
-          <Link to="/contact" className="hover:text-red-600 cursor-pointer transition">
+          <Link to="/contact" className="hover:text-brand-primary cursor-pointer transition">
             Contact
           </Link>
         </div>
