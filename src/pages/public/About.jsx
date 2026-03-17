@@ -52,11 +52,6 @@ export default function About() {
   const [founders, setFounders] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Scroll to top on mount
-  useEffect(() => {
-    window.scrollTo({ top: 0, behavior: "instant" });
-  }, []);
-
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -147,7 +142,7 @@ export default function About() {
 
         </div>
 {/* HISTORY */}
-<div className="max-w-[950px] mx-auto grid grid-cols-1 md:grid-cols-2 items-center gap-1 mt-[300px]">
+<div id="history" className="max-w-[950px] mx-auto grid grid-cols-1 md:grid-cols-2 items-center gap-1 mt-[300px]">
 
   {/* IMAGE */}
   <div className="flex justify-center md:justify-start">
@@ -173,7 +168,7 @@ export default function About() {
 
 </div>
         {/* MISSION (UNCHANGED) */}
-        <div className="mx-0 grid grid-cols-1 md:grid-cols-2 items-center gap-10 mt-[330px]">
+        <div id="mission" className="mx-0 grid grid-cols-1 md:grid-cols-2 items-center gap-10 mt-[330px]">
 
           <div className="flex justify-center md:justify-end">
             <img
@@ -204,7 +199,7 @@ export default function About() {
         </div>
 
    {/* VISION */}
-<div className="mx-4 md:mx-16 lg:mx-32 grid grid-cols-1 md:grid-cols-2 items-center gap-10 mt-[120px] md:mt-[50px]">
+<div id="vision" className="mx-4 md:mx-16 lg:mx-32 grid grid-cols-1 md:grid-cols-2 items-center gap-10 mt-[120px] md:mt-[50px]">
 
 {/* TEXT SECTION */}
 <div className="flex items-start gap-6">

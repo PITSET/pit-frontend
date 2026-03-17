@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef, useEffect } from "react";
+import React, { useState, useMemo, useRef, useEffect, useCallback } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { BsSearch } from "react-icons/bs";
 import { HiAdjustmentsHorizontal, HiUsers } from "react-icons/hi2";
@@ -11,19 +11,14 @@ import { Button, } from "../ui/Button";
  * @param {Array} projects - Array of project objects.
  * @param {Boolean} isLoading - Loading state.
  */
-export default function ProjectsCollection({ projects = [], isLoading = false }) {
-  const [searchParams] = useSearchParams();
-  const initialProgram = searchParams.get("program") || "All";
-  const [activeTab, setActiveTab] = useState(initialProgram);
-  const [searchQuery, setSearchQuery] = useState("");
 
-  // Sync activeTab with URL parameter when it changes
-  useEffect(() => {
-    const program = searchParams.get("program");
-    if (program) {
-      setActiveTab(program);
-    }
-  }, [searchParams]);
+export default function ProjectsCollection({
+  projects = [],
+  isLoading = false,
+}) {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchParams, setSearchParams] = useSearchParams();
+
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [filters, setFilters] = useState({
     teamSize: "All",
@@ -37,6 +32,46 @@ export default function ProjectsCollection({ projects = [], isLoading = false })
     "Software Engineering",
     "Mechanical Engineering",
   ];
+
+  const normalizeProgram = useCallback((value) => {
+    const cleaned = String(value || "").trim().toLowerCase();
+    if (!cleaned) return "";
+    if (cleaned === "mechatronics engineering") return "Mechatronics Engineering";
+    if (cleaned === "software engineering") return "Software Engineering";
+    if (cleaned === "mechanical engineering") return "Mechanical Engineering";
+    return "";
+  }, []);
+
+  const activeTab = useMemo(() => {
+    const program = normalizeProgram(searchParams.get("program"));
+    return program || "All";
+  }, [normalizeProgram, searchParams]);
+
+  const setActiveTab = useCallback(
+    (nextTab) => {
+      const next = String(nextTab || "").trim();
+
+      // Clicking the same tab again resets to "All"
+      if (next === "All" || next === activeTab) {
+        setSearchParams((prev) => {
+          const updated = new URLSearchParams(prev);
+          updated.delete("program");
+          return updated;
+        });
+        return;
+      }
+
+      const normalized = normalizeProgram(next);
+      if (!normalized) return;
+
+      setSearchParams((prev) => {
+        const updated = new URLSearchParams(prev);
+        updated.set("program", normalized);
+        return updated;
+      });
+    },
+    [activeTab, normalizeProgram, setSearchParams],
+  );
 
   // Close filter dropdown when clicking outside
   useEffect(() => {
