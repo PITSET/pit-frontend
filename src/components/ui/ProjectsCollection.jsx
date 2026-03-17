@@ -249,7 +249,7 @@ export default function ProjectsCollection({ projects = [], isLoading = false, l
                 )}
               </Link>
 
-              {/* Content */}
+              {/* project card */}
               <div className="p-8 flex flex-col grow">
                 <h3 className="text-2xl font-bold text-gray-900 mb-3 line-clamp-2 leading-tight">
                   {project.title}
@@ -264,10 +264,10 @@ export default function ProjectsCollection({ projects = [], isLoading = false, l
                     <span className="text-[14px] font-bold">{project.students?.length || 0}</span>
                   </div>
                   <Button variant="link" asChild>
-                    <Link 
+                    <Link
                       to={
-                        linkToProgram 
-                          ? `/programs/${(typeof project.programs?.[0] === 'object' ? project.programs[0].id : project.programs?.[0]) || project.id}` 
+                        linkToProgram
+                          ? `/programs/${(typeof project.programs?.[0] === 'object' ? project.programs[0].id : project.programs?.[0]) || project.id}`
                           : `/projects/${project.id}`
                       }
                     >

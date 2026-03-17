@@ -193,17 +193,17 @@ export default function ProgramDetail() {
                 {projects.map((project) => (
                   <div
                     key={project.id}
-                    className="group bg-white rounded-[24px] overflow-hidden border border-gray-100 shadow-[8px_8px_20px_rgba(0,0,0,0.04)] flex flex-col h-full hover:shadow-[12px_12px_30px_rgba(0,0,0,0.08)] transition-all hover:-translate-y-1"
+                    className="group/card bg-white rounded-[24px] overflow-hidden border border-gray-100 shadow-[8px_8px_20px_rgba(0,0,0,0.04)] flex flex-col h-full hover:shadow-[12px_12px_30px_rgba(0,0,0,0.08)] transition-all hover:-translate-y-1"
                   >
                     {/* Card Image */}
                     <Link
                       to={`/projects/${project.id}`}
-                      className="block h-[240px] w-full overflow-hidden bg-gray-100 relative group"
+                      className="block h-[240px] w-full overflow-hidden bg-gray-100 relative group/image"
                     >
                       <img
                         src={project.image}
                         alt={project.title}
-                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover/card:scale-110"
                       />
                       {project.date && (
                         <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-lg text-[11px] font-bold text-red-600 uppercase tracking-wider shadow-sm">
@@ -214,7 +214,7 @@ export default function ProgramDetail() {
 
                     {/* Card Content */}
                     <div className="p-8 flex flex-col grow">
-                      <h3 className="text-2xl font-bold text-gray-900 mb-3 line-clamp-2 leading-tight group-hover:text-red-600 transition-colors">
+                      <h3 className="text-2xl font-bold text-gray-900 mb-3 line-clamp-2 leading-tight group-hover/card:text-brand-primary transition-colors">
                         {project.title}
                       </h3>
                       <p className="text-gray-500 text-[15px] leading-relaxed mb-8 line-clamp-3">
@@ -226,7 +226,7 @@ export default function ProgramDetail() {
                           <HiUsers className="text-lg" />
                           <span className="text-[14px] font-bold">{project.students?.length || 0}</span>
                         </div>
-                        <Button variant="link" asChild className="p-0 h-auto text-red-600 font-bold">
+                        <Button variant="link" asChild className="p-0 h-auto text-brand-text-secondary font-bold">
                           <Link to={`/projects/${project.id}`}>
                             Read More
                           </Link>
