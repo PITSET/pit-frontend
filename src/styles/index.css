@@ -12,6 +12,13 @@
   --color-brand-accent: #f2784b;
   --color-brand-surface: #f2f2f2;
   --color-brand-text-main: #3a0d15;
+  --color-brand-text-secondary: #1a1a1a;
+
+  /* background colors */
+  --color-bg-primary: #f2f2f2;
+  --color-bg-secondary: #1a1a1a;
+  --color-bg-tertiary: #f2784b;
+  --color-bg-quaternary: #f21d2f;
 
   /* Primary brand gradient stops */
   --color-primary-start: #f98349;
@@ -41,4 +48,3 @@
 @utility bg-primary-gradient-hover {
   background: linear-gradient(90deg, #e87035 0%, #d94c12 33.41%, #e82030 100%);
 }
-

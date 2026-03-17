@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import api from "../../lib/api";
 import resolveAssetUrl from "../../lib/resolveAssetUrl";
+import { Button } from "../../components/ui/Button";
 
 const TABS = [
   "All",
@@ -195,6 +196,12 @@ export default function Instructor() {
         <p className="text-red-600 font-bold text-[14px] mt-1 transition-colors duration-300 group-hover:text-black">
           {inst.name}
         </p>
+
+        <div className="mt-2 text-left">
+          <Button variant="link" size="sm" asChild>
+            <span className="text-[12px] font-bold">View Profile</span>
+          </Button>
+        </div>
       </div>
     </Link>
   );

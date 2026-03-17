@@ -3,6 +3,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import { BsSearch } from "react-icons/bs";
 import { HiAdjustmentsHorizontal, HiUsers } from "react-icons/hi2";
 import Loader from "../ui/Loader";
+import { Button, } from "../ui/Button";
 
 /**
  * ProjectsCollection - A reusable component for listing projects with filtering and search.
@@ -231,7 +232,7 @@ export default function ProjectsCollection({ projects = [], isLoading = false })
           {filteredProjects.map((project) => (
             <div
               key={project.id}
-              className="bg-white rounded-[24px] overflow-hidden border border-gray-100 shadow-[8px_8px_20px_rgba(0,0,0,0.04)] flex flex-col h-full hover:shadow-[12px_12px_30px_rgba(0,0,0,0.08)] transition-all hover:-translate-y-1"
+              className="bg-white rounded-[24px] overflow-hidden border border-gray-100 shadow-[8px_8px_20_rgba(0,0,0,0.04)] flex flex-col h-full hover:shadow-[12px_12px_30px_rgba(0,0,0,0.08)] transition-all hover:-translate-y-1"
             >
               {/* Image */}
               <Link to={`/projects/${project.id}`} className="block h-[240px] w-full overflow-hidden bg-gray-100 relative group">
@@ -261,12 +262,11 @@ export default function ProjectsCollection({ projects = [], isLoading = false })
                     <HiUsers className="text-lg" />
                     <span className="text-[14px] font-bold">{project.students?.length || 0}</span>
                   </div>
-                  <Link
-                    to={`/projects/${project.id}`}
-                    className="bg-[#c92a2a] text-white px-6 py-2.5 rounded-xl font-bold text-sm hover:bg-[#b02525] transition-all shadow-lg shadow-red-100 hover:shadow-red-200"
-                  >
-                    View Project
-                  </Link>
+                  <Button variant="link" asChild>
+                    <Link to={`/projects/${project.id}`}>
+                      Read More
+                    </Link>
+                  </Button>
                 </div>
               </div>
             </div>

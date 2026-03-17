@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import api from "../../lib/api";
 import resolveAssetUrl from "../../lib/resolveAssetUrl";
+import { Button } from "../../components/ui/Button";
 
 import axios from "axios";
 
@@ -80,7 +81,7 @@ export default function Programs() {
             filteredPrograms.map((program) => (
               <div
                 key={program.id}
-                className="bg-white rounded-xl shadow-md flex flex-col overflow-hidden"
+                className="bg-white rounded-xl shadow-md flex flex-col overflow-hidden group"
                 style={{ width: "400px", height: "510px" }}
               >
 
@@ -93,7 +94,7 @@ export default function Programs() {
                 />
 
                 {/* Content */}
-                <div className="p-6 flex flex-col flex-grow">
+                <div className="p-6 flex flex-col grow">
 
                   {/* Title */}
                   <h3
@@ -114,12 +115,11 @@ export default function Programs() {
 
                   {/* Read More Button */}
                   <div className="mt-auto flex justify-end pt-4">
-                    <Link
-                      to={`/programs/${program.id}`}
-                      className="bg-[#E73F0F] hover:bg-[#cf360b] text-white w-[108px] h-[38px] rounded flex items-center justify-center transition"
-                    >
-                      Read More
-                    </Link>
+                    <Button variant="link" asChild>
+                      <Link to={`/programs/${program.id}`}>
+                        Read More
+                      </Link>
+                    </Button>
                   </div>
 
                 </div>

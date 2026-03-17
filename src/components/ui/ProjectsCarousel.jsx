@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { BsArrowLeft, BsArrowRight } from "react-icons/bs";
+import { Button } from "./Button";
 
 export default function ProjectsCarousel({ projects = [], isLoadingProjects = false }) {
   const [index, setIndex] = useState(0);
@@ -71,12 +72,11 @@ export default function ProjectsCarousel({ projects = [], isLoadingProjects = fa
                 </div>
               )}
 
-              <Link
-                to={`/projects/${projects[index]?.id}`}
-                className="bg-[#1a1a1a] text-white font-medium px-7 py-3 rounded-lg w-max transition duration-300 hover:bg-black hover:shadow-lg mb-10 inline-block"
-              >
-                Read More
-              </Link>
+              <Button variant="link" asChild>
+                <Link to={`/projects/${projects[index]?.id}`}>
+                  Read More
+                </Link>
+              </Button>
 
               {/* Bottom Controls row: Indicators + Navigation */}
               <div className="flex items-center justify-between w-full mt-auto">
@@ -117,12 +117,9 @@ export default function ProjectsCarousel({ projects = [], isLoadingProjects = fa
 
         {/* View All Projects Button */}
         <div className="flex justify-center mt-12 md:mt-24">
-          <Link
-            to="/projects"
-            className="border border-red-600 text-red-600 text-sm font-semibold tracking-wider px-8 py-4 rounded-lg transition-colors duration-300 hover:bg-red-600 hover:text-white flex items-center gap-2"
-          >
-            VIEW ALL PROJECTS <BsArrowRight className="text-lg" />
-          </Link>
+          <Button asChild variant="primary" size="lg">
+            <Link to="/projects">VIEW ALL PROJECTS</Link>
+          </Button>
         </div>
       </div>
     </section>
