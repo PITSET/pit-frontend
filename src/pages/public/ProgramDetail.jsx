@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-
-import api from "../../lib/api";
+import { useParams, Link } from "react-router-dom";
 import resolveAssetUrl from "../../lib/resolveAssetUrl";
-import { Button } from "../../components/ui/Button";
+import api from "../../lib/api";
 import Loader from "../../components/ui/Loader";
-import { Link } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
+import { HiUsers } from "react-icons/hi2";
+import { Button } from "../../components/ui/Button";
 
 import axios from "axios";
 
@@ -18,23 +18,72 @@ export default function ProgramDetail() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const fetchProgram = async () => {
+    const fetchProgramData = async () => {
       try {
-        const res = await api.get(`/programs/${id}`);
+        setLoading(true);
+        // 1. Fetch the program details
+        const progRes = await api.get(`/programs/${id}`);
+        const programData = progRes.data?.data;
 
-        const programData = res.data?.data;
+        if (!programData) {
+          setProgram(null);
+          setLoading(false);
+          return;
+        }
 
         setProgram(programData);
-        setProjects(programData?.projects || []);
+
+        // 2. Fetch all projects to filter them correctly (some might not be directly in the program response)
+        const projRes = await api.get("/projects");
+        const allProjects = Array.isArray(projRes.data) ? projRes.data : projRes.data?.data || projRes.data?.projects || [];
+
+        const targetProgramName = (programData.program_name || "").toLowerCase().trim();
+
+        // 3. Filter projects matching this program (Logic from ProjectsCollection)
+        const matchedProjects = allProjects
+          .filter((item) => item?.is_active !== false)
+          .filter((project) => {
+            const programList = Array.isArray(project.programs) ? project.programs : [];
+            const matchesArray = programList.some((p) => {
+              const name = (typeof p === "object" ? p.program_name || p.name : p) || "";
+              return name.toLowerCase().trim() === targetProgramName;
+            });
+
+            const matchesSingle = (project.program || "").toLowerCase().trim() === targetProgramName;
+
+            return matchesArray || matchesSingle;
+          })
+          .slice(0, 3) // Show only 3 projects
+          .map((item) => {
+            let imgVal = item?.image || item?.image_url || item?.cover || item?.cover_url;
+            if (!imgVal && item?.images) {
+              const imagesArr = Array.isArray(item.images)
+                ? item.images
+                : typeof item.images === "string" && item.images.startsWith("[")
+                  ? JSON.parse(item.images)
+                  : [item.images];
+              imgVal = imagesArr[0];
+            }
+
+            return {
+              ...item,
+              id: item.id || item._id,
+              title: item.name || item.title || "",
+              description: item.overview || item.desc || item.description || item.content || "",
+              image: resolveAssetUrl(imgVal || ""),
+            };
+          });
+
+        setProjects(matchedProjects);
       } catch (err) {
-        console.error("Failed to fetch program:", err);
+        console.error("Failed to fetch program details:", err);
         setError("Failed to load program.");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchProgram();
+    fetchProgramData();
   }, [id]);
 
   if (loading) {
@@ -118,63 +167,79 @@ export default function ProgramDetail() {
       </section>
 
       {/* PROJECTS SECTION */}
-      <section className="max-w-[1280px] mx-auto px-6 pb-24 mt-16">
-        <div className="flex justify-between items-end mb-12 border-b-2 border-gray-100 pb-6">
-          <h2 className="text-[48px] md:text-[64px] font-bold text-red-600 font-[Roboto_Condensed] uppercase tracking-tight leading-none">
-            Projects
-          </h2>
-
-          <Link 
-            to="/projects" 
-            className="text-red-600 font-bold uppercase text-sm tracking-[0.2em] flex items-center group transition-colors hover:text-red-700 pb-2"
-          >
-            VIEW MORE <span className="ml-2 group-hover:translate-x-1 transition-transform">›</span>
-          </Link>
-        </div>
-
-        {projects.length === 0 ? (
-          <div className="py-20 text-center bg-gray-50 rounded-3xl border-2 border-dashed border-gray-200">
-            <p className="text-gray-500 font-[Roboto] text-xl">
-              No projects available in this program.
-            </p>
+      <section className="bg-white py-20">
+        <div className="max-w-[1280px] mx-auto px-6">
+          <div className="flex justify-between items-end mb-12 border-b-2 border-gray-100 pb-6">
+            <h2 className="text-[32px] md:text-[48px] font-bold text-red-600 font-[Roboto_Condensed] uppercase tracking-tight leading-none">
+              Projects
+            </h2>
+            <Link
+              to="/projects"
+              className="text-red-600 font-bold uppercase text-sm tracking-[0.2em] flex items-center group transition-colors hover:text-red-700 pb-2"
+            >
+              ALL PROJECTS <span className="ml-2 group-hover:translate-x-1 transition-transform">›</span>
+            </Link>
           </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-            {projects.map((project) => (
-              <div
-                key={project.id}
-                className="group bg-white rounded-[32px] shadow-[0_15px_40px_-15px_rgba(0,0,0,0.1)] hover:shadow-[0_20px_50px_-10px_rgba(0,0,0,0.15)] overflow-hidden flex flex-col h-full transition-all duration-500 hover:-translate-y-2"
-              >
-                <div className="relative overflow-hidden h-[260px]">
-                  <img
-                    src={resolveAssetUrl(project.image)}
-                    alt={project.title}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                  />
-                  <div className="absolute inset-0 bg-black/5 group-hover:bg-transparent transition-colors duration-500" />
-                </div>
 
-                <div className="p-8 flex flex-col grow">
-                  <h3 className="font-bold text-[26px] mb-4 font-[Roboto_Condensed] text-gray-900 group-hover:text-red-600 transition-colors leading-tight">
-                    {project.title}
-                  </h3>
+          {projects.length === 0 ? (
+            <div className="py-20 text-center bg-gray-50 rounded-3xl border-2 border-dashed border-gray-200">
+              <p className="text-gray-500 font-[Roboto] text-xl">
+                No projects available in this program.
+              </p>
+            </div>
+          ) : (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+                {projects.map((project) => (
+                  <div
+                    key={project.id}
+                    className="group bg-white rounded-[24px] overflow-hidden border border-gray-100 shadow-[8px_8px_20px_rgba(0,0,0,0.04)] flex flex-col h-full hover:shadow-[12px_12px_30px_rgba(0,0,0,0.08)] transition-all hover:-translate-y-1"
+                  >
+                    {/* Card Image */}
+                    <Link
+                      to={`/projects/${project.id}`}
+                      className="block h-[240px] w-full overflow-hidden bg-gray-100 relative group"
+                    >
+                      <img
+                        src={project.image}
+                        alt={project.title}
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                      />
+                      {project.date && (
+                        <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-lg text-[11px] font-bold text-red-600 uppercase tracking-wider shadow-sm">
+                          {project.date}
+                        </div>
+                      )}
+                    </Link>
 
-                  <p className="text-gray-600 text-[17px] leading-relaxed mb-8 font-[Roboto] line-clamp-3 grow">
-                    {project.description}
-                  </p>
+                    {/* Card Content */}
+                    <div className="p-8 flex flex-col grow">
+                      <h3 className="text-2xl font-bold text-gray-900 mb-3 line-clamp-2 leading-tight group-hover:text-red-600 transition-colors">
+                        {project.title}
+                      </h3>
+                      <p className="text-gray-500 text-[15px] leading-relaxed mb-8 line-clamp-3">
+                        {project.description}
+                      </p>
 
-                  <div className="flex justify-start">
-                    <Button variant="link" asChild className="p-0 h-auto text-red-600 font-bold">
-                      <Link to={`/projects/${project.id}`}>
-                        Read More
-                      </Link>
-                    </Button>
+                      <div className="mt-auto flex items-center justify-between">
+                        <div className="flex items-center gap-1.5 text-gray-400">
+                          <HiUsers className="text-lg" />
+                          <span className="text-[14px] font-bold">{project.students?.length || 0}</span>
+                        </div>
+                        <Button variant="link" asChild className="p-0 h-auto text-red-600 font-bold">
+                          <Link to={`/projects/${project.id}`}>
+                            Read More
+                          </Link>
+                        </Button>
+                      </div>
+                    </div>
                   </div>
-                </div>
+                ))}
               </div>
-            ))}
-          </div>
-        )}
+
+            </>
+          )}
+        </div>
       </section>
     </div>
   );

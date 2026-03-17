@@ -10,8 +10,9 @@ import { Button, } from "../ui/Button";
  * 
  * @param {Array} projects - Array of project objects.
  * @param {Boolean} isLoading - Loading state.
+ * @param {Boolean} linkToProgram - If true, 'Read More' links to the program detail.
  */
-export default function ProjectsCollection({ projects = [], isLoading = false }) {
+export default function ProjectsCollection({ projects = [], isLoading = false, linkToProgram = false }) {
   const [searchParams] = useSearchParams();
   const initialProgram = searchParams.get("program") || "All";
   const [activeTab, setActiveTab] = useState(initialProgram);
@@ -263,7 +264,13 @@ export default function ProjectsCollection({ projects = [], isLoading = false })
                     <span className="text-[14px] font-bold">{project.students?.length || 0}</span>
                   </div>
                   <Button variant="link" asChild>
-                    <Link to={`/projects/${project.id}`}>
+                    <Link 
+                      to={
+                        linkToProgram 
+                          ? `/programs/${(typeof project.programs?.[0] === 'object' ? project.programs[0].id : project.programs?.[0]) || project.id}` 
+                          : `/projects/${project.id}`
+                      }
+                    >
                       Read More
                     </Link>
                   </Button>
