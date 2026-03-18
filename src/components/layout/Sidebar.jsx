@@ -9,11 +9,9 @@ import {
   ArrowRightOnRectangleIcon,
   ChevronDownIcon,
   ShieldCheckIcon,
-  UserIcon,
 } from "@heroicons/react/24/outline";
 import { Squares2X2Icon as Squares2X2SolidIcon } from "@heroicons/react/24/solid";
 import logo_image from "../../assets/logo/logo_image.svg";
-import { getAdmin } from "../../utils/auth";
 
 const iconClass = "h-5 w-5 shrink-0";
 
@@ -23,9 +21,6 @@ export default function Sidebar({ isOpen = false, onClose, onLogout }) {
   const [academicsOpen, setAcademicsOpen] = useState(false);
   const [teamOpen, setTeamOpen] = useState(false);
   const { pathname } = useLocation();
-
-  // Get current admin info
-  const admin = getAdmin();
 
   const showExpanded = isExpanded || isOpen;
 
@@ -236,36 +231,6 @@ export default function Sidebar({ isOpen = false, onClose, onLogout }) {
           Admin Management
         </NavItem>
       </nav>
-
-      {/* User Profile */}
-      {admin && (
-        <div className={`mx-3 mb-3 p-3 rounded-lg bg-slate-800 border border-slate-700 ${!showExpanded ? 'px-2' : ''}`}>
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center text-white font-semibold shrink-0">
-              {admin.username?.charAt(0).toUpperCase()}
-            </div>
-            {showExpanded && (
-              <div className="flex-1 min-w-0">
-                <p className="text-white text-sm font-medium truncate">
-                  {admin.username}
-                </p>
-                <p className="text-slate-400 text-xs truncate">
-                  {admin.email}
-                </p>
-                {admin.role && (
-                  <span className={`inline-block mt-1 text-xs px-2 py-0.5 rounded-full ${
-                    admin.role === 'super_admin' 
-                      ? 'bg-purple-500/20 text-purple-300' 
-                      : 'bg-blue-500/20 text-blue-300'
-                  }`}>
-                    {admin.role === 'super_admin' ? 'Super Admin' : 'Admin'}
-                  </span>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-      )}
 
       {/* Logout */}
       <div className="p-3">

@@ -31,6 +31,7 @@ import { getAllMembers } from "../../lib/services/memberService";
 import { getAllPrograms } from "../../lib/services/programService";
 import { getAllProjects } from "../../lib/services/projectService";
 import { getAllStudents } from "../../lib/services/studentService";
+import { getAdmin } from "../../utils/auth";
 import Loader from "../../components/ui/Loader";
 
 // Animated Number Counter
@@ -473,6 +474,9 @@ export default function Dashboard() {
   const [isTitleVisible, setIsTitleVisible] = useState(false);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
 
+  // Get current admin info
+  const admin = getAdmin();
+
   // Query for all data with caching - dramatically reduces API calls
   // Each query is cached for 10 minutes, so navigating between pages won't refetch
   const { data: membersData = [], isLoading: isMembersLoading } = useQuery({
@@ -584,10 +588,42 @@ export default function Dashboard() {
 
   return (
     <div className={`min-h-screen bg-gray-100 p-4 sm:p-6 transition-opacity duration-700 ${isPageVisible ? 'opacity-100' : 'opacity-0'}`}>
-      {/* Page Title with animation */}
-      <h1 className={`text-xl sm:text-2xl font-semibold text-gray-800 mb-4 sm:mb-6 transform transition-all duration-500 ${isTitleVisible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'}`}>
-        Dashboard
-      </h1>
+      {/* Page Header with Title and User Profile */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4 sm:mb-6">
+        <h1 className={`text-xl sm:text-2xl font-semibold text-gray-800 transform transition-all duration-500 ${isTitleVisible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'}`}>
+          Dashboard
+        </h1>
+
+        {/* User Profile Card - Avatar + username with hover tooltip */}
+        {admin && (
+          <div className="relative group">
+            <div className="flex items-center gap-2 bg-white rounded-full border border-gray-200 px-2 py-1.5 shadow-sm cursor-default">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center text-white text-sm font-semibold shrink-0">
+                {admin.username?.charAt(0).toUpperCase()}
+              </div>
+              <span className="text-sm font-medium text-gray-700 whitespace-nowrap">
+                {admin.username}
+              </span>
+            </div>
+            {/* Tooltip on hover */}
+            <div className="absolute right-0 top-full mt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10">
+              <div className="bg-gray-900 text-white text-xs rounded-lg py-3 px-4 shadow-xl whitespace-nowrap">
+                <p className="font-semibold text-sm">{admin.username}</p>
+                <p className="text-gray-400 mt-1">{admin.email}</p>
+                {admin.role && (
+                  <span className={`inline-block mt-2 text-xs px-2 py-1 rounded-full ${
+                    admin.role === 'super_admin' 
+                      ? 'bg-purple-500/30 text-purple-200' 
+                      : 'bg-blue-500/30 text-blue-200'
+                  }`}>
+                    {admin.role === 'super_admin' ? 'Super Admin' : 'Admin'}
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* Stats Grid */}
 
