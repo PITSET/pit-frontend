@@ -1,8 +1,9 @@
 // src/pages/admin/AdminManagement.jsx
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { getAllAdmins } from "../../lib/services/adminManagementService";
+import { getAllAdmins, resendInvite } from "../../lib/services/adminManagementService";
 import { getAdmin } from "../../utils/auth";
+import { toast } from "react-hot-toast";
 import {
   PencilSquareIcon,
   TrashIcon,
@@ -10,6 +11,7 @@ import {
   ShieldCheckIcon,
   ShieldExclamationIcon,
   ClockIcon,
+  EnvelopeIcon,
 } from "@heroicons/react/24/outline";
 import Loader from "../../components/ui/Loader";
 import EmptyState from "../../components/admin_ui/EmptyState";
@@ -69,6 +71,17 @@ export default function AdminManagement() {
   const handleDeleteClick = (admin) => {
     setSelectedAdmin(admin);
     setIsDeleteModalOpen(true);
+  };
+
+  // Handle resend invite
+  const handleResendInvite = async (admin) => {
+    try {
+      await resendInvite(admin.id);
+      toast.success(`Invitation resent to ${admin.email}`);
+    } catch (error) {
+      const errorMessage = error.response?.data?.error || "Failed to resend invitation";
+      toast.error(errorMessage);
+    }
   };
 
   // Format date
@@ -271,6 +284,17 @@ export default function AdminManagement() {
                           >
                             <PencilSquareIcon className="w-4.5 h-4.5" />
                           </button>
+
+                          {/* Resend invite button - show only if invite_token exists (not accepted yet) */}
+                          {admin.invite_token && (
+                            <button
+                              onClick={() => handleResendInvite(admin)}
+                              className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                              title="Resend invitation"
+                            >
+                              <EnvelopeIcon className="w-4.5 h-4.5" />
+                            </button>
+                          )}
 
                           {/* Toggle status button */}
                           {admin.id !== currentAdmin?.id && (

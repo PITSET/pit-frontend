@@ -98,3 +98,17 @@ export const acceptInvite = async (data) => {
     throw error;
   }
 };
+
+/**
+ * Resend invitation email
+ * @param {string} id - Admin ID
+ */
+export const resendInvite = async (id) => {
+  try {
+    const response = await api.post(`/admin-management/admins/${id}/resend-invite`);
+    return response.data;
+  } catch (error) {
+    console.error("Resend invite error:", error);
+    throw error;
+  }
+};
