@@ -35,8 +35,17 @@ export default function AddAdminModal({ isOpen, onClose, onSuccess }) {
     setLoading(true);
 
     try {
-      await inviteAdmin(formData);
-      toast.success("Admin invited successfully! They will receive an email to set their password.");
+      const response = await inviteAdmin(formData);
+      const inviteLink = response.data?.inviteLink;
+      
+      if (inviteLink) {
+        // Email might have failed to send, show the link for manual sharing
+        await navigator.clipboard.writeText(inviteLink);
+        toast.success("Admin invited! Invitation link copied to clipboard. The user can also find it in the admin list.");
+      } else {
+        toast.success("Admin invited successfully! They will receive an email to set their password.");
+      }
+      
       setFormData({ email: "", username: "", role: "admin" });
       onSuccess?.();
       onClose();
