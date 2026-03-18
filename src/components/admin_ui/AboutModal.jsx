@@ -13,7 +13,7 @@ import {
 
 // api
 import { createAboutSection, updateAboutSection } from "../../lib/services/aboutService";
-import { supabase } from "../../lib/supabaseClient";
+import { uploadFile, deleteFile } from "../../lib/services/storageService";
 import { getOperationErrorMessage } from "../../lib/httpErrorHandler";
 
 export default function AboutModal({ isOpen, onClose, onRefresh, item, existingSectionTypes = [], existingOrderPositions = [] }) {
@@ -152,7 +152,7 @@ export default function AboutModal({ isOpen, onClose, onRefresh, item, existingS
           const urlParts = item.image_url.split("/");
           const fileName = urlParts[urlParts.length - 1].split("?")[0];
           if (fileName) {
-            await supabase.storage.from("about_images").remove([fileName]);
+            await deleteFile(fileName, "about_images");
           }
         } catch (err) {
           console.warn("Failed to delete old image:", err);
@@ -160,34 +160,14 @@ export default function AboutModal({ isOpen, onClose, onRefresh, item, existingS
       }
 
       if (image) {
-        const safeSection = (item?.section_type || "new-section")
-          .replace(/\s+/g, "-")
-          .toLowerCase();
-
-        const fileName = `about-${safeSection}-${Date.now()}.webp`;
-
         toast.loading("Compressing & uploading image...", { id: toastId });
 
         const webpImage = await convertToWebp(image);
 
-        const { error: uploadError } = await supabase.storage
-          .from("about_images")
-          .upload(fileName, webpImage, {
-            upsert: true,
-            cacheControl: "3600",
-            contentType: "image/webp",
-          });
-
-        if (uploadError) {
-          throw uploadError;
-        }
-
-        const { data: urlData } = supabase.storage
-          .from("about_images")
-          .getPublicUrl(fileName);
+        const uploadData = await uploadFile(webpImage, "about_images");
 
         // prevent browser cache
-        imageUrl = `${urlData.publicUrl}?t=${Date.now()}`;
+        imageUrl = `${uploadData.publicUrl}?t=${Date.now()}`;
       }
 
       const sectionData = {

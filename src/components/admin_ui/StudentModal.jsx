@@ -14,7 +14,7 @@ import {
 // api
 import { createStudent, updateStudent } from "../../lib/services/studentService";
 import { getAllPrograms } from "../../lib/services/programService";
-import { supabase } from "../../lib/supabaseClient";
+import { uploadFile, deleteFile } from "../../lib/services/storageService";
 import { getOperationErrorMessage } from "../../lib/httpErrorHandler";
 
 export default function StudentModal({ isOpen, onClose, onRefresh, item }) {
@@ -175,36 +175,11 @@ export default function StudentModal({ isOpen, onClose, onRefresh, item }) {
 
       // Upload new image if selected
       if (image) {
-        const safeName = (data.name || "new-student")
-          .replace(/\s+/g, "-")
-          .toLowerCase();
-
-        const fileName = `student-${safeName}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}.webp`;
-
         toast.loading("Compressing & uploading image...", { id: toastId });
 
         const webpImage = await convertToWebp(image);
 
-        const { error: uploadError } = await supabase.storage
-          .from("student_images")
-          .upload(fileName, webpImage, {
-            upsert: true,
-            cacheControl: "3600",
-            contentType: "image/webp",
-          });
-
-        if (uploadError) {
-          // Check for RLS policy violation
-          if (uploadError.message?.includes("row-level security") || uploadError.message?.includes("RLS")) {
-            throw new Error("Storage permission denied. Please login again or contact administrator.");
-          }
-          throw uploadError;
-        }
-
-        const { data: uploadData } = supabase.storage
-          .from("student_images")
-          .getPublicUrl(fileName);
-
+        const uploadData = await uploadFile(webpImage, "student_images");
         imageUrlToSave = `${uploadData.publicUrl}?t=${Date.now()}`;
 
         // Delete old image if replacing an existing student's image
@@ -214,13 +189,7 @@ export default function StudentModal({ isOpen, onClose, onRefresh, item }) {
             const oldFileName = oldUrlParts[oldUrlParts.length - 1].split("?")[0];
             
             if (oldFileName) {
-              const { error: deleteError } = await supabase.storage
-                .from("student_images")
-                .remove([oldFileName]);
-              
-              if (deleteError) {
-                console.warn("Failed to delete old image:", deleteError);
-              }
+              await deleteFile(oldFileName, "student_images");
             }
           } catch (err) {
             console.warn("Error deleting old image:", err);

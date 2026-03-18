@@ -9,9 +9,13 @@ import { createClient } from "@supabase/supabase-js";
  */
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseServiceKey = import.meta.env.VITE_SUPABASE_SERVICE_KEY;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 /**
- * Create Supabase client with service key (bypasses RLS for admin operations)
+ * Create Supabase client with anon key (respects RLS policies)
+ * 
+ * SECURITY: Never use service role key in frontend!
+ * Service key bypasses RLS and is exposed in browser - major security risk!
+ * All admin operations should go through the backend API.
  */
-export const supabase = createClient(supabaseUrl, supabaseServiceKey);
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);
