@@ -8,6 +8,7 @@ import {
   ShieldCheckIcon,
 } from "@heroicons/react/24/outline";
 import { inviteAdmin } from "../../lib/services/adminManagementService";
+import CustomSelect from "../ui/CustomSelect";
 
 export default function AddAdminModal({ isOpen, onClose, onSuccess }) {
   const [loading, setLoading] = useState(false);
@@ -120,24 +121,18 @@ export default function AddAdminModal({ isOpen, onClose, onSuccess }) {
 
           {/* Role */}
           <div>
-            <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-1.5">
-              Role <span className="text-red-500">*</span>
-            </label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <ShieldCheckIcon className="h-5 w-5 text-gray-400" />
-              </div>
-              <select
-                id="role"
-                name="role"
-                value={formData.role}
-                onChange={handleChange}
-                className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#8B1A1A]/20 focus:border-[#8B1A1A] outline-none transition-all appearance-none bg-white"
-              >
-                <option value="admin">Admin</option>
-                <option value="super_admin">Super Admin</option>
-              </select>
-            </div>
+            <CustomSelect
+              label="Role"
+              required
+              name="role"
+              value={formData.role}
+              onChange={handleChange}
+              icon={ShieldCheckIcon}
+              options={[
+                { value: "admin", label: "Admin" },
+                { value: "super_admin", label: "Super Admin" },
+              ]}
+            />
             <p className="text-xs text-gray-500 mt-1.5">
               Super admins can manage other admin accounts
             </p>
