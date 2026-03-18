@@ -84,3 +84,17 @@ export const deleteAdmin = async (id) => {
     throw error;
   }
 };
+
+/**
+ * Accept invitation and set password
+ * @param {Object} data - { token, email, password }
+ */
+export const acceptInvite = async (data) => {
+  try {
+    const response = await api.post("/admin-management/admins/accept-invite", data);
+    return response.data;
+  } catch (error) {
+    console.error("Accept invite error:", error);
+    throw error;
+  }
+};

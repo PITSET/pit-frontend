@@ -8,14 +8,13 @@ import { EyeIcon, EyeSlashIcon, CheckCircleIcon } from "@heroicons/react/24/outl
 // Toast notifications
 import { toast } from "react-hot-toast";
 
-// Supabase client
-import { supabase } from "../../lib/supabaseClient";
+// API
+import { acceptInvite } from "../../lib/services/adminManagementService";
 
 // Logo image
 import logo_image from "../../assets/logo/logo_image.svg";
 
-// svg images
-import desktop_l from "../../assets/shapes/loginLeft.svg";
+// SVG images
 import desktop_r from "../../assets/shapes/loginRight.svg";
 
 export default function AcceptInvite() {
@@ -57,36 +56,12 @@ export default function AcceptInvite() {
   useEffect(() => {
     const processInvitation = async () => {
       try {
-        // First, check if there's a hash with access token (Supabase puts session in hash)
-        const hashParams = new URLSearchParams(window.location.hash.substring(1));
-        const accessToken = hashParams.get("access_token");
-        const refreshToken = hashParams.get("refresh_token");
-        
-        if (accessToken && refreshToken) {
-          // Set session from hash params
-          const { error: setSessionError } = await supabase.auth.setSession({
-            access_token: accessToken,
-            refresh_token: refreshToken,
-          });
-          
-          if (!setSessionError) {
-            // Get user info
-            const { data: userData } = await supabase.auth.getUser();
-            if (userData?.user?.email) {
-              setEmail(userData.user.email);
-              setToken("session_active");
-              setIsValidToken(true);
-              return;
-            }
-          }
-        }
-        
-        // Check query parameters
+        // Check query parameters for custom token
         const params = new URLSearchParams(window.location.search);
         const tokenFromUrl = params.get("token");
         const emailFromUrl = params.get("email");
         
-        // Check for error in URL
+        // Check for error in URL (from Supabase fallback)
         const errorParam = params.get("error");
         const errorDescription = params.get("error_description");
         
@@ -141,401 +116,214 @@ export default function AcceptInvite() {
       return;
     }
 
+    if (!token || !email) {
+      toast.error("Invalid invitation link");
+      return;
+    }
+
     setLoading(true);
 
     try {
-      // Try Method 1: Use verifyOtp with the token (for invitation type)
-      if (token && email && token !== "session_active") {
-        const { data: otpData, error: otpError } = await supabase.auth.verifyOtp({
-          email: email,
-          token: token,
-          type: "invite",
-        });
-        
-        if (otpData?.session && !otpError) {
-          // Got session - now set password
-          const { error: updateError } = await supabase.auth.updateUser({
-            password: data.password,
-          });
+      // Use the custom API endpoint
+      const response = await acceptInvite({
+        token,
+        email,
+        password: data.password,
+      });
 
-          if (updateError) {
-            throw updateError;
-          }
-
-          // Store session tokens for login
-          const session = otpData.session;
-          localStorage.setItem("token", session.access_token);
-          localStorage.setItem("refreshToken", session.refresh_token);
-          const expiryTime = Date.now() + (session.expires_in * 1000);
-          localStorage.setItem("sessionExpiry", expiryTime.toString());
-
-          toast.success("Account created! Redirecting to dashboard...");
-          setIsCompleted(true);
-          
-          setTimeout(() => {
-            window.location.href = "/admin/dashboard";
-          }, 2000);
-          
-          setLoading(false);
-          return;
-        }
-      }
-
-      // Method 2: Check for session from URL hash
-      const hashParams = new URLSearchParams(window.location.hash.substring(1));
-      const accessToken = hashParams.get("access_token");
-      const refreshToken = hashParams.get("refresh_token");
-      
-      if (accessToken) {
-        const { error: setSessionError } = await supabase.auth.setSession({
-          access_token: accessToken,
-          refresh_token: refreshToken,
-        });
-        
-        if (!setSessionError) {
-          // Get current user and set password
-          const { error: updateError } = await supabase.auth.updateUser({
-            password: data.password,
-          });
-
-          if (updateError) {
-            throw updateError;
-          }
-
-          // Get and store session
-          const { data: sessionData } = await supabase.auth.getSession();
-          if (sessionData?.session) {
-            localStorage.setItem("token", sessionData.session.access_token);
-            localStorage.setItem("refreshToken", sessionData.session.refresh_token);
-            const expiryTime = Date.now() + (sessionData.session.expires_in * 1000);
-            localStorage.setItem("sessionExpiry", expiryTime.toString());
-          }
-
-          toast.success("Account created! Redirecting to dashboard...");
-          setIsCompleted(true);
-          
-          setTimeout(() => {
-            window.location.href = "/admin/dashboard";
-          }, 2000);
-          
-          setLoading(false);
-          return;
-        }
-      }
-
-      // Method 3: If we have a session already, just update password
-      const { data: sessionData } = await supabase.auth.getSession();
-      if (sessionData?.session) {
-        const { error: updateError } = await supabase.auth.updateUser({
-          password: data.password,
-        });
-
-        if (updateError) {
-          throw updateError;
-        }
-
-        // Store session tokens
-        localStorage.setItem("token", sessionData.session.access_token);
-        localStorage.setItem("refreshToken", sessionData.session.refresh_token);
-        const expiryTime = Date.now() + (sessionData.session.expires_in * 1000);
-        localStorage.setItem("sessionExpiry", expiryTime.toString());
-
-        toast.success("Account created! Redirecting to dashboard...");
+      if (response.success) {
+        toast.success("Password set successfully! You can now log in.");
         setIsCompleted(true);
         
+        // Redirect to login after 2 seconds
         setTimeout(() => {
-          window.location.href = "/admin/dashboard";
+          window.location.href = "/admin/login";
         }, 2000);
-        
-        setLoading(false);
-        return;
       }
-
-      // If we get here, none of the methods worked
-      // Try one more approach - direct update with the token
-      if (token && token !== "session_active") {
-        // This is a fallback that might work
-        const { error: finalError } = await supabase.auth.updateUser({
-          password: data.password,
-        });
-
-        if (!finalError) {
-          // Try to get session
-          const { data: newSession } = await supabase.auth.getSession();
-          if (newSession?.session) {
-            localStorage.setItem("token", newSession.session.access_token);
-            localStorage.setItem("refreshToken", newSession.session.refresh_token);
-            const expiryTime = Date.now() + (newSession.session.expires_in * 1000);
-            localStorage.setItem("sessionExpiry", expiryTime.toString());
-          }
-
-          toast.success("Account created! Redirecting to dashboard...");
-          setIsCompleted(true);
-          
-          setTimeout(() => {
-            window.location.href = "/admin/dashboard";
-          }, 2000);
-          
-          setLoading(false);
-          return;
-        }
-      }
-
-      // If nothing worked, show error
-      toast.error("Unable to set password. Please try the forgot password option on the login page.");
-
-    } catch (err) {
-      console.error("Accept invite error:", err);
-      toast.error(err.message || "Failed to accept invitation");
+    } catch (error) {
+      const errorMessage = error.response?.data?.error || "Failed to set password";
+      toast.error(errorMessage);
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   /* ===============================
-     IF ALREADY LOGGED IN, REDIRECT
-     =============================== */
-
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      window.location.href = "/admin/dashboard";
-    }
-  }, []);
-
-  /* ===============================
-     UI LAYOUT - SUCCESS STATE
+     RENDER
      =============================== */
 
   if (isCompleted) {
     return (
-      <div className="relative flex items-center justify-center min-h-screen bg-gray-200 p-6 overflow-hidden">
-        <div className="relative flex w-full max-w-[840px] sm:min-h-[440px] md:min-h-[524px] rounded-3xl overflow-hidden shadow-2xl bg-white">
-          <div className="hidden sm:flex w-1/2 relative text-white flex-col items-center justify-center text-center overflow-hidden">
-            <img
-              src={desktop_l}
-              alt=""
-              className="hidden sm:block absolute top-0 left-0 h-full w-auto pointer-events-none"
-            />
-            <div className="relative z-10 flex flex-col items-center">
-              <div className="bg-white p-5 rounded-full mb-6">
-                <img src={logo_image} alt="logo" className="w-14 h-14" />
-              </div>
-              <p className="text-lg opacity-90 mb-3">
-                Prometheus Institute of Technology
-              </p>
-              <h2 className="text-4xl font-bold">Success!</h2>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+        <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8 text-center">
+          <div className="flex justify-center mb-6">
+            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center">
+              <CheckCircleIcon className="w-12 h-12 text-green-600" />
             </div>
           </div>
-
-          <div className="relative w-full sm:w-1/2 p-6 sm:pl-12 flex flex-col justify-center items-center">
-            <img
-              src={desktop_r}
-              alt=""
-              className="absolute bottom-0 left-0 rotate-180 sm:top-0 sm:left-auto sm:right-0 sm:rotate-0 
-               h-[35%] sm:h-[35%] w-auto pointer-events-none select-none"
-            />
-            
-            <div className="flex flex-col items-center">
-              <CheckCircleIcon className="w-20 h-20 text-green-500 mb-4" />
-              <h1 className="text-2xl sm:text-3xl font-bold mb-2 text-gray-900 text-center">
-                Invitation Accepted!
-              </h1>
-              <p className="text-gray-500 text-center mb-6">
-                Your account has been created successfully.<br />
-                Redirecting to login...
-              </p>
-            </div>
-          </div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Password Set!</h2>
+          <p className="text-gray-600 mb-6">
+            Your account has been created successfully. Redirecting to login...
+          </p>
         </div>
       </div>
     );
   }
-
-  /* ===============================
-     UI LAYOUT - INVALID TOKEN
-     =============================== */
 
   if (!isValidToken) {
     return (
-      <div className="relative flex items-center justify-center min-h-screen bg-gray-200 p-6 overflow-hidden">
-        <div className="relative flex w-full max-w-[840px] sm:min-h-[440px] md:min-h-[524px] rounded-3xl overflow-hidden shadow-2xl bg-white">
-          <div className="hidden sm:flex w-1/2 relative text-white flex-col items-center justify-center text-center overflow-hidden">
-            <img
-              src={desktop_l}
-              alt=""
-              className="hidden sm:block absolute top-0 left-0 h-full w-auto pointer-events-none"
-            />
-            <div className="relative z-10 flex flex-col items-center">
-              <div className="bg-white p-5 rounded-full mb-6">
-                <img src={logo_image} alt="logo" className="w-14 h-14" />
-              </div>
-              <p className="text-lg opacity-90 mb-3">
-                Prometheus Institute of Technology
-              </p>
-              <h2 className="text-4xl font-bold">Invalid Invitation</h2>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+        <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8 text-center">
+          <div className="flex justify-center mb-6">
+            <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center">
+              <EyeSlashIcon className="w-12 h-12 text-red-600" />
             </div>
           </div>
-
-          <div className="relative w-full sm:w-1/2 p-6 sm:pl-12 flex flex-col justify-center items-center">
-            <img
-              src={desktop_r}
-              alt=""
-              className="absolute bottom-0 left-0 rotate-180 sm:top-0 sm:left-auto sm:right-0 sm:rotate-0 
-               h-[35%] sm:h-[35%] w-auto pointer-events-none select-none"
-            />
-            
-            <div className="flex flex-col items-center">
-              <h1 className="text-2xl sm:text-3xl font-bold mb-2 text-gray-900 text-center">
-                Invalid Invitation Link
-              </h1>
-              <p className="text-gray-500 text-center mb-6">
-                This invitation link is invalid or has expired.<br />
-                Please contact your administrator for a new invitation.
-              </p>
-              <a
-                href="/admin/login"
-                className="px-6 py-3 rounded-full bg-[#8B1A1A] text-white font-semibold hover:bg-red-900 transition"
-              >
-                Go to Login
-              </a>
-            </div>
-          </div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Invalid Invitation Link</h2>
+          <p className="text-gray-600">
+            This invitation link is invalid or has expired. Please contact your administrator for a new invitation.
+          </p>
         </div>
       </div>
     );
   }
 
-  /* ===============================
-     UI LAYOUT - SET PASSWORD FORM
-     =============================== */
-
   return (
-    <div className="relative flex items-center justify-center min-h-screen bg-gray-200 p-6 overflow-hidden">
-      <div className="relative flex w-full max-w-[840px] sm:min-h-[440px] md:min-h-[524px] rounded-3xl overflow-hidden shadow-2xl bg-white">
-        {/* Desktop Shape */}
-        <img
-          src={desktop_l}
-          alt=""
-          className="hidden sm:block absolute top-0 left-0 h-full w-auto pointer-events-none"
-        />
-        
-        {/* LEFT SIDE (DESKTOP ONLY) */}
-        <div className="hidden sm:flex w-1/2 relative text-white flex-col items-center justify-center text-center overflow-hidden">
-          <div className="relative z-10 flex flex-col items-center">
-            <div className="bg-white p-5 rounded-full mb-6">
-              <img src={logo_image} alt="logo" className="w-14 h-14" />
-            </div>
-
-            <p className="text-lg opacity-90 mb-3">
-              Prometheus Institute of Technology
-            </p>
-
-            <h2 className="text-4xl font-bold">Accept Invitation</h2>
+    <div className="min-h-screen flex">
+      {/* Left Side - Form */}
+      <div className="flex-1 flex items-center justify-center p-8 bg-white">
+        <div className="w-full max-w-md">
+          {/* Logo */}
+          <div className="flex justify-center mb-8">
+            <img src={logo_image} alt="PIT Logo" className="h-16" />
           </div>
-        </div>
-
-        {/* RIGHT SIDE (SET PASSWORD FORM) */}
-        <div className="relative w-full sm:w-1/2 p-6 sm:pl-12 flex flex-col justify-center items-center">
-          {/* Desktop Shape */}
-          <img
-            src={desktop_r}
-            alt=""
-            className="absolute bottom-0 left-0 rotate-180 sm:top-0 sm:left-auto sm:right-0 sm:rotate-0 
-             h-[35%] sm:h-[35%] w-auto pointer-events-none select-none"
-          />
 
           {/* Title */}
-          <h1 className="hidden sm:block text-3xl sm:text-4xl font-bold mb-2 text-gray-900 text-center sm:text-left">
-            Welcome
+          <h1 className="text-3xl font-bold text-center text-gray-900 mb-2">
+            Set Your Password
           </h1>
-          {/* logo */}
-          <div className="bg-white mb-2 rounded-full sm:hidden">
-            <img src={logo_image} alt="logo" className="w-20 h-20" />
-          </div>
-
-          {/* Subtitle */}
-          <p className="text-gray-500 mb-8 text-center">
-            {email ? `Invitation for ${email}` : "Set your password to continue"}
+          <p className="text-center text-gray-600 mb-8">
+            Create a password for your admin account
           </p>
 
-          {/* SET PASSWORD FORM */}
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 w-full">
-            {/* PASSWORD */}
-            <div className="relative">
-              <input
-                type={showPassword ? "text" : "password"}
-                placeholder="Password"
-                required
-                autoComplete="new-password"
-                {...register("password", {
-                  required: "Password is required",
-                  minLength: {
-                    value: 6,
-                    message: "Password must be at least 6 characters",
-                  },
-                })}
-                className="w-full px-5 py-3 rounded-full bg-red-200/70 placeholder-gray-700 focus:outline-none focus:ring-2 focus:ring-red-400 shadow-sm"
-              />
-
-              <button
-                type="button"
-                onClick={togglePassword}
-                className="absolute right-4 top-3 text-gray-600"
-              >
-                {showPassword ? (
-                  <EyeSlashIcon className="w-5 h-5" />
-                ) : (
-                  <EyeIcon className="w-5 h-5" />
-                )}
-              </button>
+          {/* Email Display */}
+          {email && (
+            <div className="bg-gray-50 rounded-lg p-3 mb-6 text-center">
+              <p className="text-sm text-gray-500">Invited email:</p>
+              <p className="font-medium text-gray-900">{email}</p>
             </div>
-            {errors.password && (
-              <p className="mt-1 text-xs text-red-500">{errors.password.message}</p>
-            )}
+          )}
 
-            {/* CONFIRM PASSWORD */}
-            <div className="relative">
-              <input
-                type={showConfirmPassword ? "text" : "password"}
-                placeholder="Confirm Password"
-                required
-                autoComplete="new-password"
-                {...register("confirmPassword", {
-                  required: "Please confirm your password",
-                  validate: (value) =>
-                    value === passwordValue || "Passwords do not match",
-                })}
-                className="w-full px-5 py-3 rounded-full bg-red-200/70 placeholder-gray-700 focus:outline-none focus:ring-2 focus:ring-red-400 shadow-sm"
-              />
-
-              <button
-                type="button"
-                onClick={toggleConfirmPassword}
-                className="absolute right-4 top-3 text-gray-600"
-              >
-                {showConfirmPassword ? (
-                  <EyeSlashIcon className="w-5 h-5" />
-                ) : (
-                  <EyeIcon className="w-5 h-5" />
-                )}
-              </button>
+          {/* Form */}
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+            {/* Password */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Password
+              </label>
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  {...register("password", {
+                    required: "Password is required",
+                    minLength: {
+                      value: 6,
+                      message: "Password must be at least 6 characters",
+                    },
+                  })}
+                  className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#8B1A1A] focus:border-transparent outline-none transition-all"
+                  placeholder="Enter password"
+                />
+                <button
+                  type="button"
+                  onClick={togglePassword}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  {showPassword ? (
+                    <EyeSlashIcon className="w-5 h-5" />
+                  ) : (
+                    <EyeIcon className="w-5 h-5" />
+                  )}
+                </button>
+              </div>
+              {errors.password && (
+                <p className="mt-1 text-sm text-red-600">
+                  {errors.password.message}
+                </p>
+              )}
             </div>
-            {errors.confirmPassword && (
-              <p className="mt-1 text-xs text-red-500">{errors.confirmPassword.message}</p>
-            )}
 
-            {/* BUTTON */}
-            <div className="flex justify-center">
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-40 py-3 rounded-full bg-[#8B1A1A] text-white font-semibold hover:bg-red-900 transition"
-              >
-                {loading ? "Creating..." : "ACCEPT INVITE"}
-              </button>
+            {/* Confirm Password */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Confirm Password
+              </label>
+              <div className="relative">
+                <input
+                  type={showConfirmPassword ? "text" : "password"}
+                  {...register("confirmPassword", {
+                    required: "Please confirm your password",
+                    validate: (value) =>
+                      value === passwordValue || "Passwords do not match",
+                  })}
+                  className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#8B1A1A] focus:border-transparent outline-none transition-all"
+                  placeholder="Confirm password"
+                />
+                <button
+                  type="button"
+                  onClick={toggleConfirmPassword}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  {showConfirmPassword ? (
+                    <EyeSlashIcon className="w-5 h-5" />
+                  ) : (
+                    <EyeIcon className="w-5 h-5" />
+                  )}
+                </button>
+              </div>
+              {errors.confirmPassword && (
+                <p className="mt-1 text-sm text-red-600">
+                  {errors.confirmPassword.message}
+                </p>
+              )}
             </div>
+
+            {/* Submit Button */}
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-3 px-4 bg-[#8B1A1A] text-white font-semibold rounded-xl hover:bg-red-900 focus:outline-none focus:ring-2 focus:ring-[#8B1A1A] focus:ring-offset-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            >
+              {loading ? (
+                <>
+                  <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  </svg>
+                  Setting password...
+                </>
+              ) : (
+                "Set Password"
+              )}
+            </button>
           </form>
+        </div>
+      </div>
+
+      {/* Right Side - Decorative */}
+      <div className="hidden lg:block lg:w-1/2 relative">
+        <div className="absolute inset-0 bg-gradient-to-br from-[#8B1A1A] to-red-900">
+          <img
+            src={desktop_r}
+            alt="Decorative"
+            className="absolute bottom-0 right-0 w-64 h-64 object-contain opacity-50"
+          />
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="text-center text-white p-8">
+              <h2 className="text-4xl font-bold mb-4">Welcome to PIT</h2>
+              <p className="text-xl opacity-90">Admin Panel</p>
+            </div>
+          </div>
         </div>
       </div>
     </div>
