@@ -9,6 +9,7 @@ import {
   PlusIcon,
   ShieldCheckIcon,
   ShieldExclamationIcon,
+  ClockIcon,
 } from "@heroicons/react/24/outline";
 import Loader from "../../components/ui/Loader";
 import EmptyState from "../../components/admin_ui/EmptyState";
@@ -78,6 +79,24 @@ export default function AdminManagement() {
       month: "short",
       day: "numeric",
     });
+  };
+
+  // Format last active time
+  const formatLastActive = (dateString) => {
+    if (!dateString) return "Never logged in";
+    
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now - date;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+    
+    if (diffMins < 1) return "Just now";
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffDays < 7) return `${diffDays}d ago`;
+    return formatDate(dateString);
   };
 
   // Check if current user is super_admin
@@ -169,7 +188,7 @@ export default function AdminManagement() {
                     Status
                   </th>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                    Created
+                    Last Active
                   </th>
                   {isSuperAdmin && (
                     <th className="px-6 py-4 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">
@@ -224,7 +243,7 @@ export default function AdminManagement() {
                       </span>
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-500">
-                      {formatDate(admin.created_at)}
+                      {formatLastActive(admin.last_login_at)}
                     </td>
                     {isSuperAdmin && (
                       <td className="px-6 py-4">
