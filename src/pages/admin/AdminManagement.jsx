@@ -1,9 +1,8 @@
 // src/pages/admin/AdminManagement.jsx
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { getAllAdmins, resendInvite } from "../../lib/services/adminManagementService";
+import { getAllAdmins } from "../../lib/services/adminManagementService";
 import { getAdmin } from "../../utils/auth";
-import { toast } from "react-hot-toast";
 import {
   PencilSquareIcon,
   TrashIcon,
@@ -19,6 +18,7 @@ import AddAdminModal from "../../components/admin_ui/AddAdminModal";
 import EditAdminModal from "../../components/admin_ui/EditAdminModal";
 import ConfirmStatusModal from "../../components/admin_ui/ConfirmStatusModal";
 import DeleteAdminModal from "../../components/admin_ui/DeleteAdminModal";
+import ResendInviteModal from "../../components/admin_ui/ResendInviteModal";
 
 export default function AdminManagement() {
   const currentAdmin = getAdmin();
@@ -28,6 +28,7 @@ export default function AdminManagement() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isResendInviteModalOpen, setIsResendInviteModalOpen] = useState(false);
 
   // Selected admin for modals
   const [selectedAdmin, setSelectedAdmin] = useState(null);
@@ -73,15 +74,10 @@ export default function AdminManagement() {
     setIsDeleteModalOpen(true);
   };
 
-  // Handle resend invite
-  const handleResendInvite = async (admin) => {
-    try {
-      await resendInvite(admin.id);
-      toast.success(`Invitation resent to ${admin.email}`);
-    } catch (error) {
-      const errorMessage = error.response?.data?.error || "Failed to resend invitation";
-      toast.error(errorMessage);
-    }
+  // Handle resend invite - open confirmation modal
+  const handleResendInvite = (admin) => {
+    setSelectedAdmin(admin);
+    setIsResendInviteModalOpen(true);
   };
 
   // Format date
@@ -367,6 +363,16 @@ export default function AdminManagement() {
         isOpen={isDeleteModalOpen}
         onClose={() => {
           setIsDeleteModalOpen(false);
+          setSelectedAdmin(null);
+        }}
+        admin={selectedAdmin}
+        onSuccess={() => refetch()}
+      />
+
+      <ResendInviteModal
+        isOpen={isResendInviteModalOpen}
+        onClose={() => {
+          setIsResendInviteModalOpen(false);
           setSelectedAdmin(null);
         }}
         admin={selectedAdmin}
