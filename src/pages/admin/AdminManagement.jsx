@@ -1,14 +1,7 @@
 // src/pages/admin/AdminManagement.jsx
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { toast } from "react-hot-toast";
-import {
-  getAllAdmins,
-  inviteAdmin,
-  updateAdmin,
-  toggleAdminStatus,
-  deleteAdmin,
-} from "../../lib/services/adminManagementService";
+import { getAllAdmins } from "../../lib/services/adminManagementService";
 import { getAdmin } from "../../utils/auth";
 import {
   PencilSquareIcon,
@@ -17,27 +10,24 @@ import {
   UserCircleIcon,
   ShieldCheckIcon,
   ShieldExclamationIcon,
-  XMarkIcon,
 } from "@heroicons/react/24/outline";
 import Loader from "../../components/ui/Loader";
-import DeleteModal from "../../components/admin_ui/DeleteModal";
+import AddAdminModal from "../../components/admin_ui/AddAdminModal";
+import EditAdminModal from "../../components/admin_ui/EditAdminModal";
+import ConfirmStatusModal from "../../components/admin_ui/ConfirmStatusModal";
+import DeleteAdminModal from "../../components/admin_ui/DeleteAdminModal";
 
 export default function AdminManagement() {
   const currentAdmin = getAdmin();
 
-  // State
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedAdmin, setSelectedAdmin] = useState(null);
+  // Modal state
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [adminToDelete, setAdminToDelete] = useState(null);
 
-  // Form state
-  const [formData, setFormData] = useState({
-    email: "",
-    username: "",
-    role: "admin",
-  });
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  // Selected admin for modals
+  const [selectedAdmin, setSelectedAdmin] = useState(null);
 
   // Query for admins
   const {
@@ -57,109 +47,27 @@ export default function AdminManagement() {
 
   const admins = adminsData || [];
 
-  // Reset form when modal closes
-  useEffect(() => {
-    if (!isModalOpen) {
-      setFormData({ email: "", username: "", role: "admin" });
-      setSelectedAdmin(null);
-    }
-  }, [isModalOpen]);
-
-  // Open modal for adding new admin
+  // Open Add Modal
   const handleAddNew = () => {
-    setSelectedAdmin(null);
-    setFormData({ email: "", username: "", role: "admin" });
-    setIsModalOpen(true);
+    setIsAddModalOpen(true);
   };
 
-  // Open modal for editing admin
+  // Open Edit Modal
   const handleEdit = (admin) => {
     setSelectedAdmin(admin);
-    setFormData({
-      email: admin.email,
-      username: admin.username,
-      role: admin.role,
-    });
-    setIsModalOpen(true);
+    setIsEditModalOpen(true);
   };
 
-  // Handle form input change
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+  // Open Status Modal (enable/disable)
+  const handleToggleStatus = (admin) => {
+    setSelectedAdmin(admin);
+    setIsStatusModalOpen(true);
   };
 
-  // Handle form submit
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    if (!formData.email || !formData.username) {
-      toast.error("Email and username are required");
-      return;
-    }
-
-    setIsSubmitting(true);
-
-    try {
-      if (selectedAdmin) {
-        // Update existing admin
-        await updateAdmin(selectedAdmin.id, {
-          username: formData.username,
-          role: formData.role,
-        });
-        toast.success("Admin updated successfully");
-      } else {
-        // Invite new admin
-        await inviteAdmin({
-          email: formData.email,
-          username: formData.username,
-          role: formData.role,
-        });
-        toast.success("Admin invited successfully. They will receive an email to set their password.");
-      }
-
-      setIsModalOpen(false);
-      refetch();
-    } catch (error) {
-      const errorMessage = error.response?.data?.error || "An error occurred";
-      toast.error(errorMessage);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  // Handle toggle status (enable/disable)
-  const handleToggleStatus = async (admin) => {
-    try {
-      const newStatus = !admin.is_active;
-      await toggleAdminStatus(admin.id, newStatus);
-      toast.success(newStatus ? "Admin enabled successfully" : "Admin disabled successfully");
-      refetch();
-    } catch (error) {
-      const errorMessage = error.response?.data?.error || "Failed to update status";
-      toast.error(errorMessage);
-    }
-  };
-
-  // Handle delete
+  // Open Delete Modal
   const handleDeleteClick = (admin) => {
-    setAdminToDelete(admin);
+    setSelectedAdmin(admin);
     setIsDeleteModalOpen(true);
-  };
-
-  const handleConfirmDelete = async () => {
-    if (!adminToDelete) return;
-
-    try {
-      await deleteAdmin(adminToDelete.id);
-      toast.success("Admin deleted successfully");
-      setIsDeleteModalOpen(false);
-      setAdminToDelete(null);
-      refetch();
-    } catch (error) {
-      const errorMessage = error.response?.data?.error || "Failed to delete admin";
-      toast.error(errorMessage);
-    }
   };
 
   // Format date
@@ -377,133 +285,41 @@ export default function AdminManagement() {
         </div>
       </div>
 
-      {/* Add/Edit Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 overflow-y-auto">
-          <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-            {/* Background overlay */}
-            <div
-              className="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75"
-              onClick={() => setIsModalOpen(false)}
-            />
+      {/* Modals */}
+      <AddAdminModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        onSuccess={() => refetch()}
+      />
 
-            {/* Modal panel */}
-            <div className="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg w-full">
-              {/* Modal header */}
-              <div className="bg-gray-50 px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-gray-900">
-                  {selectedAdmin ? "Edit Admin" : "Add New Admin"}
-                </h3>
-                <button
-                  onClick={() => setIsModalOpen(false)}
-                  className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100"
-                >
-                  <XMarkIcon className="w-5 h-5" />
-                </button>
-              </div>
+      <EditAdminModal
+        isOpen={isEditModalOpen}
+        onClose={() => {
+          setIsEditModalOpen(false);
+          setSelectedAdmin(null);
+        }}
+        admin={selectedAdmin}
+        onSuccess={() => refetch()}
+      />
 
-              {/* Modal body */}
-              <form onSubmit={handleSubmit} className="px-6 py-6">
-                <div className="space-y-4">
-                  {/* Email - only show for new admin */}
-                  {!selectedAdmin && (
-                    <div>
-                      <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                        Email Address <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        type="email"
-                        id="email"
-                        name="email"
-                        value={formData.email}
-                        onChange={handleInputChange}
-                        required
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#8B1A1A] focus:border-transparent outline-none"
-                        placeholder="admin@example.com"
-                      />
-                      <p className="text-xs text-gray-500 mt-1">
-                        An invitation email will be sent to this address
-                      </p>
-                    </div>
-                  )}
+      <ConfirmStatusModal
+        isOpen={isStatusModalOpen}
+        onClose={() => {
+          setIsStatusModalOpen(false);
+          setSelectedAdmin(null);
+        }}
+        admin={selectedAdmin}
+        onSuccess={() => refetch()}
+      />
 
-                  {/* Username */}
-                  <div>
-                    <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
-                      Username <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      id="username"
-                      name="username"
-                      value={formData.username}
-                      onChange={handleInputChange}
-                      required
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#8B1A1A] focus:border-transparent outline-none"
-                      placeholder="johndoe"
-                    />
-                  </div>
-
-                  {/* Role */}
-                  <div>
-                    <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-1">
-                      Role <span className="text-red-500">*</span>
-                    </label>
-                    <select
-                      id="role"
-                      name="role"
-                      value={formData.role}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#8B1A1A] focus:border-transparent outline-none"
-                    >
-                      <option value="admin">Admin</option>
-                      <option value="super_admin">Super Admin</option>
-                    </select>
-                    <p className="text-xs text-gray-500 mt-1">
-                      Super admins can manage other admin accounts
-                    </p>
-                  </div>
-                </div>
-
-                {/* Modal footer */}
-                <div className="mt-6 flex justify-end gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setIsModalOpen(false)}
-                    className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="px-4 py-2 bg-[#8B1A1A] text-white rounded-lg hover:bg-red-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {isSubmitting ? "Saving..." : selectedAdmin ? "Update Admin" : "Send Invitation"}
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Delete Confirmation Modal */}
-      <DeleteModal
+      <DeleteAdminModal
         isOpen={isDeleteModalOpen}
         onClose={() => {
           setIsDeleteModalOpen(false);
-          setAdminToDelete(null);
+          setSelectedAdmin(null);
         }}
-        onConfirm={handleConfirmDelete}
-        title="Delete Admin"
-        message={
-          adminToDelete
-            ? `Are you sure you want to delete "${adminToDelete.username}"? This action cannot be undone.`
-            : "Are you sure you want to delete this admin?"
-        }
-        confirmText="Delete"
-        isDanger
+        admin={selectedAdmin}
+        onSuccess={() => refetch()}
       />
     </div>
   );
