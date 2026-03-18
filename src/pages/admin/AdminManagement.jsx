@@ -188,6 +188,9 @@ export default function AdminManagement() {
                     Status
                   </th>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                    Online
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                     Last Active
                   </th>
                   {isSuperAdmin && (
@@ -239,7 +242,19 @@ export default function AdminManagement() {
                         }`}
                       >
                         <span className={`w-2 h-2 rounded-full ${admin.is_active ? "bg-green-500" : "bg-red-500"}`} />
-                        {admin.is_active ? "Active" : "Inactive"}
+                        {admin.is_active ? "Enabled" : "Disabled"}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span
+                        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${
+                          admin.is_online
+                            ? "bg-blue-100 text-blue-700"
+                            : "bg-gray-100 text-gray-500"
+                        }`}
+                      >
+                        <span className={`w-2 h-2 rounded-full ${admin.is_online ? "bg-blue-500 animate-pulse" : "bg-gray-400"}`} />
+                        {admin.is_online ? "Online" : "Offline"}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-500">
