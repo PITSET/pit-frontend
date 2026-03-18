@@ -1,5 +1,6 @@
 // src/components/admin_ui/EditAdminModal.jsx
 import { useState, useEffect } from "react";
+import toast from "react-hot-toast";
 import {
   XMarkIcon,
   PencilSquareIcon,
@@ -35,6 +36,7 @@ export default function EditAdminModal({ isOpen, onClose, admin, onSuccess }) {
     e.preventDefault();
 
     if (!formData.username) {
+      toast.error("Please fill in all required fields");
       return;
     }
 
@@ -45,10 +47,12 @@ export default function EditAdminModal({ isOpen, onClose, admin, onSuccess }) {
         username: formData.username,
         role: formData.role,
       });
+      toast.success("Admin updated successfully!");
       onSuccess?.();
       onClose();
     } catch (error) {
-      // Error is handled by the service with toast notifications
+      const errorMessage = error.response?.data?.error || "Failed to update admin";
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }

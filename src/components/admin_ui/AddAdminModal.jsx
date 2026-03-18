@@ -1,5 +1,6 @@
 // src/components/admin_ui/AddAdminModal.jsx
 import { useState } from "react";
+import toast from "react-hot-toast";
 import {
   XMarkIcon,
   UserPlusIcon,
@@ -27,6 +28,7 @@ export default function AddAdminModal({ isOpen, onClose, onSuccess }) {
     e.preventDefault();
 
     if (!formData.email || !formData.username) {
+      toast.error("Please fill in all required fields");
       return;
     }
 
@@ -34,11 +36,13 @@ export default function AddAdminModal({ isOpen, onClose, onSuccess }) {
 
     try {
       await inviteAdmin(formData);
+      toast.success("Admin invited successfully! They will receive an email to set their password.");
       setFormData({ email: "", username: "", role: "admin" });
       onSuccess?.();
       onClose();
     } catch (error) {
-      // Error is handled by the service with toast notifications
+      const errorMessage = error.response?.data?.error || "Failed to invite admin";
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }

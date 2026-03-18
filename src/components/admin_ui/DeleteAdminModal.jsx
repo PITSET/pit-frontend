@@ -1,5 +1,6 @@
 // src/components/admin_ui/DeleteAdminModal.jsx
 import { useState } from "react";
+import toast from "react-hot-toast";
 import {
   XMarkIcon,
   ExclamationTriangleIcon,
@@ -16,10 +17,12 @@ export default function DeleteAdminModal({ isOpen, onClose, admin, onSuccess }) 
 
     try {
       await deleteAdmin(admin.id);
+      toast.success("Admin deleted successfully!");
       onSuccess?.();
       onClose();
     } catch (error) {
-      // Error is handled by the service with toast notifications
+      const errorMessage = error.response?.data?.error || "Failed to delete admin";
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }

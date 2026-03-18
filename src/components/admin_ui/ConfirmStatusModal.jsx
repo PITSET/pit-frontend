@@ -1,5 +1,6 @@
 // src/components/admin_ui/ConfirmStatusModal.jsx
 import { useState } from "react";
+import toast from "react-hot-toast";
 import {
   XMarkIcon,
   ShieldCheckIcon,
@@ -19,10 +20,12 @@ export default function ConfirmStatusModal({ isOpen, onClose, admin, onSuccess }
 
     try {
       await toggleAdminStatus(admin.id, isEnabling);
+      toast.success(isEnabling ? "Admin enabled successfully!" : "Admin disabled successfully!");
       onSuccess?.();
       onClose();
     } catch (error) {
-      // Error is handled by the service with toast notifications
+      const errorMessage = error.response?.data?.error || "Failed to update status";
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
