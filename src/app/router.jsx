@@ -31,6 +31,7 @@ import AdminMembers from "../pages/admin/AdminMembers";
 import AdminStudents from "../pages/admin/AdminStudents";
 import AcceptInvite from "../pages/admin/AcceptInvite";
 import ResetPassword from "../pages/admin/ResetPassword";
+import AdminManagement from "../pages/admin/AdminManagement";
 
 const router = createBrowserRouter([
   {
@@ -99,6 +100,7 @@ const router = createBrowserRouter([
       { path: "team/members", element: <AdminMembers /> },
       { path: "team/students", element: <AdminStudents /> },
       { path: "contact", element: <AdminContact /> },
+      { path: "management", element: <AdminManagement /> },
     ],
   },
 ]);
