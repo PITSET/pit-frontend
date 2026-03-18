@@ -17,7 +17,7 @@ import {
 import { createProject, updateProject } from "../../lib/services/projectService";
 import { getAllPrograms } from "../../lib/services/programService";
 import { getAllStudents } from "../../lib/services/studentService";
-import { supabase } from "../../lib/supabaseClient";
+import { uploadFile, deleteFile } from "../../lib/services/storageService";
 import { getOperationErrorMessage } from "../../lib/httpErrorHandler";
 
 export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
@@ -304,13 +304,7 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
               
               if (fileName) {
                 console.log("Deleting image:", fileName);
-                const { error: deleteError } = await supabase.storage
-                  .from("project_images")
-                  .remove([fileName]);
-                  
-                if (deleteError) {
-                  console.error("Failed to delete image:", deleteError);
-                }
+                await deleteFile(fileName, "project_images");
               }
             } catch (err) {
               console.error("Error deleting image:", err);
@@ -322,33 +316,13 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
       // Upload new images
       if (newImages.length > 0) {
         for (const image of newImages) {
-          const safeName = (name || "new-project")
-            .replace(/\s+/g, "-")
-            .toLowerCase();
-
-          const fileName = `project-${safeName}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}.webp`;
-
           toast.loading("Compressing & uploading image...", { id: toastId });
 
           const webpImage = await convertToWebp(image);
 
-          const { error: uploadError } = await supabase.storage
-            .from("project_images")
-            .upload(fileName, webpImage, {
-              upsert: true,
-              cacheControl: "3600",
-              contentType: "image/webp",
-            });
+          const uploadData = await uploadFile(webpImage, "project_images");
 
-          if (uploadError) {
-            throw uploadError;
-          }
-
-          const { data } = supabase.storage
-            .from("project_images")
-            .getPublicUrl(fileName);
-
-          imageUrls.push(`${data.publicUrl}?t=${Date.now()}`);
+          imageUrls.push(`${uploadData.publicUrl}?t=${Date.now()}`);
         }
       }
 

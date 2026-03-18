@@ -8,7 +8,7 @@ import {
 } from "@heroicons/react/24/outline";
 
 // supabase
-import { supabase } from "../../lib/supabaseClient";
+import { deleteFile } from "../../lib/services/storageService";
 import { getOperationErrorMessage } from "../../lib/httpErrorHandler";
 
 export default function DeleteModal({ 
@@ -62,12 +62,10 @@ export default function DeleteModal({
       const cleanFileName = fileName.split("?")[0];
 
       if (cleanFileName) {
-        const { error } = await supabase.storage
-          .from(bucket)
-          .remove([cleanFileName]);
-
-        if (error) {
-          console.warn("Failed to delete image from storage:", error);
+        try {
+          await deleteFile(cleanFileName, bucket);
+        } catch (err) {
+          console.warn("Failed to delete image from storage:", err);
         }
       }
     } catch (err) {

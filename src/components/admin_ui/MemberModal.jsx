@@ -18,7 +18,7 @@ import {
 // api
 import { createMember, updateMember } from "../../lib/services/memberService";
 import { getAllPrograms } from "../../lib/services/programService";
-import { supabase } from "../../lib/supabaseClient";
+import { uploadFile, deleteFile } from "../../lib/services/storageService";
 import { getOperationErrorMessage } from "../../lib/httpErrorHandler";
 
 export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
@@ -230,37 +230,12 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
 
       // Upload new image if selected
       if (image) {
-        const safeName = (data.name || "new-member")
-          .replace(/\s+/g, "-")
-          .toLowerCase();
-
-        const fileName = `member-${safeName}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}.webp`;
-
         toast.loading("Compressing & uploading image...", { id: toastId });
 
         const webpImage = await convertToWebp(image);
 
-        const { error: uploadError } = await supabase.storage
-          .from("member_images")
-          .upload(fileName, webpImage, {
-            upsert: true,
-            cacheControl: "3600",
-            contentType: "image/webp",
-          });
-
-        if (uploadError) {
-          // Check for RLS policy violation
-          if (uploadError.message?.includes("row-level security") || uploadError.message?.includes("RLS")) {
-            throw new Error("Storage permission denied. Please login again or contact administrator.");
-          }
-          throw uploadError;
-        }
-
-        const { data: urlData } = supabase.storage
-          .from("member_images")
-          .getPublicUrl(fileName);
-
-        imageUrlToSave = `${urlData.publicUrl}?t=${Date.now()}`;
+        const uploadData = await uploadFile(webpImage, "member_images");
+        imageUrlToSave = `${uploadData.publicUrl}?t=${Date.now()}`;
 
         // Delete old image if replacing an existing member's image
         if (item?.image_url) {
@@ -269,13 +244,7 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
             const oldFileName = oldUrlParts[oldUrlParts.length - 1].split("?")[0];
             
             if (oldFileName) {
-              const { error: deleteError } = await supabase.storage
-                .from("member_images")
-                .remove([oldFileName]);
-              
-              if (deleteError) {
-                console.warn("Failed to delete old image:", deleteError);
-              }
+              await deleteFile(oldFileName, "member_images");
             }
           } catch (err) {
             console.warn("Error deleting old image:", err);

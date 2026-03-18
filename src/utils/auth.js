@@ -3,6 +3,8 @@ import { toast } from "react-hot-toast";
 
 export const login = async (email, password) => {
   try {
+    console.log("[AUTH] Attempting login for:", email);
+    
     // Call backend API for admin login
     const response = await api.post("/auth/login", {
       email,
@@ -10,11 +12,18 @@ export const login = async (email, password) => {
     });
 
     if (!response.data.success) {
+      console.log("[AUTH] Login failed:", response.data.error);
       throw new Error(response.data.error || "Login failed");
     }
 
-    const { token, refresh_token, admin } = response.data.data;
-    const expiresIn = 3600000; // Default 1 hour (backend should provide this)
+    console.log("[AUTH] Login successful!");
+    
+    const { token, refresh_token, expires_in, admin } = response.data.data;
+    console.log("[AUTH] Token received, expires_in:", expires_in, "seconds");
+    console.log("[AUTH] Admin:", admin.username, "Role:", admin.role);
+    
+    // Use expires_in from backend (in seconds) - convert to milliseconds
+    const expiresIn = expires_in ? expires_in * 1000 : 3600000;
 
     // Store token
     localStorage.setItem("token", token);
@@ -88,7 +97,10 @@ export const getAdmin = () => {
 export const restoreSession = async () => {
   const refreshToken = localStorage.getItem("refreshToken");
   
+  console.log("[AUTH] Attempting to restore session...");
+  
   if (!refreshToken) {
+    console.log("[AUTH] No refresh token found");
     return null;
   }
   
@@ -99,11 +111,17 @@ export const restoreSession = async () => {
     });
     
     if (!response.data.success) {
+      console.log("[AUTH] Session refresh failed:", response.data.error);
       return null;
     }
     
-    const { token, refresh_token } = response.data.data;
-    const expiresIn = 3600000; // Default 1 hour
+    console.log("[AUTH] Session refreshed successfully!");
+    
+    const { token, refresh_token, expires_in } = response.data.data;
+    console.log("[AUTH] New token expires_in:", expires_in, "seconds");
+    
+    // Use expires_in from backend (in seconds) - convert to milliseconds
+    const expiresIn = expires_in ? expires_in * 1000 : 3600000;
     
     // Update stored token and expiry
     localStorage.setItem("token", token);

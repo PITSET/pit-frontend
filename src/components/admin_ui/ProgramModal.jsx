@@ -11,7 +11,7 @@ import {
 
 // api
 import { createProgram, updateProgram } from "../../lib/services/programService";
-import { supabase } from "../../lib/supabaseClient";
+import { uploadFile, deleteFile } from "../../lib/services/storageService";
 import { getOperationErrorMessage } from "../../lib/httpErrorHandler";
 
 export default function ProgramModal({ isOpen, onClose, onRefresh, item }) {
@@ -135,7 +135,7 @@ export default function ProgramModal({ isOpen, onClose, onRefresh, item }) {
           const urlParts = item.image_url.split("/");
           const fileName = urlParts[urlParts.length - 1].split("?")[0];
           if (fileName) {
-            await supabase.storage.from("program_images").remove([fileName]);
+            await deleteFile(fileName, "program_images");
           }
         } catch (err) {
           console.warn("Failed to delete old image:", err);
@@ -143,31 +143,11 @@ export default function ProgramModal({ isOpen, onClose, onRefresh, item }) {
       }
 
       if (image) {
-        const safeProgram = (data.programName || "new-program")
-          .replace(/\s+/g, "-")
-          .toLowerCase();
-
-        const fileName = `program-${safeProgram}-${Date.now()}.webp`;
-
         toast.loading("Compressing & uploading image...", { id: toastId });
 
         const webpImage = await convertToWebp(image);
 
-        const { error: uploadError } = await supabase.storage
-          .from("program_images")
-          .upload(fileName, webpImage, {
-            upsert: true,
-            cacheControl: "3600",
-            contentType: "image/webp",
-          });
-
-        if (uploadError) {
-          throw uploadError;
-        }
-
-        const { data: uploadData } = supabase.storage
-          .from("program_images")
-          .getPublicUrl(fileName);
+        const uploadData = await uploadFile(webpImage, "program_images");
 
         // prevent browser cache
         imageUrl = `${uploadData.publicUrl}?t=${Date.now()}`;
