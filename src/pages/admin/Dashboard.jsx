@@ -374,10 +374,11 @@ function processProjectsByProgram(programs, projects) {
   // Map all programs to include their project count (including zero)
   const programsWithProjects = uniquePrograms.map((program) => {
     // Count projects linked to this program using program_name
+    // Backend returns projects with flattened 'programs' array: [{id, program_name}, ...]
     const projectCount = projects.filter((project) => {
-      if (!project) return false;
-      // Try to match by program name in project_programs
-      const programNames = project.project_programs?.map(pp => pp.programs?.program_name) || [];
+      if (!project || !project.programs) return false;
+      // Match by program_name in project.programs array
+      const programNames = project.programs.map(p => p.program_name) || [];
       return programNames.includes(program.program_name);
     }).length;
 
