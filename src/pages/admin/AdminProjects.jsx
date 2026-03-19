@@ -88,11 +88,11 @@ export default function AdminProjects() {
   const filteredData = useMemo(() => {
     let result = data;
 
-    // Filter by program - backend returns nested structure: project_programs: [{ programs: { id: 1 } }]
+    // Filter by program - backend returns flattened programs array: [{id, program_name}, ...]
     if (programFilter !== "all") {
       result = result.filter(item => {
-        // Extract program IDs from nested structure
-        const programIds = item.project_programs?.map(pp => pp.programs?.id) || [];
+        // Extract program IDs from programs array
+        const programIds = item.programs?.map(p => p.id) || [];
         return programIds.includes(programFilter);
       });
     }
@@ -304,7 +304,7 @@ export default function AdminProjects() {
                     <span className={`text-xs px-2 py-0.5 rounded-full ${
                       programFilter === program.id ? "bg-orange-200 text-orange-800" : "bg-slate-100 text-slate-600"
                     }`}>
-                      {data.filter(item => item.project_programs?.some(pp => pp.programs?.id === program.id)).length}
+                      {data.filter(item => item.programs?.some(p => p.id === program.id)).length}
                     </span>
                   </button>
                 ))}

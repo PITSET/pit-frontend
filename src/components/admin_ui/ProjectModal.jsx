@@ -465,33 +465,34 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
     setNewImages([]);
     setIsActive(item?.is_featured || false); // Use is_featured field from backend
     
-    // Load program_ids from item - backend returns nested structure
-    // Format: project_programs: [{ programs: { id: 1 } }]
+    // Load program_ids from item - backend returns flattened programs array: [{id, program_name}, ...]
     let programIdsArray = [];
-    if (item?.project_programs) {
+    if (Array.isArray(item?.programs)) {
+      // Flattened array of program objects: [{id, program_name}, ...]
+      console.log("programs data:", JSON.stringify(item.programs, null, 2));
+      programIdsArray = item.programs.map(p => p.id).filter(id => id != null);
+    } else if (item?.project_programs) {
+      // Legacy nested structure fallback: project_programs: [{ programs: { id: 1 } }]
       console.log("project_programs data:", JSON.stringify(item.project_programs, null, 2));
       programIdsArray = item.project_programs
         .map(pp => pp.programs?.id)
         .filter(id => id != null);
-    } else if (Array.isArray(item?.programs)) {
-      // Fallback: already flat array of IDs
-      programIdsArray = item.programs;
     }
     console.log("Extracted programIds:", programIdsArray);
     setProgramIds(programIdsArray);
     
-    // Load student_ids from item - backend returns nested structure
-    // Format: project_students: [{ students: { id: 1 } }]
+    // Load student_ids from item - backend returns flattened students array: [{id, name, image_url}, ...]
     let studentIdsArray = [];
-    if (item?.project_students) {
+    if (Array.isArray(item?.students)) {
+      // Flattened array of student objects: [{id, name, image_url}, ...]
+      console.log("students data:", JSON.stringify(item.students, null, 2));
+      studentIdsArray = item.students.map(s => s.id).filter(id => id != null);
+    } else if (item?.project_students) {
+      // Legacy nested structure fallback: project_students: [{ students: { id: 1 } }]
       console.log("project_students data:", JSON.stringify(item.project_students, null, 2));
       studentIdsArray = item.project_students
         .map(ps => ps.students?.id)
         .filter(id => id != null);
-    } else if (Array.isArray(item?.students)) {
-      // Fallback: already flat array of IDs
-      console.log("students data (flat):", JSON.stringify(item.students, null, 2));
-      studentIdsArray = item.students;
     }
     console.log("Extracted studentIds:", studentIdsArray);
     setStudentIds(studentIdsArray);
