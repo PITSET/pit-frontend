@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import logoImage from "../../assets/logo/logo_image.svg";
 import { Link, useNavigate } from "react-router-dom";
+import { motion, useScroll, useTransform } from "framer-motion";
 
 import api from "../../lib/api";
 import resolveAssetUrl from "../../lib/resolveAssetUrl";
@@ -61,6 +62,9 @@ const getYoutubeId = (url) => {
 };
 
 export default function Home() {
+
+  const { scrollYProgress } = useScroll();
+  const titleX = useTransform(scrollYProgress, [0, 0.2], [0, -100]);
 
   const [heroSection, setHeroSection] = useState(null);
   const [aboutSection, setAboutSection] = useState(null);
@@ -244,32 +248,47 @@ export default function Home() {
 
           <div className="max-w-xl md:max-w-2xl text-white text-center lg:text-left">
 
-            <h1 className="font-bold text-3xl sm:text-4xl md:text-5xl lg:text-6xl leading-tight mb-6">
+            <motion.h1 
+              style={{ x: titleX }}
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+              className="font-bold text-3xl sm:text-4xl md:text-5xl lg:text-6xl leading-tight mb-6"
+            >
               {heroSection?.title || (
                 <>
                   Empowering Future <br /> Technologists
                 </>
               )}
-            </h1>
+            </motion.h1>
 
-            <p className="text-sm md:text-base text-gray-200 mb-8">
+            <motion.p 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1], delay: 0.2 }}
+              className="text-sm md:text-base text-gray-200 mb-8"
+            >
               {heroSection?.content ||
                 "Through practical education and innovative programs, we prepare students to meet real-world challenges and lead in a rapidly evolving technological landscape."}
-            </p>
+            </motion.p>
 
-
-            <Button
-              variant="primary"
-              size="lg"
-              className="font-semibold shadow-lg"
-              onClick={() => {
-                setIsNavigating(true);
-                navigate("/programs");
-              }}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1], delay: 0.4 }}
             >
-              Explore Our Programs
-            </Button>
-
+              <Button
+                variant="primary"
+                size="lg"
+                className="font-semibold shadow-lg"
+                onClick={() => {
+                  setIsNavigating(true);
+                  navigate("/programs");
+                }}
+              >
+                Explore Our Programs
+              </Button>
+            </motion.div>
 
           </div >
         </div >
@@ -303,7 +322,13 @@ export default function Home() {
 
         <div className="relative z-20 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-12 flex justify-center lg:justify-center">
 
-          <div className="max-w-md text-white text-center lg:text-left">
+          <motion.div 
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+            className="max-w-md text-white text-center lg:text-left"
+          >
 
             <h2 className="font-bold text-3xl md:text-5xl mb-4">
               {aboutSection?.title || "About Us"}
@@ -325,9 +350,7 @@ export default function Home() {
               </Link>
             </Button>
 
-
-
-          </div >
+          </motion.div >
         </div >
 
       </section >
@@ -362,7 +385,13 @@ export default function Home() {
         {/* Content */}
         <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 w-full flex justify-center lg:justify-center">
 
-          <div className="max-w-md text-white text-center lg:text-left">
+          <motion.div 
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+            className="max-w-md text-white text-center lg:text-left"
+          >
 
             <h2 className="font-bold text-3xl md:text-5xl mb-4">
               {programSection?.title || "Programs"}
@@ -377,7 +406,7 @@ export default function Home() {
               <Link to="/programs">VIEW ALL PROGRAMS</Link>
             </Button>
 
-          </div >
+          </motion.div >
 
         </div >
 

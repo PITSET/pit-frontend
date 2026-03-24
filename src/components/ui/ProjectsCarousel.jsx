@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { BsArrowLeft, BsArrowRight } from "react-icons/bs";
 import { Button } from "./Button";
+import { motion } from "framer-motion";
 
 export default function ProjectsCarousel({ projects = [], isLoadingProjects = false }) {
   const [index, setIndex] = useState(0);
@@ -26,7 +27,13 @@ export default function ProjectsCarousel({ projects = [], isLoadingProjects = fa
 
   return (
     <section className="py-24 bg-[#f8f9fc] w-full flex flex-col items-center overflow-x-hidden">
-      <div className="w-full max-w-6xl px-6">
+      <motion.div 
+        initial={{ opacity: 0, y: 40 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.2 }}
+        transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+        className="w-full max-w-6xl px-6"
+      >
         <h2 className="text-center font-bold text-5xl md:text-6xl mb-12 lg:mb-20 text-[#1A1A1A]">
           Projects
         </h2>
@@ -36,13 +43,21 @@ export default function ProjectsCarousel({ projects = [], isLoadingProjects = fa
           <div className="relative bg-[#FAFAFC] w-full md:w-[85%] lg:w-[900px] xl:w-[950px] min-h-[450px] rounded-3xl shadow-[0_30px_60px_-15px_rgba(0,0,0,0.1)] flex flex-col md:flex-row items-center p-8 md:p-12 lg:pr-16 md:gap-14">
 
             {/* Image (Overlapping the left edge on larger screens) */}
-            <div className="relative w-[300px] md:w-[380px] lg:w-[420px] h-[300px] md:h-[400px] lg:h-[420px] shrink-0 md:-ml-24 lg:-ml-32 md:mt-0 mb-8 md:mb-0 bg-gray-200 rounded-3xl overflow-hidden shadow-2xl z-10 transition-all duration-300">
-              <img
+            <motion.div 
+              whileHover={{ scale: 1.03, rotate: -1 }}
+              transition={{ type: "spring", stiffness: 300, damping: 20 }}
+              className="relative w-[300px] md:w-[380px] lg:w-[420px] h-[300px] md:h-[400px] lg:h-[420px] shrink-0 md:-ml-24 lg:-ml-32 md:mt-0 mb-8 md:mb-0 bg-gray-200 rounded-3xl overflow-hidden shadow-2xl z-10"
+            >
+              <motion.img
+                key={index}
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.4 }}
                 src={projects[index]?.image || ""}
                 alt={projects[index]?.title || "Project Image"}
                 className="w-full h-full object-cover"
               />
-            </div>
+            </motion.div>
 
             {/* Content Container */}
             <div className="flex-1 flex flex-col justify-center max-w-lg">
@@ -121,7 +136,7 @@ export default function ProjectsCarousel({ projects = [], isLoadingProjects = fa
             <Link to="/projects">VIEW ALL PROJECTS</Link>
           </Button>
         </div>
-      </div>
+      </motion.div>
     </section>
   );
 }
