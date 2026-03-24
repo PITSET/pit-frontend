@@ -110,6 +110,10 @@ export default function ProgramDetail() {
 
   return (
     <div className="h-screen overflow-y-auto snap-y snap-mandatory scroll-smooth bg-gray-100">
+      <Helmet>
+        <title>{program.program_name} | PIT</title>
+        <meta name="description" content={program.description || "Program details and related projects."} />
+      </Helmet>
 
       {/* SECTION 1: HERO SECTION */}
       <section className="relative h-screen snap-start overflow-hidden flex flex-col">
@@ -143,18 +147,14 @@ export default function ProgramDetail() {
       </section>
 
       {/* SECTION 2: PROGRAM OVERVIEW */}
-      <section className="relative h-screen snap-start flex items-center bg-gray-50 px-8">
-        <div className="w-full flex flex-col md:flex-row gap-16 items-center">
-          <div className="w-full md:w-1/3">
-            <h2 className="text-brand-primary font-[Roboto_Condensed] font-bold text-[56px] md:text-[72px] leading-none uppercase">
-              Program<br />Overview
-            </h2>
-          </div>
-          <div className="w-full md:w-2/3 border-l-4 border-brand-primary pl-10">
-            <p className="text-gray-700 leading-relaxed font-[Roboto] text-[20px] md:text-[24px]">
-              {program.overview}
-            </p>
-          </div>
+      <section className="relative h-screen snap-start flex items-center justify-center bg-white px-8">
+        <div className="max-w-4xl w-full text-center">
+          <h2 className="text-brand-primary font-[Roboto_Condensed] font-bold text-[56px] md:text-[72px] leading-tight uppercase mb-12">
+            Program Overview
+          </h2>
+          <p className="text-gray-700 leading-relaxed font-[Roboto] text-[20px] md:text-[24px]">
+            {program.description}
+          </p>
         </div>
       </section>
 
