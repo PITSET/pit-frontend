@@ -223,7 +223,7 @@ export default function Home() {
         <div
           className="absolute inset-0 bg-cover bg-center"
           style={{
-            backgroundImage: `url('${resolveAssetUrl(heroSection?.image_url)}')`,
+            backgroundImage: heroSection?.image_url ? `url('${resolveAssetUrl(heroSection.image_url)}')` : "none",
           }}
         />
 
@@ -284,7 +284,7 @@ export default function Home() {
         <div
           className="absolute inset-0 bg-cover bg-top"
           style={{
-            backgroundImage: `url('${resolveAssetUrl(aboutSection?.image_url)}')`,
+            backgroundImage: aboutSection?.image_url ? `url('${resolveAssetUrl(aboutSection.image_url)}')` : "none",
           }}
         />
 
@@ -327,7 +327,7 @@ export default function Home() {
         <div
           className="absolute inset-0 bg-cover bg-center"
           style={{
-            backgroundImage: `url('${resolveAssetUrl(programSection?.image_url)}')`,
+            backgroundImage: programSection?.image_url ? `url('${resolveAssetUrl(programSection.image_url)}')` : "none",
           }}
         />
 

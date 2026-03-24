@@ -10,10 +10,10 @@ const getBackendOrigin = () => {
 };
 
 export default function resolveAssetUrl(value) {
-  if (!value) return "";
+  if (!value) return null;
 
   const raw = String(value).trim();
-  if (!raw) return "";
+  if (!raw) return null;
 
   if (
     isAbsoluteUrl(raw) ||

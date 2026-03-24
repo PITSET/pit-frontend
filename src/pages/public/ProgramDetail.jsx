@@ -5,6 +5,8 @@ import api from "../../lib/api";
 import Loader from "../../components/ui/Loader";
 import { Helmet } from "react-helmet-async";
 import Footer from "../../components/layout/Footer";
+import { HiUsers } from "react-icons/hi";
+import { Button } from "../../components/ui/Button";
 
 export default function ProgramDetail() {
   const { id } = useParams();
@@ -18,12 +20,40 @@ export default function ProgramDetail() {
     const fetchProgram = async () => {
       try {
         setLoading(true);
-        const res = await api.get(`/programs/${id}`);
-        const programData = res.data?.data;
+        // Fetch program details and projects list in parallel to ensure we get linkage
+        const [programRes, projectsRes] = await Promise.all([
+          api.get(`/programs/${id}`),
+          api.get("/projects").catch(() => ({ data: [] }))
+        ]);
 
+        const programData = programRes.data?.data || programRes.data;
+        
         if (programData) {
           setProgram(programData);
-          setProjects(programData.projects || []);
+
+          // Get projects from nested program data (if joined) OR from the full projects list
+          const nestedProjects = programData.projects || programData.Project || [];
+          
+          if (nestedProjects.length > 0) {
+            setProjects(nestedProjects);
+            console.log("Projects found via nested API join:", nestedProjects.length);
+          } else {
+            // Fallback: Manually filter all projects that mention this program ID
+            const allProjects = Array.isArray(projectsRes.data) 
+              ? projectsRes.data 
+              : projectsRes.data?.data || projectsRes.data?.projects || [];
+            
+            const linkedProjects = allProjects.filter(p => {
+              const pProgs = Array.isArray(p.programs) ? p.programs : [];
+              return pProgs.some(prog => {
+                const progId = typeof prog === 'object' ? prog.id : prog;
+                return String(progId) === String(id);
+              });
+            });
+            
+            setProjects(linkedProjects);
+            console.log("Projects found via manual filter from /projects:", linkedProjects.length);
+          }
         }
       } catch (err) {
         console.error("Failed to fetch program:", err);
@@ -69,7 +99,7 @@ export default function ProgramDetail() {
 
       {/* HERO SECTION */}
       <div className="relative w-full min-h-screen overflow-hidden">
-        
+
 
         {/* Background Image */}
         <img
@@ -125,35 +155,58 @@ export default function ProgramDetail() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-            {projects.map((project) => (
-              <div
-                key={project.id}
-                className="bg-white rounded-[24px] shadow-sm border border-gray-100 overflow-hidden flex flex-col group hover:shadow-xl transition-all duration-300"
-              >
-                <div className="h-[220px] overflow-hidden">
-                  <img
-                    src={resolveAssetUrl(project.image || project.image_url || project.cover_url)}
-                    alt={project.name || project.title}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                </div>
+            {projects.map((project) => {
+              // Robust image resolution similar to Home.jsx
+              let imgVal = project?.image || project?.image_url || project?.cover || project?.cover_url;
+              if (!imgVal && project?.images) {
+                imgVal = Array.isArray(project.images) ? project.images[0] : project.images;
+                if (typeof imgVal === "string" && imgVal.startsWith("[")) {
+                  try {
+                    const parsed = JSON.parse(imgVal);
+                    imgVal = Array.isArray(parsed) ? parsed[0] : imgVal;
+                  } catch (e) {
+                    console.log("Failed to parse image string", e);
+                  }
+                }
+              }
 
+              return (
+                <div
+                  key={project.id}
+                  className="bg-white rounded-[24px] shadow-sm border border-gray-100 overflow-hidden flex flex-col group/card hover:shadow-xl transition-all duration-300"
+                >
+                  <div className="h-[220px] overflow-hidden">
+                    <img
+                      src={resolveAssetUrl(imgVal)}
+                      alt={project.title || project.name}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover/card:scale-105"
+                    />
+                  </div>
+
+                {/* Card Content */}
                 <div className="p-8 flex flex-col grow">
-                  <h3 className="font-bold text-[24px] mb-4 font-[Roboto_Condensed] line-clamp-2 leading-tight group-hover:text-red-600 transition-colors">
-                    {project.name || project.title}
+                  <h3 className="text-2xl font-bold text-gray-900 mb-3 line-clamp-2 leading-tight group-hover/card:text-brand-primary transition-colors font-[Roboto_Condensed]">
+                    {project.title || project.name}
                   </h3>
-                  <p className="text-gray-600 text-[16px] mb-8 font-[Roboto] line-clamp-3 leading-relaxed">
-                    {project.overview || project.description || project.desc}
+                  <p className="text-gray-500 text-[15px] leading-relaxed mb-8 line-clamp-3">
+                    {project.description || project.overview || project.desc}
                   </p>
-                  <Link 
-                    to={`/projects/${project.id}`}
-                    className="mt-auto bg-[#E73F0F] hover:bg-[#cf360b] text-white px-8 py-3 rounded-xl transition text-center font-bold tracking-wide shadow-lg shadow-orange-200 active:scale-95"
-                  >
-                    Read More
-                  </Link>
+
+                  <div className="mt-auto flex items-center justify-between">
+                    <div className="flex items-center gap-1.5 text-gray-400">
+                      <HiUsers className="text-lg" />
+                      <span className="text-[14px] font-bold">{project.students?.length || 0}</span>
+                    </div>
+                    <Button variant="link" asChild className="p-0 h-auto text-brand-primary font-bold">
+                      <Link to={`/projects/${project.id}`}>
+                        Read More
+                      </Link>
+                    </Button>
+                  </div>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </section>
