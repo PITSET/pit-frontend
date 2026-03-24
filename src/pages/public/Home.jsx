@@ -75,7 +75,7 @@ export default function Home() {
     const load = async () => {
       setIsLoadingProjects(true);
       try {
-        const [homeRes, projectsRes, programsRes] = await Promise.all([
+        const [homeRes, projectsRes, programsRes, aboutRes] = await Promise.all([
           api.get("/home").catch((e) => {
             console.error("Failed to load /api/home:", e);
             return { data: [] };
@@ -86,6 +86,10 @@ export default function Home() {
           }),
           api.get("/programs").catch((e) => {
             console.error("Failed to load /api/programs:", e);
+            return { data: [] };
+          }),
+          api.get("/about").catch((e) => {
+            console.error("Failed to load /api/about:", e);
             return { data: [] };
           }),
         ]);
@@ -100,6 +104,10 @@ export default function Home() {
           (a, b) => (Number(a?.order_position) || 0) - (Number(b?.order_position) || 0),
         );
 
+        const aboutRaw = Array.isArray(aboutRes.data) ? aboutRes.data : aboutRes.data?.data || [];
+        const activeAboutItems = (Array.isArray(aboutRaw) ? aboutRaw : []).filter((item) => item?.is_active === true);
+        const missionAbouts = activeAboutItems.filter((item) => normalizeSectionType(item?.section_type) === "mission");
+
         const heroes = sortedItems.filter(
           (item) => normalizeSectionType(item?.section_type) === "hero",
         );
@@ -111,7 +119,7 @@ export default function Home() {
         );
 
         const hero = pickOne(heroes, "latest_updated");
-        const about = pickOne(abouts, "lowest_order_position");
+        const about = pickOne(missionAbouts, "lowest_order_position") || pickOne(abouts, "lowest_order_position");
         const program = pickOne(programs, "lowest_order_position");
 
         if (!isActive) return;
