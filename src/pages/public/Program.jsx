@@ -92,10 +92,10 @@ export default function Programs() {
     : programs;
 
   return (
-    <div className="h-screen overflow-y-auto snap-y snap-mandatory scroll-smooth bg-gray-100">
+    <div className="min-h-screen bg-gray-50 pt-24 pb-12">
 
       {/* SECTION 1: PROGRAMS LIST */}
-      <section className="min-h-screen snap-start pt-12 pb-20 px-8">
+      <section className="px-6 md:px-12 max-w-[1440px] mx-auto">
         <div className="w-full">
 
           <motion.h1
@@ -130,17 +130,16 @@ export default function Programs() {
                     viewport={{ once: true, amount: 0.1 }}
                     whileHover={{ y: -8 }}
                     key={program.id}
-                    className="bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col overflow-hidden group border border-gray-100"
+                    className="bg-white rounded-[24px] shadow-lg hover:shadow-2xl transition-all duration-300 flex flex-col overflow-hidden group border border-gray-100 h-full w-full max-w-[400px] mx-auto hover:-translate-y-2"
                     id={programSectionId(program?.program_name)}
-                    style={{ width: "100%", maxWidth: "400px", height: "540px" }}
                   >
 
                     {/* Program Image */}
-                    <div className="h-[280px] overflow-hidden shrink-0">
+                    <div className="h-[240px] w-full overflow-hidden shrink-0">
                       <img
                         src={resolveAssetUrl(program.image_url)}
                         alt={program.program_name}
-                        className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500"
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       />
                     </div>
 
@@ -183,7 +182,7 @@ export default function Programs() {
                       <motion.div variants={textVariants} className="mt-auto flex justify-end pt-6">
                         <Button
                           variant="link"
-                          className="text-brand-primary font-bold hover:gap-2 transition-all p-0 flex items-center gap-1"
+                          className=" text-brand-text-secondary hover:text-brand-primary font-bold hover:gap-2 transition-all p-0 flex items-center gap-1"
                           onClick={() => {
                             setIsNavigating(true);
                             navigate(`/programs/${program.id}`);
@@ -203,7 +202,7 @@ export default function Programs() {
       </section>
 
       {/* SECTION 2: FOOTER */}
-      <section className="snap-start py-10 bg-white">
+      <section className="mt-20">
         <Footer />
       </section>
 
