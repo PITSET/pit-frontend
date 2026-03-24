@@ -4,12 +4,8 @@ import resolveAssetUrl from "../../lib/resolveAssetUrl";
 import api from "../../lib/api";
 import Loader from "../../components/ui/Loader";
 import { Helmet } from "react-helmet-async";
-import { HiUsers } from "react-icons/hi2";
-import { Button } from "../../components/ui/Button";
 import Breadcrumbs from "../../components/ui/Breadcrumbs";
 import Footer from "../../components/layout/Footer";
-
-import axios from "axios";
 
 export default function ProgramDetail() {
   const { id } = useParams();
@@ -20,81 +16,38 @@ export default function ProgramDetail() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const fetchProgramData = async () => {
+    const fetchProgram = async () => {
       try {
         setLoading(true);
-        // 1. Fetch the program details
-        const progRes = await api.get(`/programs/${id}`);
-        const programData = progRes.data?.data;
+        const res = await api.get(`/programs/${id}`);
+        const programData = res.data?.data;
 
-        if (!programData) {
-          setProgram(null);
-          setLoading(false);
-          return;
+        if (programData) {
+          setProgram(programData);
+          setProjects(programData.projects || []);
         }
-
-        setProgram(programData);
-
-        // 2. Fetch all projects to filter them correctly (some might not be directly in the program response)
-        const projRes = await api.get("/projects");
-        const allProjects = Array.isArray(projRes.data) ? projRes.data : projRes.data?.data || projRes.data?.projects || [];
-
-        const targetProgramName = (programData.program_name || "").toLowerCase().trim();
-
-        // 3. Filter projects matching this program (Logic from ProjectsCollection)
-        const matchedProjects = allProjects
-          .filter((item) => item?.is_active !== false)
-          .filter((project) => {
-            const programList = Array.isArray(project.programs) ? project.programs : [];
-            const matchesArray = programList.some((p) => {
-              const name = (typeof p === "object" ? p.program_name || p.name : p) || "";
-              return name.toLowerCase().trim() === targetProgramName;
-            });
-
-            const matchesSingle = (project.program || "").toLowerCase().trim() === targetProgramName;
-
-            return matchesArray || matchesSingle;
-          })
-          .slice(0, 3) // Show only 3 projects
-          .map((item) => {
-            let imgVal = item?.image || item?.image_url || item?.cover || item?.cover_url;
-            if (!imgVal && item?.images) {
-              const imagesArr = Array.isArray(item.images)
-                ? item.images
-                : typeof item.images === "string" && item.images.startsWith("[")
-                  ? JSON.parse(item.images)
-                  : [item.images];
-              imgVal = imagesArr[0];
-            }
-
-            return {
-              ...item,
-              id: item.id || item._id,
-              title: item.name || item.title || "",
-              description: item.overview || item.desc || item.description || item.content || "",
-              image: resolveAssetUrl(imgVal || ""),
-            };
-          });
-
-        setProjects(matchedProjects);
       } catch (err) {
-        console.error("Failed to fetch program details:", err);
+        console.error("Failed to fetch program:", err);
         setError("Failed to load program.");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchProgramData();
+    fetchProgram();
   }, [id]);
 
   if (loading) {
-    return <Loader label="Loading Program Details..." />;
+    return (
+      <div className="text-center py-20 text-lg font-[Roboto]">
+        Loading...
+      </div>
+    );
   }
 
   if (error) {
     return (
-      <div className="text-center py-20 text-brand-primary font-[Roboto]">
+      <div className="text-center py-20 text-red-500 font-[Roboto]">
         {error}
       </div>
     );
@@ -109,15 +62,15 @@ export default function ProgramDetail() {
   }
 
   return (
-    <div className="h-screen overflow-y-auto snap-y snap-mandatory scroll-smooth bg-gray-100">
+    <div className="bg-white min-h-screen">
       <Helmet>
-        <title>{program.program_name} | PIT</title>
-        <meta name="description" content={program.description || "Program details and related projects."} />
+        <title>{program.program_name} | Program Detail</title>
+        <meta name="description" content={program.description} />
       </Helmet>
 
-      {/* SECTION 1: HERO SECTION */}
-      <section className="relative h-screen snap-start overflow-hidden flex flex-col">
-
+      {/* HERO SECTION */}
+      <div className="relative w-full min-h-screen overflow-hidden">
+        
         {/* Breadcrumb Overlay */}
         <div className="absolute top-12 left-0 w-full px-8 z-30">
           <Breadcrumbs />
@@ -131,98 +84,86 @@ export default function ProgramDetail() {
         />
 
         {/* Dark Gradient Overlay */}
-        <div className="absolute inset-0 bg-linear-to-r from-[#0b2545]/90 via-[#0b2545]/70 to-transparent"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-[#0b2545]/90 via-[#0b2545]/70 to-transparent"></div>
 
         {/* Content */}
-        <div className="relative flex-grow flex items-center px-8">
-          <div className="max-w-2xl text-white">
-            <h1 className="text-[48px] md:text-[64px] lg:text-[72px] leading-none font-bold font-[Roboto_Condensed] mb-8">
+        <div className="relative max-w-[1248px] mx-auto min-h-screen flex items-center px-6">
+          <div className="max-w-[520px] text-white">
+            <h1 className="text-[48px] md:text-[64px] leading-tight font-bold font-[Roboto_Condensed] mb-6 uppercase">
               {program.program_name}
             </h1>
-            <p className="text-[18px] md:text-[20px] leading-relaxed font-[Roboto] text-gray-200 max-w-xl">
+            <p className="text-[18px] leading-[30px] font-[Roboto] text-gray-200">
               {program.description}
             </p>
           </div>
         </div>
-      </section>
+      </div>
 
-      {/* SECTION 2: PROGRAM OVERVIEW */}
-      <section className="relative h-screen snap-start flex items-center justify-center bg-white px-8">
-        <div className="max-w-4xl w-full text-center">
-          <h2 className="text-brand-primary font-[Roboto_Condensed] font-bold text-[56px] md:text-[72px] leading-tight uppercase mb-12">
+      {/* PROGRAM OVERVIEW */}
+      <section className="relative w-full min-h-[600px] flex items-center overflow-hidden py-24 bg-gray-50">
+        <div className="max-w-[900px] mx-auto text-center px-6">
+          <h2 className="text-red-700 mb-8 font-[Roboto_Condensed] font-bold text-[56px] md:text-[64px] uppercase">
             Program Overview
           </h2>
-          <p className="text-gray-700 leading-relaxed font-[Roboto] text-[20px] md:text-[24px]">
-            {program.description}
+          <p className="text-gray-700 leading-relaxed font-[Roboto] text-[20px] md:text-[24px] whitespace-pre-wrap wrap-break-word">
+            {program.overview || program.description}
           </p>
         </div>
       </section>
 
-      {/* SECTION 3: PROJECTS SECTION */}
-      <section className="snap-start min-h-screen py-20 bg-white flex flex-col justify-center">
-        <div className="w-full px-8">
-          <div className="flex justify-between items-end mb-12 border-b-2 border-gray-100 pb-6">
-            <h2 className="text-[32px] md:text-[48px] font-bold text-brand-primary font-[Roboto_Condensed] uppercase leading-none">
-              Projects
-            </h2>
-            <Link
-              to="/projects"
-              className="text-brand-primary font-bold uppercase text-sm tracking-widest flex items-center group transition-colors pb-2"
-            >
-              ALL PROJECTS <span className="ml-2 group-hover:translate-x-1 transition-transform">→</span>
-            </Link>
-          </div>
-
-          {projects.length === 0 ? (
-            <div className="py-20 text-center bg-gray-50 rounded-3xl border-2 border-dashed border-gray-100">
-              <p className="text-gray-500 font-[Roboto] text-xl">
-                No projects available in this program.
-              </p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-              {projects.map((project) => (
-                <div
-                  key={project.id}
-                  className="group bg-white rounded-[24px] overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col h-full"
-                >
-                  <Link to={`/projects/${project.id}`} className="block h-[260px] overflow-hidden">
-                    <img
-                      src={project.image}
-                      alt={project.title}
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    />
-                  </Link>
-
-                  <div className="p-8 flex flex-col grow">
-                    <h3 className="text-2xl font-bold text-gray-900 mb-3 line-clamp-2 leading-tight group-hover:text-brand-primary transition-colors">
-                      {project.title}
-                    </h3>
-                    <p className="text-gray-500 text-[15px] leading-relaxed mb-8 line-clamp-3">
-                      {project.description}
-                    </p>
-
-                    <div className="mt-auto flex items-center justify-between">
-                      <div className="flex items-center gap-1.5 text-gray-400">
-                        <HiUsers className="text-lg" />
-                        <span className="text-[14px] font-bold">{project.students?.length || 0}</span>
-                      </div>
-                      <Link to={`/projects/${project.id}`} className="text-brand-primary font-bold text-sm tracking-wider hover:underline">
-                        READ MORE →
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+      {/* PROJECTS SECTION */}
+      <section className="max-w-[1248px] mx-auto px-6 py-24">
+        <div className="flex justify-between items-end mb-12 border-b border-gray-100 pb-8">
+          <h2 className="text-[36px] md:text-[48px] font-bold text-red-600 font-[Roboto_Condensed] uppercase leading-none">
+            Projects
+          </h2>
+          <Link to="/projects" className="text-red-600 font-bold hover:underline tracking-widest text-sm">
+            VIEW MORE →
+          </Link>
         </div>
+
+        {projects.length === 0 ? (
+          <div className="text-center py-20 bg-gray-50 rounded-3xl border-2 border-dashed border-gray-200">
+            <p className="text-gray-500 font-[Roboto] text-xl">
+              No projects available for this program.
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+            {projects.map((project) => (
+              <div
+                key={project.id}
+                className="bg-white rounded-[24px] shadow-sm border border-gray-100 overflow-hidden flex flex-col group hover:shadow-xl transition-all duration-300"
+              >
+                <div className="h-[220px] overflow-hidden">
+                  <img
+                    src={resolveAssetUrl(project.image || project.image_url || project.cover_url)}
+                    alt={project.name || project.title}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                </div>
+
+                <div className="p-8 flex flex-col grow">
+                  <h3 className="font-bold text-[24px] mb-4 font-[Roboto_Condensed] line-clamp-2 leading-tight group-hover:text-red-600 transition-colors">
+                    {project.name || project.title}
+                  </h3>
+                  <p className="text-gray-600 text-[16px] mb-8 font-[Roboto] line-clamp-3 leading-relaxed">
+                    {project.overview || project.description || project.desc}
+                  </p>
+                  <Link 
+                    to={`/projects/${project.id}`}
+                    className="mt-auto bg-[#E73F0F] hover:bg-[#cf360b] text-white px-8 py-3 rounded-xl transition text-center font-bold tracking-wide shadow-lg shadow-orange-200 active:scale-95"
+                  >
+                    Read More
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </section>
 
-      {/* SECTION 4: FOOTER */}
-      <section className="snap-start py-10 bg-white">
-        <Footer />
-      </section>
+      <Footer />
     </div>
   );
 }

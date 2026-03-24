@@ -174,15 +174,16 @@ export default function ProjectDetail() {
     <div className="h-screen overflow-y-auto snap-y snap-mandatory scroll-smooth bg-white">
       
       {/* SECTION 1: HERO & STATS */}
-      <section className="min-h-screen snap-start pt-12 pb-20 px-8 flex flex-col">
-        <div className="w-full mb-8">
-          <Breadcrumbs />
-        </div>
+      <section className="min-h-screen snap-start pt-12 pb-20 px-4 sm:px-8 flex flex-col">
+        <div className="max-w-[1248px] mx-auto w-full grow flex flex-col">
+          <div className="w-full mb-8">
+            <Breadcrumbs />
+          </div>
 
-        <div className="flex-grow flex flex-col justify-center">
-          <h1 className="text-[56px] md:text-[72px] font-bold text-brand-primary mb-12 font-[Roboto_Condensed] leading-none uppercase">
-            Project Detail
-          </h1>
+          <div className="grow flex flex-col justify-center">
+            <h1 className="text-[48px] md:text-[64px] lg:text-[72px] font-bold text-brand-primary mb-8 sm:mb-12 font-[Roboto_Condensed] leading-none uppercase text-center sm:text-left">
+              Project Detail
+            </h1>
 
           {/* HERO CARD SPLIT */}
           <div className="grid grid-cols-1 lg:grid-cols-10 bg-[#1A1A1A] rounded-[40px] overflow-hidden shadow-2xl">
@@ -210,135 +211,136 @@ export default function ProjectDetail() {
             </div>
 
             {/* RIGHT: Stats Details */}
-            <div className="lg:col-span-4 text-white p-12 flex flex-col justify-center">
-              <h2 className="text-4xl lg:text-5xl font-bold text-white mb-10 leading-tight font-[Roboto_Condensed]">
+            <div className="lg:col-span-4 text-white p-6 sm:p-10 lg:p-12 flex flex-col justify-center">
+              <h2 className="text-3xl lg:text-4xl font-bold text-brand-primary mb-6 sm:mb-10 leading-tight font-[Roboto_Condensed]">
                 {project.name || project.title || "Unnamed Project"}
               </h2>
 
-              <div className="space-y-6 text-sm tracking-widest uppercase font-bold text-gray-400">
+              <div className="space-y-4 text-sm font-sans">
                 {project.leader && (
-                  <div className="flex items-center gap-4">
-                    <span className="w-32 shrink-0">Leader</span>
-                    <span className="text-white normal-case font-medium text-lg">{project.leader}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-gray-100 whitespace-nowrap">Leader :</span>
+                    <span className="text-gray-400">{project.leader}</span>
                   </div>
                 )}
 
-                <div className="flex items-start gap-4">
-                  <span className="w-32 shrink-0">Program</span>
-                  <div className="flex flex-wrap gap-2">
-                    {programNames.map((name, i) => (
-                      <span key={i} className="bg-brand-primary/20 text-brand-primary px-3 py-1 rounded-lg text-[10px] tracking-widest border border-brand-primary/30">
-                        {name}
-                      </span>
-                    ))}
-                  </div>
+                <div className="flex items-start gap-2">
+                  <span className="font-bold text-gray-100 whitespace-nowrap">Program :</span>
+                  <span className="text-gray-400">{programNames.join(", ") || "General Engineering"}</span>
                 </div>
 
-                <div className="flex items-center gap-4">
-                  <span className="w-32 shrink-0">Released</span>
-                  <span className="text-white normal-case font-medium text-lg">
+                <div className="flex items-center gap-2">
+                  <span className="font-bold text-gray-100 whitespace-nowrap">Duration :</span>
+                  <span className="text-gray-400">{project.duration || "4 Weeks"}</span>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <span className="font-bold text-gray-100 whitespace-nowrap">Released :</span>
+                  <span className="text-gray-400">
                     {formatProjectDate(project.created_at || project.date)}
                   </span>
                 </div>
 
-                <div className="flex items-start gap-4">
-                  <span className="w-32 shrink-0">Contributors</span>
-                  <div className="flex flex-wrap gap-2">
-                    {studentNames.map((name, i) => (
-                      <span key={i} className="bg-white/10 text-white px-3 py-1 rounded-lg text-[10px] tracking-widest border border-white/10">
-                        {name}
-                      </span>
-                    ))}
-                  </div>
+                <div className="flex items-center gap-2">
+                  <span className="font-bold text-gray-100 whitespace-nowrap">Team Size :</span>
+                  <span className="text-gray-400">{studentCount} Students</span>
                 </div>
               </div>
 
               {/* Source Code */}
-              <div className="mt-16 pt-10 border-t border-white/10">
-                <p className="text-[10px] font-bold tracking-[0.3em] text-gray-500 uppercase mb-4">Repository</p>
-                <div className="flex items-center bg-white/5 rounded-2xl p-2 pl-6 border border-white/10">
-                  <span className="flex-grow text-gray-400 font-mono text-xs truncate mr-4">
-                    {project.github_url || "Hidden or Private Repository"}
-                  </span>
+              <div className="mt-10 sm:mt-16">
+                <p className="text-xs sm:text-sm font-bold tracking-widest text-white uppercase mb-4 font-[Roboto_Condensed]">Project Source Code</p>
+                <div className="flex items-center gap-2">
+                  <div className="grow bg-white rounded-md overflow-hidden h-10 flex items-center px-4">
+                    <span className="text-gray-400 text-[10px] sm:text-xs truncate">
+                      {project.github_url || "https://github.com/source-link"}
+                    </span>
+                  </div>
                   <a
-                    href={project.github_url || "#"}
+                    href={project.github_url}
                     target="_blank"
                     rel="noreferrer"
-                    className={`bg-brand-primary text-white p-4 rounded-xl shadow-lg transition-transform active:scale-95 ${!project.github_url ? 'opacity-20 cursor-not-allowed' : 'hover:bg-brand-primary/90'}`}
+                    className={`bg-[#FF4D00] text-white w-10 h-10 flex items-center justify-center rounded-md shrink-0 transition-transform active:scale-95 ${!project.github_url ? 'opacity-30 cursor-not-allowed pointer-events-none' : 'hover:brightness-110'}`}
                     onClick={(e) => !project.github_url && e.preventDefault()}
                   >
-                    <BsArrowUpRightSquare className="text-xl" />
+                    <BsArrowUpRightSquare className="text-lg" />
                   </a>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </section>
+      </div>
+    </section>
 
-      {/* SECTION 2: OVERVIEW & DETAILS */}
-      <section className="min-h-screen snap-start py-24 px-8 bg-gray-50 flex flex-col justify-center">
-        <div className="w-full grid lg:grid-cols-2 gap-20 items-start">
+      {/* SECTION 2: CONTENT AREAS */}
+      <section className="py-12 sm:py-24 px-4 sm:px-8 bg-white overflow-visible">
+        <div className="max-w-[1248px] mx-auto w-full space-y-16 sm:space-y-24">
           
-          {/* Overview */}
-          <div>
-            <h2 className="text-[12px] font-bold tracking-[0.4em] uppercase text-gray-400 mb-6 flex items-center gap-4">
-              <span className="w-12 h-[1px] bg-gray-300"></span>
-              Project Overview
+          {/* Overview Section */}
+          <div className="w-full">
+            <h2 className="text-[28px] sm:text-4xl font-bold text-gray-900 mb-4 sm:mb-6 font-[Roboto_Condensed]">
+              Overview
             </h2>
-            <p className="text-gray-800 text-xl md:text-2xl leading-relaxed font-medium">
+            <p className="text-gray-600 text-base sm:text-lg leading-relaxed max-w-5xl whitespace-pre-wrap wrap-break-word">
               {project.overview || project.desc || project.description || "No overview available for this project."}
             </p>
+          </div>
 
-            <div className="mt-16">
-              <h2 className="text-[12px] font-bold tracking-[0.4em] uppercase text-gray-400 mb-10 flex items-center gap-4">
-                <span className="w-12 h-[1px] bg-gray-300"></span>
-                Results & Conclusion
-              </h2>
-              <p className="text-gray-600 text-lg leading-relaxed bg-white p-10 rounded-[32px] border border-gray-100 shadow-sm">
-                {project.result || "Results and conclusions are not yet documented for this project."}
-              </p>
+          {/* Dual Cards Section */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 sm:gap-12">
+            
+            {/* Objectives Card */}
+            <div className="rounded-[24px] overflow-hidden shadow-2xl border border-gray-100 flex flex-col h-full bg-white">
+              <div className="bg-[#1A1A1A] p-5 sm:p-6 flex items-center gap-4">
+                <div className="bg-brand-primary p-2 rounded-lg shrink-0">
+                  <BsCheckCircleFill className="text-white text-xl sm:text-2xl" />
+                </div>
+                <h3 className="text-xl sm:text-2xl font-bold text-white font-[Roboto_Condensed]">Objectives</h3>
+              </div>
+              <div className="p-6 sm:p-10 grow">
+                <ul className="space-y-4 sm:space-y-5">
+                  {(objectivesArray.length > 0 ? objectivesArray : ["No objectives defined."]).map((obj, i) => (
+                    <li key={i} className="flex items-start gap-3">
+                      <span className="w-2 h-2 rounded-full bg-black shrink-0 mt-2.5"></span>
+                      <span className="text-gray-600 text-sm sm:text-base font-medium leading-relaxed">{obj}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+
+            {/* Tasks & Activities Card */}
+            <div className="rounded-[24px] overflow-hidden shadow-2xl border border-gray-100 flex flex-col h-full bg-white">
+              <div className="bg-[#1A1A1A] p-5 sm:p-6 flex items-center gap-4">
+                <div className="bg-[#FF4D00] p-2 rounded-lg shrink-0">
+                  <BsListCheck className="text-white text-xl sm:text-2xl" />
+                </div>
+                <h3 className="text-xl sm:text-2xl font-bold text-white font-[Roboto_Condensed]">Tasks & Activities</h3>
+              </div>
+              <div className="p-6 sm:p-10 grow">
+                <ul className="space-y-4 sm:space-y-5">
+                  {(tasksArray.length > 0 ? tasksArray : ["No tasks defined."]).map((task, i) => (
+                    <li key={i} className="flex items-start gap-3">
+                      <span className="w-2 h-2 rounded-full bg-black shrink-0 mt-2.5"></span>
+                      <span className="text-gray-600 text-sm sm:text-base font-medium leading-relaxed">{task}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
           </div>
 
-          {/* Lists */}
-          <div className="space-y-10">
-            {/* Objectives */}
-            <div className="bg-white rounded-[40px] p-10 shadow-sm border border-gray-100">
-              <div className="flex items-center gap-4 mb-8">
-                <BsCheckCircleFill className="text-brand-primary text-3xl" />
-                <h3 className="text-2xl font-bold font-[Roboto_Condensed]">Objectives</h3>
-              </div>
-              <ul className="space-y-6">
-                {(objectivesArray.length > 0 ? objectivesArray : ["To foster innovation and technical skills"]).map((obj, i) => (
-                  <li key={i} className="flex items-start gap-4">
-                    <span className="w-6 h-6 rounded-full bg-brand-primary/10 flex items-center justify-center shrink-0 mt-0.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-brand-primary"></span>
-                    </span>
-                    <span className="text-gray-600 font-medium leading-relaxed">{obj}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Tasks */}
-            <div className="bg-white rounded-[40px] p-10 shadow-sm border border-gray-100">
-              <div className="flex items-center gap-4 mb-8">
-                <BsListCheck className="text-brand-primary text-3xl" />
-                <h3 className="text-2xl font-bold font-[Roboto_Condensed]">Tasks & Activities</h3>
-              </div>
-              <ul className="space-y-6">
-                {(tasksArray.length > 0 ? tasksArray : ["Research and requirements gathering", "Technical design and prototyping"]).map((task, i) => (
-                  <li key={i} className="flex items-start gap-4">
-                    <span className="w-6 h-6 rounded-full bg-brand-primary/10 flex items-center justify-center shrink-0 mt-0.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-brand-primary"></span>
-                    </span>
-                    <span className="text-gray-600 font-medium leading-relaxed">{task}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
+          {/* Results Section */}
+          <div className="w-full">
+            <h2 className="text-[28px] sm:text-4xl font-bold text-gray-900 mb-4 sm:mb-6 font-[Roboto_Condensed]">
+              Results & Conclusion
+            </h2>
+            <p className="text-gray-600 text-base sm:text-lg leading-relaxed max-w-5xl whitespace-pre-wrap wrap-break-word">
+              {project.result || "Results and conclusions are not yet documented for this project."}
+            </p>
           </div>
+
         </div>
       </section>
 
