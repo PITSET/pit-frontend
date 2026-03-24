@@ -15,7 +15,7 @@ export default function Breadcrumbs({ items: manualItems }) {
   if (items.length === 0) return null;
 
   return (
-    <nav className="flex items-center gap-2 text-sm font-medium pt-8 pb-4 px-6 md:px-12 lg:px-30 animate-in fade-in slide-in-from-left-4 duration-500" aria-label="Breadcrumb">
+    <nav className="flex items-center gap-2 text-sm font-medium py-4 animate-in fade-in slide-in-from-left-4 duration-500" aria-label="Breadcrumb">
       <Link
         to="/"
         className="text-gray-500 hover:text-red-600 transition-colors"

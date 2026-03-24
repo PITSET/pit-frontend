@@ -4,6 +4,7 @@ import { BsArrowUpRightSquare, BsCheckCircleFill, BsListCheck } from "react-icon
 import resolveAssetUrl from "../../lib/resolveAssetUrl";
 import api from "../../lib/api";
 import Loader from "../../components/ui/Loader";
+import Breadcrumbs from "../../components/ui/Breadcrumbs";
 
 const formatProjectDate = (value) => {
   if (!value) return "";
@@ -169,8 +170,11 @@ export default function ProjectDetail() {
   const tasksArray = Array.isArray(project.tasks) ? project.tasks : [];
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="max-w-7xl mx-auto px-6 py-12 lg:py-16">
+    <div className="min-h-screen bg-white py-12">
+      <div className="max-w-7xl mx-auto px-6 py-4">
+        <Breadcrumbs />
+      </div>
+      <div className="max-w-7xl mx-auto px-6 py-6 lg:py-8">
 
         {/* PAGE TITLE */}
         <h1 className="text-4xl md:text-[44px] font-bold text-brand-primary mb-10 tracking-tight">

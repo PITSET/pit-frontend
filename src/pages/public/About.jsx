@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import api from "../../lib/api";
 import resolveAssetUrl from "../../lib/resolveAssetUrl";
 import Loader from "../../components/ui/Loader";
+import Breadcrumbs from "../../components/ui/Breadcrumbs";
 
 const defaultFounders = [
   {
@@ -100,8 +101,9 @@ export default function About() {
   }
 
   return (
-    <div className="bg-[#E9E9EB] py-0 px-4 md:px-0 pb-16 md:pb-10 font-roboto">
-      <div className="max-w-[1248px] mx-auto">
+    <div className="bg-[#E9E9EB] py-12 px-4 md:px-0 pb-16 md:pb-10 font-roboto">
+      <div className="max-w-[1248px] mx-auto px-6 py-4">
+        <Breadcrumbs />
 
         {/* WHO WE ARE */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">

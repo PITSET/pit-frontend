@@ -4,6 +4,7 @@ import api from "../../lib/api";
 import resolveAssetUrl from "../../lib/resolveAssetUrl";
 import Loader from "../../components/ui/Loader";
 import { Button } from "../../components/ui/Button";
+import Breadcrumbs from "../../components/ui/Breadcrumbs";
 
 const TABS = [
   "All",
@@ -87,8 +88,11 @@ export default function Instructor() {
       );
 
   return (
-    <div>
-      <div className="max-w-[1248px] mx-auto py-16 px-4">
+    <div className="bg-white min-h-screen py-12">
+      <div className="max-w-[1248px] mx-auto px-6 py-4">
+        <Breadcrumbs />
+      </div>
+      <div className="max-w-[1248px] mx-auto pb-16 px-6">
 
         {/* TITLE */}
         <h1 className="text-center text-brand-primary font-bold text-[64px] mb-12">

@@ -77,7 +77,7 @@ export default function Projects() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-white pb-20 pt-10">
+    <div className="min-h-screen bg-white pb-20 py-12">
       <ProjectsCollection projects={projects} isLoading={loading} linkToProgram={true} />
     </div>
   );

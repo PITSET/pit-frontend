@@ -6,6 +6,7 @@ import Loader from "../../components/ui/Loader";
 import { Helmet } from "react-helmet-async";
 import { HiUsers } from "react-icons/hi2";
 import { Button } from "../../components/ui/Button";
+import Breadcrumbs from "../../components/ui/Breadcrumbs";
 
 import axios from "axios";
 
@@ -107,8 +108,9 @@ export default function ProgramDetail() {
   }
 
   return (
-    <div className="bg-gray-100">
-      <div className="max-w-[1280px] mx-auto px-6 pt-8">
+    <div className="bg-gray-100 pb-10">
+      <div className="max-w-[1280px] mx-auto px-6 py-4">
+        <Breadcrumbs />
       </div>
       {/* HERO SECTION */}
       <div className="relative w-full min-h-screen overflow-hidden">

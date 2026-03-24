@@ -355,7 +355,7 @@ export default function AboutModal({ isOpen, onClose, onRefresh, item, existingS
       {/* Modal */}
       <div className="bg-[#FEF2F3] w-full max-w-[720px] max-h-[90vh] rounded-2xl shadow-xl animate-[fadeIn_0.2s_ease-out] overflow-hidden flex flex-col my-4">
         {/* Header - Fixed */}
-        <div className="flex-shrink-0 bg-white rounded-t-2xl px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200">
+        <div className="shrink-0 bg-white rounded-t-2xl px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 sm:gap-3">
               <div className="bg-red-200 p-2 sm:p-3 rounded-xl">
@@ -643,7 +643,7 @@ export default function AboutModal({ isOpen, onClose, onRefresh, item, existingS
             </div>
 
             {/* Footer - Fixed at bottom */}
-            <div className="flex-shrink-0 bg-[#FEF2F3] rounded-b-2xl px-4 sm:px-6 py-3 sm:py-4 border-t border-gray-200 mt-6">
+            <div className="shrink-0 bg-[#FEF2F3] rounded-b-2xl px-4 sm:px-6 py-3 sm:py-4 border-t border-gray-200 mt-6">
               <div className="flex justify-end gap-2 sm:gap-3">
                 <button
                   type="button"

@@ -86,7 +86,9 @@ export default function Programs() {
   return (
     <div className="bg-gray-100 py-12">
       <div className="max-w-[1280px] mx-auto px-6">
-
+        <div className="pb-4">
+          <Breadcrumbs />
+        </div>
 
         <h1 className="text-[50px] font-bold text-brand-primary mb-10 font-[Roboto_Condensed]">
           Programs

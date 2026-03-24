@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import api from "../../lib/api";
 import resolveAssetUrl from "../../lib/resolveAssetUrl";
 import Loader from "../../components/ui/Loader";
+import Breadcrumbs from "../../components/ui/Breadcrumbs";
 
 export default function InstructorDetail() {
   const { id } = useParams();
@@ -63,7 +64,11 @@ export default function InstructorDetail() {
     instructor?.team_member_programs?.[0]?.programs?.program_name || "";
 
   return (
-    <div className="max-w-[1248px] mx-auto px-4 py-10">
+    <div className="bg-white min-h-screen py-12">
+      <div className="max-w-[1248px] mx-auto px-6 py-4">
+        <Breadcrumbs />
+      </div>
+      <div className="max-w-[1248px] mx-auto pb-16 px-6">
 
       {/* CONTENT */}
       <div className="grid md:grid-cols-2 gap-16">
@@ -201,6 +206,7 @@ export default function InstructorDetail() {
           </div>
         </div>
 
+      </div>
       </div>
     </div>
   );

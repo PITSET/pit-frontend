@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { FaMapMarkerAlt, FaEnvelope, FaPhone } from "react-icons/fa";
 import api from "../../lib/api";
+import Breadcrumbs from "../../components/ui/Breadcrumbs";
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -77,7 +78,11 @@ export default function ContactPage() {
   };
 
   return (
-    <div className="bg-gray-100 min-h-screen">
+    <div className="bg-gray-100 min-h-screen pb-10">
+      <div className="max-w-7xl mx-auto px-6 py-4">
+        <Breadcrumbs />
+      </div>
+
       {/* HERO */}
       <div
         className="relative h-[360px] bg-cover bg-center"
@@ -87,7 +92,7 @@ export default function ContactPage() {
         }}
       >
         <div className="absolute inset-0 bg-white/60"></div>
-
+        
         <div className="relative max-w-7xl mx-auto px-6 pt-24">
           <h1 className="text-5xl font-bold text-brand-primary">
             Prometheus Institute of Technology

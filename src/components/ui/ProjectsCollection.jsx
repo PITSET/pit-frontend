@@ -4,6 +4,7 @@ import { BsSearch } from "react-icons/bs";
 import { HiAdjustmentsHorizontal, HiUsers } from "react-icons/hi2";
 import Loader from "../ui/Loader";
 import { Button, } from "../ui/Button";
+import Breadcrumbs from "../ui/Breadcrumbs";
 
 /**
  * ProjectsCollection - A reusable component for listing projects with filtering and search.
@@ -116,7 +117,10 @@ export default function ProjectsCollection({ projects = [], isLoading = false, l
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-6 py-16 transition-colors duration-300">
+    <div className="max-w-7xl mx-auto px-6 transition-colors duration-300">
+      <div className="pb-4">
+        <Breadcrumbs />
+      </div>
       <div className="mb-12 text-center md:text-left">
         <h2 className="text-4xl md:text-[44px] font-bold text-brand-primary mb-4 tracking-tight">
           Projects Collection
