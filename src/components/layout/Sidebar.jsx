@@ -8,6 +8,7 @@ import {
   EnvelopeIcon,
   ArrowRightOnRectangleIcon,
   ChevronDownIcon,
+  ShieldCheckIcon,
 } from "@heroicons/react/24/outline";
 import { Squares2X2Icon as Squares2X2SolidIcon } from "@heroicons/react/24/solid";
 import logo_image from "../../assets/logo/logo_image.svg";
@@ -224,6 +225,10 @@ export default function Sidebar({ isOpen = false, onClose, onLogout }) {
 
         <NavItem to="/admin/contact" icon={EnvelopeIcon}>
           Contact
+        </NavItem>
+
+        <NavItem to="/admin/management" icon={ShieldCheckIcon}>
+          Admin Management
         </NavItem>
       </nav>
 

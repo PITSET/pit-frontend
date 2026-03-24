@@ -18,7 +18,7 @@ import {
 // api
 import { createMember, updateMember } from "../../lib/services/memberService";
 import { getAllPrograms } from "../../lib/services/programService";
-import { supabase } from "../../lib/supabaseClient";
+import { uploadFile, deleteFile } from "../../lib/services/storageService";
 import { getOperationErrorMessage } from "../../lib/httpErrorHandler";
 
 export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
@@ -59,7 +59,7 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
   const [programs, setPrograms] = useState([]);
   const [programsLoading, setProgramsLoading] = useState(false);
   const [showProgramDropdown, setShowProgramDropdown] = useState(false);
-
+  
   // Image state
   const [image, setImage] = useState(null);
   const fileInputRef = useRef(null);
@@ -104,7 +104,7 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
     if (!file) return;
 
     // Validate file
-    if (!file.type.startsWith("image/") && !file.name.toLowerCase().endsWith('.heic')) {
+    if (!file.type.startsWith("image/")) {
       toast.error("Please upload image files only");
       return;
     }
@@ -129,7 +129,7 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
   const handleEmailChange = (e) => {
     const value = e.target.value;
     setValue("email", value);
-
+    
     if (value && !validateEmail(value)) {
       setError("email", { type: "manual", message: "Please enter a valid email address" });
     } else {
@@ -186,12 +186,6 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
   // Convert image to WEBP (compression + resize)
   const convertToWebp = (file) => {
     return new Promise((resolve) => {
-      // Skip conversion for SVG and GIF to preserve formatting/animation
-      if (file.type === "image/svg+xml" || file.type === "image/gif") {
-        resolve(file);
-        return;
-      }
-
       const img = new Image();
       const reader = new FileReader();
 
@@ -213,15 +207,11 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
 
         canvas.toBlob(
           (blob) => {
-            resolve(new File([blob], file.name ? file.name.replace(/\.[^/.]+$/, "") + ".webp" : "image.webp", { type: "image/webp" }));
+            resolve(blob);
           },
           "image/webp",
           0.8,
         );
-      };
-
-      img.onerror = () => {
-        resolve(file); // fallback to original file on error
       };
 
       reader.readAsDataURL(file);
@@ -240,53 +230,21 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
 
       // Upload new image if selected
       if (image) {
-        const safeName = (data.name || "new-member")
-          .replace(/\s+/g, "-")
-          .toLowerCase();
-
-
-        const webpImage = await convertToWebp(image);
-        const fileExt = webpImage.name.split('.').pop();
-        const fileName = `member-${safeName}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${fileExt}`;
-
         toast.loading("Compressing & uploading image...", { id: toastId });
 
-        const { error: uploadError } = await supabase.storage
-          .from("member_images")
-          .upload(fileName, webpImage, {
-            upsert: true,
-            cacheControl: "3600",
-            contentType: webpImage.type || 'image/webp',
-          });
+        const webpImage = await convertToWebp(image);
 
-        if (uploadError) {
-          // Check for RLS policy violation
-          if (uploadError.message?.includes("row-level security") || uploadError.message?.includes("RLS")) {
-            throw new Error("Storage permission denied. Please login again or contact administrator.");
-          }
-          throw uploadError;
-        }
-
-        const { data: urlData } = supabase.storage
-          .from("member_images")
-          .getPublicUrl(fileName);
-
-        imageUrlToSave = `${urlData.publicUrl}?t=${Date.now()}`;
+        const uploadData = await uploadFile(webpImage, "member_images");
+        imageUrlToSave = `${uploadData.publicUrl}?t=${Date.now()}`;
 
         // Delete old image if replacing an existing member's image
         if (item?.image_url) {
           try {
             const oldUrlParts = item.image_url.split("/");
             const oldFileName = oldUrlParts[oldUrlParts.length - 1].split("?")[0];
-
+            
             if (oldFileName) {
-              const { error: deleteError } = await supabase.storage
-                .from("member_images")
-                .remove([oldFileName]);
-
-              if (deleteError) {
-                console.warn("Failed to delete old image:", deleteError);
-              }
+              await deleteFile(oldFileName, "member_images");
             }
           } catch (err) {
             console.warn("Error deleting old image:", err);
@@ -395,14 +353,14 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
       onClose();
     } catch (error) {
       console.error("Failed to save:", error);
-
+      
       // Use the improved error handler to get backend message with fallback
       const errorMessage = getOperationErrorMessage(
         error,
         isCreate ? 'create' : 'update',
         'member'
       );
-
+      
       toast.error(errorMessage, { id: toastId });
     } finally {
       setLoading(false);
@@ -499,9 +457,9 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
               {/* Left column - Image upload */}
               <div className="space-y-4">
                 <label className="text-sm font-medium text-gray-700">Member Image</label>
-
+                
                 {/* Image Upload */}
-                <label className="relative group block rounded-lg overflow-hidden border border-gray-300 bg-white shadow-sm cursor-pointer" onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }} onDrop={(e) => { e.preventDefault(); e.stopPropagation(); if (e.dataTransfer.files && e.dataTransfer.files.length > 0) { handleImageChange({ target: { files: e.dataTransfer.files } }); } }}>
+                <label className="relative group block rounded-lg overflow-hidden border border-gray-300 bg-white shadow-sm cursor-pointer">
                   <img
                     src={
                       image
@@ -529,7 +487,7 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
 
                   <input
                     type="file"
-                    accept=".jpg,.jpeg,.png,.webp,.gif,.svg,.heic"
+                    accept="image/*"
                     className="hidden"
                     ref={fileInputRef}
                     onChange={handleImageChange}
@@ -571,12 +529,13 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
                       })}
                       placeholder="email@example.com"
                       onChange={handleEmailChange}
-                      className={`w-full rounded-lg border bg-white px-3 sm:px-4 py-2 sm:py-2.5 text-sm shadow-sm focus:outline-none focus:ring-2 transition ${errors.email
-                          ? "border-red-300 focus:ring-red-400"
+                      className={`w-full rounded-lg border bg-white px-3 sm:px-4 py-2 sm:py-2.5 text-sm shadow-sm focus:outline-none focus:ring-2 transition ${
+                        errors.email 
+                          ? "border-red-300 focus:ring-red-400" 
                           : watchEmail && validateEmail(watchEmail)
-                            ? "border-green-300 focus:ring-green-400"
-                            : "border-gray-300 focus:ring-orange-400"
-                        }`}
+                          ? "border-green-300 focus:ring-green-400"
+                          : "border-gray-300 focus:ring-orange-400"
+                      }`}
                     />
                     {watchEmail && validateEmail(watchEmail) && !errors.email && (
                       <div className="absolute right-3 top-1/2 -translate-y-1/2">
@@ -610,12 +569,14 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
                       <button
                         type="button"
                         onClick={() => setValue("isFounder", !watchIsFounder)}
-                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${watchIsFounder ? "bg-primary-gradient" : "bg-gray-200"
-                          }`}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                          watchIsFounder ? "bg-primary-gradient" : "bg-gray-200"
+                        }`}
                       >
                         <span
-                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform shadow-sm ${watchIsFounder ? "translate-x-6" : "translate-x-1"
-                            }`}
+                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform shadow-sm ${
+                            watchIsFounder ? "translate-x-6" : "translate-x-1"
+                          }`}
                         />
                       </button>
                     </div>
@@ -634,12 +595,14 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
                       <button
                         type="button"
                         onClick={() => setValue("isInstructor", !watchIsInstructor)}
-                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${watchIsInstructor ? "bg-primary-gradient" : "bg-gray-200"
-                          }`}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                          watchIsInstructor ? "bg-primary-gradient" : "bg-gray-200"
+                        }`}
                       >
                         <span
-                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform shadow-sm ${watchIsInstructor ? "translate-x-6" : "translate-x-1"
-                            }`}
+                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform shadow-sm ${
+                            watchIsInstructor ? "translate-x-6" : "translate-x-1"
+                          }`}
                         />
                       </button>
                     </div>
@@ -650,7 +613,7 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
                 {watchIsInstructor && (
                   <div className="space-y-2" ref={programDropdownRef}>
                     <label className="text-sm font-medium text-gray-700">Programs <span className="text-red-500">*</span></label>
-
+                    
                     {programsLoading ? (
                       <div className="flex items-center gap-2 text-gray-500">
                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-orange-500"></div>
@@ -665,12 +628,12 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
                           className="w-full flex items-center justify-between rounded-lg border border-gray-300 bg-white px-3 sm:px-4 py-2 sm:py-2.5 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-400 transition"
                         >
                           <span className={(watch("programIds") || []).length > 0 ? "text-gray-900" : "text-gray-500"}>
-                            {(watch("programIds") || []).length > 0
+                            {(watch("programIds") || []).length > 0 
                               ? `${(watch("programIds") || []).length} program(s) selected`
                               : "Select program(s)..."}
                           </span>
-                          <ChevronDownIcon
-                            className={`w-4 h-4 text-gray-500 transition-transform ${showProgramDropdown ? "rotate-180" : ""}`}
+                          <ChevronDownIcon 
+                            className={`w-4 h-4 text-gray-500 transition-transform ${showProgramDropdown ? "rotate-180" : ""}`} 
                           />
                         </button>
 
@@ -682,10 +645,11 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
                                 key={program.id}
                                 type="button"
                                 onClick={() => toggleProgram(program.id)}
-                                className={`w-full px-3 sm:px-4 py-2 text-left text-sm transition flex items-center justify-between ${(watch("programIds") || []).includes(program.id)
+                                className={`w-full px-3 sm:px-4 py-2 text-left text-sm transition flex items-center justify-between ${
+                                  (watch("programIds") || []).includes(program.id)
                                     ? "bg-orange-50 text-orange-600"
                                     : "text-gray-700 bg-white hover:bg-gray-100"
-                                  }`}
+                                }`}
                               >
                                 <span>{program.program_name}</span>
                                 {(watch("programIds") || []).includes(program.id) && (
@@ -718,7 +682,7 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
             {/* Academic Achievements */}
             <div className="space-y-3 mt-6">
               <label className="text-sm font-medium text-gray-700">Academic Achievements</label>
-
+              
               <div className="space-y-2">
                 {(watchAcademicAchievements || []).length === 0 ? (
                   <div className="text-center py-4 text-gray-400 text-sm">
@@ -753,7 +717,7 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
                     </div>
                   ))
                 )}
-
+                
                 <button
                   type="button"
                   onClick={addAcademicAchievement}
@@ -768,7 +732,7 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
             {/* Skills */}
             <div className="space-y-3 mt-6">
               <label className="text-sm font-medium text-gray-700">Skills</label>
-
+              
               <div className="space-y-2">
                 {(watchSkills || []).length === 0 ? (
                   <div className="text-center py-4 text-gray-400 text-sm">
@@ -803,7 +767,7 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
                     </div>
                   ))
                 )}
-
+                
                 <button
                   type="button"
                   onClick={addSkill}

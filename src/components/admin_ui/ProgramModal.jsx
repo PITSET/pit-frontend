@@ -11,12 +11,12 @@ import {
 
 // api
 import { createProgram, updateProgram } from "../../lib/services/programService";
-import { supabase } from "../../lib/supabaseClient";
+import { uploadFile, deleteFile } from "../../lib/services/storageService";
 import { getOperationErrorMessage } from "../../lib/httpErrorHandler";
 
 export default function ProgramModal({ isOpen, onClose, onRefresh, item }) {
   const isCreate = !item;
-
+  
   // React Hook Form
   const {
     register,
@@ -47,7 +47,7 @@ export default function ProgramModal({ isOpen, onClose, onRefresh, item }) {
 
     if (!file) return;
 
-    if (!file.type.startsWith("image/") && !file.name.toLowerCase().endsWith('.heic')) {
+    if (!file.type.startsWith("image/")) {
       toast.error("Please upload an image file");
       return;
     }
@@ -65,12 +65,6 @@ export default function ProgramModal({ isOpen, onClose, onRefresh, item }) {
   // Convert image to WEBP (compression + resize)
   const convertToWebp = (file) => {
     return new Promise((resolve) => {
-      // Skip conversion for SVG and GIF to preserve formatting/animation
-      if (file.type === "image/svg+xml" || file.type === "image/gif") {
-        resolve(file);
-        return;
-      }
-
       const img = new Image();
       const reader = new FileReader();
 
@@ -92,15 +86,11 @@ export default function ProgramModal({ isOpen, onClose, onRefresh, item }) {
 
         canvas.toBlob(
           (blob) => {
-            resolve(new File([blob], file.name ? file.name.replace(/\.[^/.]+$/, "") + ".webp" : "image.webp", { type: "image/webp" }));
+            resolve(blob);
           },
           "image/webp",
           0.8,
         );
-      };
-
-      img.onerror = () => {
-        resolve(file); // fallback to original file on error
       };
 
       reader.readAsDataURL(file);
@@ -145,7 +135,7 @@ export default function ProgramModal({ isOpen, onClose, onRefresh, item }) {
           const urlParts = item.image_url.split("/");
           const fileName = urlParts[urlParts.length - 1].split("?")[0];
           if (fileName) {
-            await supabase.storage.from("program_images").remove([fileName]);
+            await deleteFile(fileName, "program_images");
           }
         } catch (err) {
           console.warn("Failed to delete old image:", err);
@@ -153,32 +143,11 @@ export default function ProgramModal({ isOpen, onClose, onRefresh, item }) {
       }
 
       if (image) {
-        const safeProgram = (data.programName || "new-program")
-          .replace(/\s+/g, "-")
-          .toLowerCase();
-
-
-        const webpImage = await convertToWebp(image);
-        const fileExt = webpImage.name.split('.').pop();
-        const fileName = `program-${safeProgram}-${Date.now()}.${fileExt}`;
-
         toast.loading("Compressing & uploading image...", { id: toastId });
 
-        const { error: uploadError } = await supabase.storage
-          .from("program_images")
-          .upload(fileName, webpImage, {
-            upsert: true,
-            cacheControl: "3600",
-            contentType: webpImage.type || 'image/webp',
-          });
+        const webpImage = await convertToWebp(image);
 
-        if (uploadError) {
-          throw uploadError;
-        }
-
-        const { data: uploadData } = supabase.storage
-          .from("program_images")
-          .getPublicUrl(fileName);
+        const uploadData = await uploadFile(webpImage, "program_images");
 
         // prevent browser cache
         imageUrl = `${uploadData.publicUrl}?t=${Date.now()}`;
@@ -208,14 +177,14 @@ export default function ProgramModal({ isOpen, onClose, onRefresh, item }) {
       onClose();
     } catch (error) {
       console.error("Failed to save:", error);
-
+      
       // Use the improved error handler to get backend message with fallback
       const errorMessage = getOperationErrorMessage(
         error,
         isCreate ? 'create' : 'update',
         'program'
       );
-
+      
       toast.error(errorMessage, { id: toastId });
     } finally {
       setLoading(false);
@@ -297,11 +266,13 @@ export default function ProgramModal({ isOpen, onClose, onRefresh, item }) {
                   {...register("isActive")}
                   className="sr-only peer"
                 />
-                <div className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${watchIsActive ? "bg-green-500" : "bg-gray-300"
-                  }`}>
+                <div className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                  watchIsActive ? "bg-green-500" : "bg-gray-300"
+                }`}>
                   <span
-                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${watchIsActive ? "translate-x-6" : "translate-x-1"
-                      }`}
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      watchIsActive ? "translate-x-6" : "translate-x-1"
+                    }`}
                   />
                 </div>
               </label>
@@ -319,7 +290,7 @@ export default function ProgramModal({ isOpen, onClose, onRefresh, item }) {
               <div className="space-y-1.5">
                 <span className="text-sm font-medium text-gray-700">Image</span>
               </div>
-              <label className="relative group block rounded-lg overflow-hidden border border-gray-300 bg-white shadow-sm cursor-pointer" onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }} onDrop={(e) => { e.preventDefault(); e.stopPropagation(); if (e.dataTransfer.files && e.dataTransfer.files.length > 0) { handleImageChange({ target: { files: e.dataTransfer.files } }); } }}>
+              <label className="relative group block rounded-lg overflow-hidden border border-gray-300 bg-white shadow-sm cursor-pointer">
                 <img
                   src={
                     image
@@ -348,7 +319,7 @@ export default function ProgramModal({ isOpen, onClose, onRefresh, item }) {
                 <input
                   ref={fileInputRef}
                   type="file"
-                  accept=".jpg,.jpeg,.png,.webp,.gif,.svg,.heic"
+                  accept="image/*"
                   className="hidden"
                   onChange={handleImageChange}
                 />
