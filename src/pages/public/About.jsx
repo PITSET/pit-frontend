@@ -3,6 +3,7 @@ import api from "../../lib/api";
 import resolveAssetUrl from "../../lib/resolveAssetUrl";
 import Loader from "../../components/ui/Loader";
 import Breadcrumbs from "../../components/ui/Breadcrumbs";
+import Footer from "../../components/layout/Footer";
 
 const defaultSections = {
   hero: {
@@ -288,6 +289,10 @@ export default function About() {
           </section>
         );
       })}
+
+      <section className="snap-start py-10 bg-white">
+        <Footer />
+      </section>
 
     </div>
   );

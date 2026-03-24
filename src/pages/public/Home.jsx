@@ -9,6 +9,7 @@ import resolveAssetUrl from "../../lib/resolveAssetUrl";
 import ProjectsCarousel from "../../components/ui/ProjectsCarousel";
 import Loader from "../../components/ui/Loader";
 import { Button } from "../../components/ui/Button";
+import Footer from "../../components/layout/Footer";
 
 const normalizeSectionType = (value) => String(value || "").trim().toLowerCase();
 
@@ -361,7 +362,9 @@ export default function Home() {
       <section className="relative w-screen min-h-dvh flex items-center justify-center snap-start overflow-hidden shrink-0">
         <ProjectsCarousel projects={projects} isLoadingProjects={isLoadingProjects} />
       </section>
-
+      <section className="snap-start pt-[90px]">
+        <Footer />
+      </section>
     </main>
   );
 }
