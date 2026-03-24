@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import api from "../../lib/api";
 import resolveAssetUrl from "../../lib/resolveAssetUrl";
+import { motion } from "framer-motion";
 import Loader from "../../components/ui/Loader";
 import Footer from "../../components/layout/Footer";
 
@@ -107,37 +108,49 @@ export default function About() {
       <section className="relative h-screen snap-start overflow-y-auto flex flex-col md:flex-row">
 
         {/* LEFT PANEL — text */}
-        <div className="relative z-10 w-full md:w-1/2 flex flex-col justify-center px-10 md:px-16 py-12 bg-[#E9E9EB]">
+        <motion.div
+          initial={{ opacity: 0, x: -30 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true, amount: 0.3 }}
+          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+          className="relative z-10 w-full md:w-1/2 flex flex-col justify-center px-10 md:px-16 py-12 bg-white hover:bg-slate-900 transition-colors duration-1000 group"
+        >
 
           {/* Badge */}
-          <div className="flex items-center gap-0 mb-8 mt-10">
-            <span className="bg-gradient-to-r from-brand-primary to-brand-accent text-white text-[13px] font-bold px-5 py-2 tracking-widest uppercase">
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.3 }} className="flex items-center gap-0 mb-8 mt-10">
+            <span className="bg-gradient-to-r from-brand-primary to-brand-accent text-white text-[13px] font-bold px-5 py-2 tracking-widest uppercase transition-colors duration-1000">
               WHO
             </span>
-            <span className="text-gray-700 text-[13px] font-bold px-5 py-2 tracking-widest uppercase bg-white/70">
+            <span className="text-gray-700 group-hover:bg-slate-800 group-hover:text-white transition-colors duration-1000 text-[13px] font-bold px-5 py-2 tracking-widest uppercase bg-white/70">
               WE ARE
             </span>
-          </div>
+          </motion.div>
 
-          <h1 className="font-[Roboto_Condensed] font-bold text-[52px] md:text-[68px] lg:text-[80px] text-brand-primary leading-none mb-8">
+          <motion.h1 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.4 }} className="font-[Roboto_Condensed] font-bold text-[52px] md:text-[68px] lg:text-[80px] text-brand-primary group-hover:text-white transition-colors duration-1000 leading-none mb-8">
             {line1}
             <br />
             {line2}
-          </h1>
+          </motion.h1>
 
-          <p className="text-gray-600 text-[15px] md:text-[17px] leading-relaxed max-w-[480px]">
+          <motion.p initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.5 }} className="text-gray-600 group-hover:text-gray-300 transition-colors duration-500 text-[15px] md:text-[17px] leading-relaxed max-w-[480px]">
             {whoWeAre.content}
-          </p>
-        </div>
+          </motion.p>
+        </motion.div>
 
         {/* RIGHT PANEL — full-height image */}
-        <div className="w-full md:w-1/2 h-64 md:h-full">
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true, amount: 0.3 }}
+          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1], delay: 0.2 }}
+          className="w-full md:w-1/2 h-64 md:h-full"
+        >
           <img
             src={resolveAssetUrl(whoWeAre.image_url)}
             alt="who we are"
             className="w-full h-full object-cover"
           />
-        </div>
+        </motion.div>
       </section>
 
       {/* ─────────────────────────────────────────────
@@ -146,25 +159,37 @@ export default function About() {
       <section id="history" className="relative h-screen snap-start overflow-y-auto flex flex-col md:flex-row">
 
         {/* LEFT PANEL — full-height image */}
-        <div className="w-full md:w-1/2 h-64 md:h-full">
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true, amount: 0.3 }}
+          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+          className="w-full md:w-1/2 h-64 md:h-full"
+        >
           <img
             src={resolveAssetUrl(history.image_url)}
             alt="history"
             className="w-full h-full object-cover"
           />
-        </div>
+        </motion.div>
 
         {/* RIGHT PANEL — text */}
-        <div className="w-full md:w-1/2 flex flex-col justify-center px-10 md:px-16 py-12 bg-white">
-          <h2 className="font-[Roboto_Condensed] font-bold text-[52px] md:text-[68px] text-brand-primary leading-none mb-8">
+        <motion.div
+          initial={{ opacity: 0, x: 30 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true, amount: 0.3 }}
+          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1], delay: 0.2 }}
+          className="w-full md:w-1/2 flex flex-col justify-center px-10 md:px-16 py-12 bg-white hover:bg-slate-900 transition-colors duration-500 group"
+        >
+          <motion.h2 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.3 }} className="font-[Roboto_Condensed] font-bold text-[52px] md:text-[68px] text-brand-primary group-hover:text-white transition-colors duration-500 leading-none mb-8">
             {history.title}
-          </h2>
+          </motion.h2>
           {history.content.split("\n\n").map((para, i) => (
-            <p key={i} className="text-gray-600 text-[15px] md:text-[16px] leading-relaxed mb-5">
+            <motion.p initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.4 + i * 0.1 }} key={i} className="text-gray-600 group-hover:text-gray-300 transition-colors duration-500 text-[15px] md:text-[16px] leading-relaxed mb-5">
               {para}
-            </p>
+            </motion.p>
           ))}
-        </div>
+        </motion.div>
       </section>
 
       {/* ─────────────────────────────────────────────
@@ -173,28 +198,40 @@ export default function About() {
       <section id="mission" className="relative h-screen snap-start overflow-y-auto flex flex-col md:flex-row">
 
         {/* LEFT PANEL — full-height image */}
-        <div className="w-full md:w-1/2 h-64 md:h-full">
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true, amount: 0.3 }}
+          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+          className="w-full md:w-1/2 h-64 md:h-full"
+        >
           <img
             src={resolveAssetUrl(mission.image_url)}
             alt="mission"
             className="w-full h-full object-cover"
           />
-        </div>
+        </motion.div>
 
         {/* RIGHT PANEL — text with accent bar */}
-        <div className="w-full md:w-1/2 flex flex-col justify-center px-10 md:px-16 py-12 bg-[#E9E9EB]">
+        <motion.div
+          initial={{ opacity: 0, x: 30 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true, amount: 0.3 }}
+          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1], delay: 0.2 }}
+          className="w-full md:w-1/2 flex flex-col justify-center px-10 md:px-16 py-12 bg-white hover:bg-slate-900 transition-colors duration-500 group"
+        >
           <div className="flex items-start gap-5">
-            <div className="w-[4px] self-stretch bg-linear-to-b from-brand-primary via-brand-accent to-brand-primary shrink-0 rounded-full" />
+            <motion.div initial={{ opacity: 0, scaleY: 0 }} whileInView={{ opacity: 1, scaleY: 1 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.3 }} style={{ transformOrigin: "top" }} className="w-[4px] self-stretch bg-linear-to-b from-brand-primary via-brand-accent to-brand-primary shrink-0 rounded-full" />
             <div>
-              <h2 className="font-[Roboto_Condensed] font-bold text-[52px] md:text-[64px] text-brand-primary leading-none mb-6">
+              <motion.h2 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.4 }} className="font-[Roboto_Condensed] font-bold text-[52px] md:text-[64px] text-brand-primary group-hover:text-white transition-colors duration-500 leading-none mb-6">
                 {mission.title}
-              </h2>
-              <p className="text-gray-600 text-[15px] md:text-[17px] leading-relaxed max-w-lg">
+              </motion.h2>
+              <motion.p initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.5 }} className="text-gray-600 group-hover:text-gray-300 transition-colors duration-500 text-[15px] md:text-[17px] leading-relaxed max-w-lg">
                 {mission.content}
-              </p>
+              </motion.p>
             </div>
           </div>
-        </div>
+        </motion.div>
       </section>
 
       {/* ─────────────────────────────────────────────
@@ -203,28 +240,40 @@ export default function About() {
       <section id="vision" className="relative h-screen snap-start overflow-y-auto flex flex-col md:flex-row">
 
         {/* LEFT PANEL — text with accent bar */}
-        <div className="w-full md:w-1/2 flex flex-col justify-center px-10 md:px-16 py-12 bg-white order-2 md:order-1">
+        <motion.div
+          initial={{ opacity: 0, x: -30 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true, amount: 0.3 }}
+          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+          className="w-full md:w-1/2 flex flex-col justify-center px-10 md:px-16 py-12 bg-white hover:bg-slate-900 transition-colors duration-500 group order-2 md:order-1"
+        >
           <div className="flex items-start gap-5">
-            <div className="w-[4px] self-stretch bg-linear-to-b from-brand-primary via-brand-accent to-brand-primary shrink-0 rounded-full" />
+            <motion.div initial={{ opacity: 0, scaleY: 0 }} whileInView={{ opacity: 1, scaleY: 1 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.3 }} style={{ transformOrigin: "top" }} className="w-[4px] self-stretch bg-linear-to-b from-brand-primary via-brand-accent to-brand-primary shrink-0 rounded-full" />
             <div>
-              <h2 className="font-[Roboto_Condensed] font-bold text-[52px] md:text-[64px] text-brand-primary leading-none mb-6">
+              <motion.h2 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.4 }} className="font-[Roboto_Condensed] font-bold text-[52px] md:text-[64px] text-brand-primary group-hover:text-white transition-colors duration-500 leading-none mb-6">
                 {vision.title}
-              </h2>
-              <p className="text-gray-600 text-[15px] md:text-[17px] leading-relaxed max-w-lg">
+              </motion.h2>
+              <motion.p initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.5 }} className="text-gray-600 group-hover:text-gray-300 transition-colors duration-500 text-[15px] md:text-[17px] leading-relaxed max-w-lg">
                 {vision.content}
-              </p>
+              </motion.p>
             </div>
           </div>
-        </div>
+        </motion.div>
 
         {/* RIGHT PANEL — full-height image */}
-        <div className="w-full md:w-1/2 h-64 md:h-full order-1 md:order-2">
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true, amount: 0.3 }}
+          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1], delay: 0.2 }}
+          className="w-full md:w-1/2 h-64 md:h-full order-1 md:order-2"
+        >
           <img
             src={resolveAssetUrl(vision.image_url)}
             alt="vision"
             className="w-full h-full object-cover"
           />
-        </div>
+        </motion.div>
       </section>
 
       {/* ─────────────────────────────────────────────
@@ -247,7 +296,11 @@ export default function About() {
             className="relative h-screen snap-start overflow-y-auto flex flex-col md:flex-row"
           >
             {/* Image Panel */}
-            <div
+            <motion.div
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true, amount: 0.3 }}
+              transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
               className={`w-full md:w-1/2 h-64 md:h-full ${isReversed ? "order-1 md:order-2" : "order-1"}`}
             >
               <img
@@ -256,31 +309,35 @@ export default function About() {
                 className="w-full h-full object-cover object-top"
                 loading="lazy"
               />
-            </div>
+            </motion.div>
 
             {/* Text Panel */}
-            <div
-              className={`w-full md:w-1/2 flex flex-col justify-center px-10 md:px-16 py-12 bg-[#E9E9EB] ${isReversed ? "order-2 md:order-1" : "order-2"}`}
+            <motion.div
+              initial={{ opacity: 0, x: isReversed ? -30 : 30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true, amount: 0.3 }}
+              transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1], delay: 0.2 }}
+              className={`w-full md:w-1/2 flex flex-col justify-center px-10 md:px-16 py-12 bg-white hover:bg-slate-900 transition-colors duration-500 group ${isReversed ? "order-2 md:order-1" : "order-2"}`}
             >
               {/* Only show "Founders" label on first founder card */}
-              <p className="text-brand-accent font-bold text-[13px] tracking-widest uppercase mb-4">
+              <motion.p initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.3 }} className="text-brand-accent font-bold text-[13px] tracking-widest uppercase mb-4 transition-colors duration-500">
                 Founder
-              </p>
+              </motion.p>
 
 
-              <h2 className="font-[Roboto_Condensed] font-bold text-[52px] md:text-[72px] text-brand-primary leading-none mb-6">
+              <motion.h2 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.4 }} className="font-[Roboto_Condensed] font-bold text-[52px] md:text-[72px] text-brand-primary group-hover:text-white transition-colors duration-500 leading-none mb-6">
                 {founder.name}
-              </h2>
+              </motion.h2>
 
               {programName && (
-                <p className="text-gray-400 text-sm font-medium mb-4 uppercase tracking-wider">
+                <motion.p initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.5 }} className="text-gray-400 group-hover:text-gray-300 transition-colors duration-500 text-sm font-medium mb-4 uppercase tracking-wider">
                   {programName}
-                </p>
+                </motion.p>
               )}
-              <p className="text-gray-600 text-[15px] md:text-[17px] leading-relaxed max-w-lg">
+              <motion.p initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.6 }} className="text-gray-600 group-hover:text-gray-300 transition-colors duration-500 text-[15px] md:text-[17px] leading-relaxed max-w-lg">
                 {bio}
-              </p>
-            </div>
+              </motion.p>
+            </motion.div>
           </section>
         );
       })}
