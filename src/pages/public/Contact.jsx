@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { FaMapMarkerAlt, FaEnvelope, FaPhone } from "react-icons/fa";
 import api from "../../lib/api";
 import Breadcrumbs from "../../components/ui/Breadcrumbs";
+import Footer from "../../components/layout/Footer";
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -78,143 +79,158 @@ export default function ContactPage() {
   };
 
   return (
-    <div className="bg-gray-100 min-h-screen pb-10">
-      <div className="max-w-7xl mx-auto px-6 py-4">
-        <Breadcrumbs />
-      </div>
-
-      {/* HERO */}
-      <div
-        className="relative h-[360px] bg-cover bg-center"
-        style={{
-          backgroundImage:
-            "url('https://images.unsplash.com/photo-1500530855697-b586d89ba3ee')",
-        }}
-      >
-        <div className="absolute inset-0 bg-white/60"></div>
-        
-        <div className="relative max-w-7xl mx-auto px-6 pt-24">
-          <h1 className="text-5xl font-bold text-brand-primary">
-            Prometheus Institute of Technology
-          </h1>
-
-          <p className="mt-4 text-gray-700 max-w-xl">
-            Prometheus Institute of Technology aims to educate Knyaw on the
-            Thai-Myanmar border in Science, Technology, Engineering, and Math
-            (STEM).
-          </p>
-        </div>
-      </div>
-
-      {/* CONTACT SECTION */}
-      <div className="max-w-7xl mx-auto px-6 py-16 grid md:grid-cols-2 gap-12 items-stretch">
-        {/* MAP */}
-        <div className="w-full h-full bg-white rounded-lg shadow overflow-hidden">
-          <iframe
-            title="Thoo Mweh Khee Learning Center"
-            src="https://maps.google.com/maps?q=Thoo%20Mweh%20Khee%20Learning%20Center,%20351,%20Phop%20Phra,%20Tak%2063160,%20Thailand&z=15&output=embed"
-            className="w-full h-full border-0"
-            loading="lazy"
-          ></iframe>
+    <div className="h-screen overflow-y-auto snap-y snap-mandatory scroll-smooth bg-gray-100">
+      
+      {/* SECTION 1: HERO & BREADCRUMBS */}
+      <section className="relative h-screen snap-start flex flex-col pt-12">
+        <div className="w-full px-8 mb-4 shrink-0">
+          <Breadcrumbs />
         </div>
 
-        {/* CONTACT FORM */}
-        <div className="flex flex-col h-full">
-          <p className="text-sm font-semibold uppercase text-brand-primary">
-            GET IN TOUCH
-          </p>
+        <div
+          className="relative flex-grow bg-cover bg-center flex items-center"
+          style={{
+            backgroundImage:
+              "url('https://images.unsplash.com/photo-1500530855697-b586d89ba3ee')",
+          }}
+        >
+          <div className="absolute inset-0 bg-white/60"></div>
+          
+          <div className="relative w-full px-8">
+            <h1 className="text-5xl md:text-6xl font-bold text-brand-primary leading-tight">
+              Prometheus Institute of Technology
+            </h1>
 
-          <h2 className="text-4xl font-bold mt-1">
-            <span className="text-[#5B616E]">Contact </span>
-            <span className="text-brand-primary">Us</span>
-          </h2>
+            <p className="mt-6 text-gray-700 max-w-xl text-lg">
+              Prometheus Institute of Technology aims to educate Knyaw on the
+              Thai-Myanmar border in Science, Technology, Engineering, and Math
+              (STEM).
+            </p>
+          </div>
+        </div>
+      </section>
 
-          <p className="text-gray-500 mt-3">
-            Have a question? We'd love to hear from you. Fill out the form and
-            we'll respond promptly.
-          </p>
-
-          {/* CONTACT INFO */}
-          <div className="bg-white shadow-md rounded-lg p-5 mt-6 space-y-4 text-sm">
-            <div className="flex items-center gap-3">
-              <FaMapMarkerAlt className="text-brand-primary" />
-              <p>
-                351, Moo 3, District Phop Phra, Province Tak, Postcode 63150
-              </p>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <FaEnvelope className="text-brand-primary" />
-              <p>pit@technology.com</p>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <FaPhone className="text-brand-primary" />
-              <p>123-456-789-0</p>
-            </div>
+      {/* SECTION 2: CONTACT SECTION */}
+      <section className="min-h-screen snap-start flex items-center py-20 bg-white">
+        <div className="w-full px-8 grid md:grid-cols-2 gap-16 items-start">
+          {/* MAP */}
+          <div className="w-full h-[500px] md:h-full min-h-[400px] bg-gray-50 rounded-2xl shadow-sm overflow-hidden">
+            <iframe
+              title="Thoo Mweh Khee Learning Center"
+              src="https://maps.google.com/maps?q=Thoo%20Mweh%20Khee%20Learning%20Center,%20351,%20Phop%20Phra,%20Tak%2063160,%20Thailand&z=15&output=embed"
+              className="w-full h-full border-0"
+              loading="lazy"
+            ></iframe>
           </div>
 
-          {/* FORM */}
-          <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-            <input
-              type="text"
-              name="fullName"
-              value={formData.fullName}
-              onChange={handleChange}
-              placeholder="Full Name"
-              className="w-full bg-[#F7F8F8] border rounded-md px-4 py-3 focus:outline-none"
-            />
+          {/* CONTACT FORM */}
+          <div className="flex flex-col">
+            <p className="text-sm font-bold tracking-widest uppercase text-brand-primary mb-2">
+              GET IN TOUCH
+            </p>
 
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              placeholder="Email"
-              className="w-full bg-[#F7F8F8] border rounded-md px-4 py-3 focus:outline-none"
-            />
+            <h2 className="text-5xl font-bold font-[Roboto_Condensed] text-brand-primary leading-tight mb-6">
+              Contact Us
+            </h2>
 
-            <textarea
-              rows="5"
-              name="message"
-              value={formData.message}
-              onChange={handleChange}
-              placeholder="Your Message"
-              className="w-full bg-[#F7F8F8] border rounded-md px-4 py-3 focus:outline-none"
-            ></textarea>
+            <p className="text-gray-600 text-lg mb-8">
+              Have a question? We'd love to hear from you. Fill out the form and
+              we'll respond promptly.
+            </p>
 
-            {/* STATUS MESSAGE */}
-            {status && (
-              <p
-                className={`text-center text-sm font-medium ${
-                  statusType === "error"
-                    ? "text-brand-primary"
-                    : statusType === "success"
-                    ? "text-green-600"
-                    : "text-gray-700"
-                }`}
-              >
-                {status}
-              </p>
-            )}
+            {/* CONTACT INFO */}
+            <div className="bg-gray-50 rounded-2xl p-8 mb-10 space-y-6">
+              <div className="flex items-center gap-4 group">
+                <div className="p-3 bg-white rounded-full shadow-sm">
+                  <FaMapMarkerAlt className="text-brand-primary text-xl" />
+                </div>
+                <p className="text-gray-700">
+                  351, Moo 3, District Phop Phra, Province Tak, Postcode 63150
+                </p>
+              </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-brand-primary text-white py-3 rounded-md font-semibold flex items-center justify-center gap-2 hover:opacity-90 transition"
-            >
-              {loading ? (
-                <>
-                  <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                  Sending...
-                </>
-              ) : (
-                "SEND MESSAGE"
+              <div className="flex items-center gap-4 group">
+                <div className="p-3 bg-white rounded-full shadow-sm">
+                  <FaEnvelope className="text-brand-primary text-xl" />
+                </div>
+                <p className="text-gray-700">pit@technology.com</p>
+              </div>
+
+              <div className="flex items-center gap-4 group">
+                <div className="p-3 bg-white rounded-full shadow-sm">
+                  <FaPhone className="text-brand-primary text-xl" />
+                </div>
+                <p className="text-gray-700">123-456-789-0</p>
+              </div>
+            </div>
+
+            {/* FORM */}
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <input
+                  type="text"
+                  name="fullName"
+                  value={formData.fullName}
+                  onChange={handleChange}
+                  placeholder="Full Name"
+                  className="w-full bg-[#F7F8F8] border border-gray-200 rounded-xl px-4 py-4 focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary outline-none transition"
+                />
+
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  placeholder="Email"
+                  className="w-full bg-[#F7F8F8] border border-gray-200 rounded-xl px-4 py-4 focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary outline-none transition"
+                />
+              </div>
+
+              <textarea
+                rows="4"
+                name="message"
+                value={formData.message}
+                onChange={handleChange}
+                placeholder="Your Message"
+                className="w-full bg-[#F7F8F8] border border-gray-200 rounded-xl px-4 py-4 focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary outline-none transition resize-none"
+              ></textarea>
+
+              {/* STATUS MESSAGE */}
+              {status && (
+                <div
+                  className={`p-4 rounded-xl text-center text-sm font-medium ${
+                    statusType === "error"
+                      ? "bg-red-50 text-brand-primary"
+                      : "bg-green-50 text-green-700"
+                  }`}
+                >
+                  {status}
+                </div>
               )}
-            </button>
-          </form>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-brand-primary text-white py-4 rounded-xl font-bold tracking-widest flex items-center justify-center gap-3 hover:bg-brand-primary/95 shadow-lg shadow-brand-primary/10 transition transform active:scale-[0.98]"
+              >
+                {loading ? (
+                  <>
+                    <span className="w-5 h-5 border-3 border-white border-t-transparent rounded-full animate-spin"></span>
+                    SENDING...
+                  </>
+                ) : (
+                  "SEND MESSAGE"
+                )}
+              </button>
+            </form>
+          </div>
         </div>
-      </div>
+      </section>
+
+      {/* SECTION 3: FOOTER */}
+      <section className="snap-start py-10 bg-white">
+        <Footer />
+      </section>
     </div>
   );
 }

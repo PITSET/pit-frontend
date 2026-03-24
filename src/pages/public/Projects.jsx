@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import api from "../../lib/api";
 import resolveAssetUrl from "../../lib/resolveAssetUrl";
 import ProjectsCollection from "../../components/ui/ProjectsCollection";
+import Footer from "../../components/layout/Footer";
 const formatProjectDate = (value) => {
   if (!value) return "";
   const date = new Date(value);
@@ -77,8 +78,20 @@ export default function Projects() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-white pb-20 py-12">
-      <ProjectsCollection projects={projects} isLoading={loading} linkToProgram={true} />
+    <div className="h-screen overflow-y-auto snap-y snap-mandatory scroll-smooth bg-white">
+      
+      {/* SECTION 1: PROJECTS COLLECTION */}
+      <section className="min-h-screen snap-start pt-12 pb-20 px-8">
+        <div className="w-full">
+          <ProjectsCollection projects={projects} isLoading={loading} linkToProgram={true} />
+        </div>
+      </section>
+
+      {/* SECTION 2: FOOTER */}
+      <section className="snap-start py-10 bg-white">
+        <Footer />
+      </section>
+
     </div>
   );
 }

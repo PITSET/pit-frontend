@@ -6,7 +6,8 @@ import ScrollToHash from "../routing/ScrollToHash";
 
 export default function PublicLayout() {
   const location = useLocation();
-  const hideFooter = ["/", "/about"].includes(location.pathname);
+  // All public pages will now handle their own scroll-snapping and footers
+  const isPublicPage = !location.pathname.startsWith("/admin");
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -15,7 +16,7 @@ export default function PublicLayout() {
       <main className="flex-grow">
         <Outlet />
       </main>
-      {!hideFooter && <Footer />}
+      {!isPublicPage && <Footer />}
     </div>
   );
 }

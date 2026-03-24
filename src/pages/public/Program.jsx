@@ -6,6 +6,7 @@ import { Button } from "../../components/ui/Button";
 import Loader from "../../components/ui/Loader"; 
 
 import Breadcrumbs from "../../components/ui/Breadcrumbs"; 
+import Footer from "../../components/layout/Footer";
 
 const programSectionId = (value) => {
   const name = String(value || "").toLowerCase().trim();
@@ -84,83 +85,91 @@ export default function Programs() {
     : programs;
 
   return (
-    <div className="bg-gray-100 py-12">
-      <div className="max-w-[1280px] mx-auto px-6">
-        <div className="pb-4">
-          <Breadcrumbs />
-        </div>
+    <div className="h-screen overflow-y-auto snap-y snap-mandatory scroll-smooth bg-gray-100">
+      
+      {/* SECTION 1: PROGRAMS LIST */}
+      <section className="min-h-screen snap-start pt-12 pb-20 px-8">
+        <div className="w-full">
+          <div className="pb-8">
+            <Breadcrumbs />
+          </div>
 
-        <h1 className="text-[50px] font-bold text-brand-primary mb-10 font-[Roboto_Condensed]">
-          Programs
-        </h1>
+          <h1 className="text-[56px] font-bold text-brand-primary mb-12 font-[Roboto_Condensed] leading-none">
+            Programs
+          </h1>
 
-        {/* Programs Grid */}
-        <div className="grid grid-cols-3 gap-8 justify-items-center">
+          {/* Programs Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 justify-items-center">
 
-          {filteredPrograms.length === 0 ? (
-            <p className="col-span-3 text-gray-500">
-              No programs found.
-            </p>
-          ) : (
-            filteredPrograms.map((program) => (
-              <div
-                key={program.id}
+            {filteredPrograms.length === 0 ? (
+              <p className="col-span-full text-gray-500 text-lg">
+                No programs found.
+              </p>
+            ) : (
+              filteredPrograms.map((program) => (
+                <div
+                  key={program.id}
+                  className="bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col overflow-hidden group border border-gray-100"
+                  id={programSectionId(program?.program_name)}
+                  style={{ width: "100%", maxWidth: "400px", height: "540px" }}
+                >
 
-                className="bg-white rounded-xl shadow-md flex flex-col overflow-hidden group"
-
-                id={programSectionId(program?.program_name)}
-              
-
-                style={{ width: "400px", height: "510px" }}
-              >
-
-                {/* Program Image */}
-                <img
-                  src={resolveAssetUrl(program.image_url)}
-                  alt={program.program_name}
-                  className="object-cover"
-                  style={{ width: "400px", height: "260px" }}
-                />
-
-                {/* Content */}
-                <div className="p-6 flex flex-col grow">
-
-                  {/* Title */}
-                  <h3
-                    className="mb-3"
-                    style={{
-                      fontFamily: "Roboto Condensed",
-                      fontWeight: "700",
-                      fontSize: "30px",
-                    }}
-                  >
-                    {program.program_name}
-                  </h3>
-
-                  {/* Description */}
-                  <p className="text-gray-600 text-[16px] leading-relaxed font-[Roboto]">
-                    {program.description}
-                  </p>
-
-                  <div className="mt-auto flex justify-end pt-4">
-                    <Button
-                      variant="link"
-                      onClick={() => {
-                        setIsNavigating(true);
-                        navigate(`/programs/${program.id}`);
-                      }}
-                    >
-                      Read More
-                    </Button>
+                  {/* Program Image */}
+                  <div className="h-[280px] overflow-hidden shrink-0">
+                    <img
+                      src={resolveAssetUrl(program.image_url)}
+                      alt={program.program_name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
                   </div>
 
-                </div>
-              </div>
-            ))
-          )}
+                  {/* Content */}
+                  <div className="p-8 flex flex-col grow">
 
+                    {/* Title */}
+                    <h3
+                      className="text-brand-primary mb-4"
+                      style={{
+                        fontFamily: "Roboto Condensed",
+                        fontWeight: "700",
+                        fontSize: "32px",
+                        lineHeight: "1.1",
+                      }}
+                    >
+                      {program.program_name}
+                    </h3>
+
+                    {/* Description */}
+                    <p className="text-gray-600 text-[16px] leading-relaxed font-[Roboto] line-clamp-4">
+                      {program.description}
+                    </p>
+
+                    <div className="mt-auto flex justify-end pt-6">
+                      <Button
+                        variant="link"
+                        className="text-brand-primary font-bold hover:gap-2 transition-all p-0 flex items-center gap-1"
+                        onClick={() => {
+                          setIsNavigating(true);
+                          navigate(`/programs/${program.id}`);
+                        }}
+                      >
+                        Read More <span className="text-xl">→</span>
+                      </Button>
+                    </div>
+
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
         </div>
-      </div>
+      </section>
+
+      {/* SECTION 2: FOOTER */}
+      <section className="snap-start py-10 bg-white">
+        <Footer />
+      </section>
+
     </div>
   );
 }
