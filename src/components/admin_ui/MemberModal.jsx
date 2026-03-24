@@ -104,7 +104,7 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
     if (!file) return;
 
     // Validate file
-    if (!file.type.startsWith("image/")) {
+    if (!file.type.startsWith("image/") && !file.name.toLowerCase().endsWith('.heic')) {
       toast.error("Please upload image files only");
       return;
     }
@@ -186,6 +186,12 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
   // Convert image to WEBP (compression + resize)
   const convertToWebp = (file) => {
     return new Promise((resolve) => {
+      // Skip conversion for SVG and GIF to preserve formatting/animation
+      if (file.type === "image/svg+xml" || file.type === "image/gif") {
+        resolve(file);
+        return;
+      }
+
       const img = new Image();
       const reader = new FileReader();
 
@@ -207,11 +213,15 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
 
         canvas.toBlob(
           (blob) => {
-            resolve(blob);
+            resolve(new File([blob], file.name ? file.name.replace(/\.[^/.]+$/, "") + ".webp" : "image.webp", { type: "image/webp" }));
           },
           "image/webp",
           0.8,
         );
+      };
+
+      img.onerror = () => {
+        resolve(file); // fallback to original file on error
       };
 
       reader.readAsDataURL(file);
@@ -234,7 +244,8 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
           .replace(/\s+/g, "-")
           .toLowerCase();
 
-        const fileName = `member-${safeName}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}.webp`;
+        const fileExt = webpImage.name ? webpImage.name.split('.').pop() : 'webp';
+        const fileName = `member-${safeName}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${fileExt}`;
 
         toast.loading("Compressing & uploading image...", { id: toastId });
 
@@ -245,7 +256,7 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
           .upload(fileName, webpImage, {
             upsert: true,
             cacheControl: "3600",
-            contentType: "image/webp",
+            contentType: webpImage.type || 'image/webp',
           });
 
         if (uploadError) {
@@ -490,7 +501,7 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
                 <label className="text-sm font-medium text-gray-700">Member Image</label>
                 
                 {/* Image Upload */}
-                <label className="relative group block rounded-lg overflow-hidden border border-gray-300 bg-white shadow-sm cursor-pointer">
+                <label className="relative group block rounded-lg overflow-hidden border border-gray-300 bg-white shadow-sm cursor-pointer" onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }} onDrop={(e) => { e.preventDefault(); e.stopPropagation(); if (e.dataTransfer.files && e.dataTransfer.files.length > 0) { handleImageChange({ target: { files: e.dataTransfer.files } }); } }}>
                   <img
                     src={
                       image
@@ -518,7 +529,7 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
 
                   <input
                     type="file"
-                    accept="image/*"
+                    accept=".jpg,.jpeg,.png,.webp,.gif,.svg,.heic"
                     className="hidden"
                     ref={fileInputRef}
                     onChange={handleImageChange}

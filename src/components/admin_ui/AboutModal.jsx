@@ -87,7 +87,7 @@ export default function AboutModal({ isOpen, onClose, onRefresh, item, existingS
 
     if (!file) return;
 
-    if (!file.type.startsWith("image/")) {
+    if (!file.type.startsWith("image/") && !file.name.toLowerCase().endsWith('.heic')) {
       toast.error("Please upload an image file");
       return;
     }
@@ -105,6 +105,12 @@ export default function AboutModal({ isOpen, onClose, onRefresh, item, existingS
   // Convert image to WEBP (compression + resize)
   const convertToWebp = (file) => {
     return new Promise((resolve) => {
+      // Skip conversion for SVG and GIF to preserve formatting/animation
+      if (file.type === "image/svg+xml" || file.type === "image/gif") {
+        resolve(file);
+        return;
+      }
+
       const img = new Image();
       const reader = new FileReader();
 
@@ -126,11 +132,15 @@ export default function AboutModal({ isOpen, onClose, onRefresh, item, existingS
 
         canvas.toBlob(
           (blob) => {
-            resolve(blob);
+            resolve(new File([blob], file.name ? file.name.replace(/\.[^/.]+$/, "") + ".webp" : "image.webp", { type: "image/webp" }));
           },
           "image/webp",
           0.8,
         );
+      };
+
+      img.onerror = () => {
+        resolve(file); // fallback to original file on error
       };
 
       reader.readAsDataURL(file);
@@ -164,7 +174,8 @@ export default function AboutModal({ isOpen, onClose, onRefresh, item, existingS
           .replace(/\s+/g, "-")
           .toLowerCase();
 
-        const fileName = `about-${safeSection}-${Date.now()}.webp`;
+        const fileExt = webpImage.name ? webpImage.name.split('.').pop() : 'webp';
+        const fileName = `about-${safeSection}-${Date.now()}.${fileExt}`;
 
         toast.loading("Compressing & uploading image...", { id: toastId });
 
@@ -175,7 +186,7 @@ export default function AboutModal({ isOpen, onClose, onRefresh, item, existingS
           .upload(fileName, webpImage, {
             upsert: true,
             cacheControl: "3600",
-            contentType: "image/webp",
+            contentType: webpImage.type || 'image/webp',
           });
 
         if (uploadError) {
@@ -581,7 +592,7 @@ export default function AboutModal({ isOpen, onClose, onRefresh, item, existingS
                 <div className="space-y-1.5">
                   <span className="text-sm font-medium text-gray-700">Image</span>
                 </div>
-                <label className="relative group block rounded-lg overflow-hidden border border-gray-300 bg-white shadow-sm cursor-pointer">
+                <label className="relative group block rounded-lg overflow-hidden border border-gray-300 bg-white shadow-sm cursor-pointer" onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }} onDrop={(e) => { e.preventDefault(); e.stopPropagation(); if (e.dataTransfer.files && e.dataTransfer.files.length > 0) { handleImageChange({ target: { files: e.dataTransfer.files } }); } }}>
                   <img
                     src={
                       image
@@ -609,7 +620,7 @@ export default function AboutModal({ isOpen, onClose, onRefresh, item, existingS
 
                   <input
                     type="file"
-                    accept="image/*"
+                    accept=".jpg,.jpeg,.png,.webp,.gif,.svg,.heic"
                     className="hidden"
                     onChange={handleImageChange}
                   />

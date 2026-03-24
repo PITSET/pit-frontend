@@ -103,23 +103,25 @@ export default function Home() {
         const sortedItems = [...activeItems].sort(
           (a, b) => (Number(a?.order_position) || 0) - (Number(b?.order_position) || 0),
         );
-
+        // 1. gete all active items from the about endpoint
         const aboutRaw = Array.isArray(aboutRes.data) ? aboutRes.data : aboutRes.data?.data || [];
         const activeAboutItems = (Array.isArray(aboutRaw) ? aboutRaw : []).filter((item) => item?.is_active === true);
-        const missionAbouts = activeAboutItems.filter((item) => normalizeSectionType(item?.section_type) === "mission");
+        // 2. filter out the items that are not about
+        const filterAbouts = activeAboutItems.filter((item) => normalizeSectionType(item?.section_type) === "about");
 
         const heroes = sortedItems.filter(
           (item) => normalizeSectionType(item?.section_type) === "hero",
         );
-        const abouts = sortedItems.filter(
-          (item) => normalizeSectionType(item?.section_type) === "about",
-        );
+
+        // const abouts = sortedItems.filter(
+        //   (item) => normalizeSectionType(item?.section_type) === "about",
+        // );
         const programs = sortedItems.filter(
           (item) => normalizeSectionType(item?.section_type) === "program",
         );
 
         const hero = pickOne(heroes, "latest_updated");
-        const about = pickOne(missionAbouts, "lowest_order_position") || pickOne(abouts, "lowest_order_position");
+        const about = pickOne(filterAbouts, "lowest_order_position") || pickOne(activeAboutItems, "lowest_order_position");
         const program = pickOne(programs, "lowest_order_position");
 
         if (!isActive) return;
@@ -206,7 +208,7 @@ export default function Home() {
   }
 
   return (
-    <main className="w-full">
+    <main className="w-full h-dvh overflow-y-auto overflow-x-hidden snap-y snap-mandatory scroll-smooth relative">
 
       <Helmet>
         <title>Home - Prometheus Institute</title>
@@ -214,7 +216,7 @@ export default function Home() {
       </Helmet>
 
       {/* HERO */}
-      <section className="relative min-h-[90vh] md:min-h-[95vh] w-full flex items-center overflow-hidden">
+      <section className="relative w-screen min-h-dvh flex items-center justify-center snap-start overflow-hidden pt-[90px] shrink-0">
 
         {/* Background Image (Fallback or Overlay while loading) */}
         <div
@@ -276,10 +278,10 @@ export default function Home() {
 
 
       {/* ABOUT SECTION */}
-      < section className="relative min-h-[90vh] md:min-h-[95vh] w-full flex items-center" >
+      <section className="relative w-screen min-h-dvh flex items-center justify-center snap-start overflow-hidden shrink-0" >
 
         <div
-          className="absolute inset-0 bg-cover bg-center"
+          className="absolute inset-0 bg-cover bg-top"
           style={{
             backgroundImage: `url('${resolveAssetUrl(aboutSection?.image_url)}')`,
           }}
@@ -318,7 +320,7 @@ export default function Home() {
 
       </section >
 
-      <section className="relative w-full min-h-[90vh] md:min-h-[95vh] flex items-center">
+      <section className="relative w-screen min-h-dvh flex items-center justify-center snap-start overflow-hidden shrink-0">
 
         {/* Background Image */}
         <div
@@ -356,8 +358,10 @@ export default function Home() {
       </section >
 
       {/* PROJECTS */}
-      < ProjectsCarousel projects={projects} isLoadingProjects={isLoadingProjects} />
+      <section className="relative w-screen min-h-dvh flex items-center justify-center snap-start overflow-hidden shrink-0">
+        <ProjectsCarousel projects={projects} isLoadingProjects={isLoadingProjects} />
+      </section>
 
-    </main >
+    </main>
   );
 }

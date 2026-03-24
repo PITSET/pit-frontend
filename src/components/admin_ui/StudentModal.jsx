@@ -19,7 +19,7 @@ import { getOperationErrorMessage } from "../../lib/httpErrorHandler";
 
 export default function StudentModal({ isOpen, onClose, onRefresh, item }) {
   const isCreate = !item;
-  
+
   // React Hook Form
   const {
     register,
@@ -38,14 +38,14 @@ export default function StudentModal({ isOpen, onClose, onRefresh, item }) {
 
   // Program ID watch for dropdown
   const programId = watch("programId");
-  
+
   // Non-form state
   const [loading, setLoading] = useState(false);
   const [programs, setPrograms] = useState([]);
   const [programsLoading, setProgramsLoading] = useState(false);
   const [showProgramDropdown, setShowProgramDropdown] = useState(false);
   const [image, setImage] = useState(null);
-  
+
   // Refs
   const fileInputRef = useRef(null);
   const programDropdownRef = useRef(null);
@@ -89,7 +89,7 @@ export default function StudentModal({ isOpen, onClose, onRefresh, item }) {
     if (!file) return;
 
     // Validate file
-    if (!file.type.startsWith("image/")) {
+    if (!file.type.startsWith("image/") && !file.name.toLowerCase().endsWith('.heic')) {
       toast.error("Please upload image files only");
       return;
     }
@@ -106,6 +106,12 @@ export default function StudentModal({ isOpen, onClose, onRefresh, item }) {
   // Convert image to WEBP (compression + resize)
   const convertToWebp = (file) => {
     return new Promise((resolve) => {
+      // Skip conversion for SVG and GIF to preserve formatting/animation
+      if (file.type === "image/svg+xml" || file.type === "image/gif") {
+        resolve(file);
+        return;
+      }
+
       const img = new Image();
       const reader = new FileReader();
 
@@ -127,11 +133,15 @@ export default function StudentModal({ isOpen, onClose, onRefresh, item }) {
 
         canvas.toBlob(
           (blob) => {
-            resolve(blob);
+            resolve(new File([blob], file.name ? file.name.replace(/\.[^/.]+$/, "") + ".webp" : "image.webp", { type: "image/webp" }));
           },
           "image/webp",
           0.8,
         );
+      };
+
+      img.onerror = () => {
+        resolve(file); // fallback to original file on error
       };
 
       reader.readAsDataURL(file);
@@ -179,18 +189,19 @@ export default function StudentModal({ isOpen, onClose, onRefresh, item }) {
           .replace(/\s+/g, "-")
           .toLowerCase();
 
-        const fileName = `student-${safeName}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}.webp`;
+        const webpImage = await convertToWebp(image);
+        const fileExt = webpImage.name.split('.').pop();
+        const fileName = `student-${safeName}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${fileExt}`;
 
         toast.loading("Compressing & uploading image...", { id: toastId });
 
-        const webpImage = await convertToWebp(image);
 
         const { error: uploadError } = await supabase.storage
           .from("student_images")
           .upload(fileName, webpImage, {
             upsert: true,
             cacheControl: "3600",
-            contentType: "image/webp",
+            contentType: webpImage.type || 'image/webp',
           });
 
         if (uploadError) {
@@ -212,12 +223,12 @@ export default function StudentModal({ isOpen, onClose, onRefresh, item }) {
           try {
             const oldUrlParts = item.image_url.split("/");
             const oldFileName = oldUrlParts[oldUrlParts.length - 1].split("?")[0];
-            
+
             if (oldFileName) {
               const { error: deleteError } = await supabase.storage
                 .from("student_images")
                 .remove([oldFileName]);
-              
+
               if (deleteError) {
                 console.warn("Failed to delete old image:", deleteError);
               }
@@ -251,14 +262,14 @@ export default function StudentModal({ isOpen, onClose, onRefresh, item }) {
       onClose();
     } catch (error) {
       console.error("Failed to save:", error);
-      
+
       // Use the improved error handler to get backend message with fallback
       const errorMessage = getOperationErrorMessage(
         error,
         isCreate ? 'create' : 'update',
         'student'
       );
-      
+
       toast.error(errorMessage, { id: toastId });
     } finally {
       setLoading(false);
@@ -310,9 +321,9 @@ export default function StudentModal({ isOpen, onClose, onRefresh, item }) {
             {/* Left column - Image upload */}
             <div className="space-y-4">
               <label className="text-sm font-medium text-gray-700">Student Image</label>
-              
+
               {/* Image Upload */}
-              <label className="relative group block rounded-lg overflow-hidden border border-gray-300 bg-white shadow-sm cursor-pointer">
+              <label className="relative group block rounded-lg overflow-hidden border border-gray-300 bg-white shadow-sm cursor-pointer" onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }} onDrop={(e) => { e.preventDefault(); e.stopPropagation(); if (e.dataTransfer.files && e.dataTransfer.files.length > 0) { handleImageChange({ target: { files: e.dataTransfer.files } }); } }}>
                 <img
                   src={
                     image
@@ -339,7 +350,7 @@ export default function StudentModal({ isOpen, onClose, onRefresh, item }) {
                 <input
                   ref={fileInputRef}
                   type="file"
-                  accept="image/*"
+                  accept=".jpg,.jpeg,.png,.webp,.gif,.svg,.heic"
                   onChange={handleImageChange}
                   className="hidden"
                 />
@@ -388,9 +399,8 @@ export default function StudentModal({ isOpen, onClose, onRefresh, item }) {
                     },
                   })}
                   placeholder="Enter email address"
-                  className={`w-full px-3 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-shadow ${
-                    errors.email ? 'border-red-500' : 'border-gray-300'
-                  }`}
+                  className={`w-full px-3 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-shadow ${errors.email ? 'border-red-500' : 'border-gray-300'
+                    }`}
                 />
                 {errors.email && (
                   <p className="mt-1 text-xs text-red-500">{errors.email.message}</p>
@@ -418,8 +428,8 @@ export default function StudentModal({ isOpen, onClose, onRefresh, item }) {
                       <span className={programId ? "text-gray-900" : "text-gray-500"}>
                         {selectedProgramName || "Select a program..."}
                       </span>
-                      <ChevronDownIcon 
-                        className={`w-4 h-4 text-gray-500 transition-transform ${showProgramDropdown ? "rotate-180" : ""}`} 
+                      <ChevronDownIcon
+                        className={`w-4 h-4 text-gray-500 transition-transform ${showProgramDropdown ? "rotate-180" : ""}`}
                       />
                     </button>
 
@@ -434,11 +444,10 @@ export default function StudentModal({ isOpen, onClose, onRefresh, item }) {
                               setValue("programId", program.id);
                               setShowProgramDropdown(false);
                             }}
-                            className={`w-full px-3 sm:px-4 py-2 text-left text-sm transition flex items-center justify-between ${
-                              programId === program.id
+                            className={`w-full px-3 sm:px-4 py-2 text-left text-sm transition flex items-center justify-between ${programId === program.id
                                 ? "bg-orange-50 text-orange-600"
                                 : "text-gray-700 bg-white hover:bg-gray-100"
-                            }`}
+                              }`}
                           >
                             <span>{program.program_name || program.name}</span>
                             {programId === program.id && (

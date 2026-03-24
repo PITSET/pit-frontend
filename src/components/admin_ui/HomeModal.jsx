@@ -203,7 +203,7 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item, existingSe
 
     if (!file) return;
 
-    if (!file.type.startsWith("image/")) {
+    if (!file.type.startsWith("image/") && !file.name.toLowerCase().endsWith('.heic')) {
       toast.error("Please upload an image file");
       return;
     }
@@ -221,6 +221,12 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item, existingSe
   // Convert image to WEBP (compression + resize)
   const convertToWebp = (file) => {
     return new Promise((resolve) => {
+      // Skip conversion for SVG and GIF to preserve formatting/animation
+      if (file.type === "image/svg+xml" || file.type === "image/gif") {
+        resolve(file);
+        return;
+      }
+
       const img = new Image();
       const reader = new FileReader();
 
@@ -242,11 +248,15 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item, existingSe
 
         canvas.toBlob(
           (blob) => {
-            resolve(blob);
+            resolve(new File([blob], file.name ? file.name.replace(/\.[^/.]+$/, "") + ".webp" : "image.webp", { type: "image/webp" }));
           },
           "image/webp",
           0.8,
         );
+      };
+
+      img.onerror = () => {
+        resolve(file); // fallback to original file on error
       };
 
       reader.readAsDataURL(file);
@@ -280,18 +290,20 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item, existingSe
           .replace(/\s+/g, "-")
           .toLowerCase();
 
-        const fileName = `home-${safeSection}-${Date.now()}.webp`;
+        const webpImage = await convertToWebp(image);
+        const fileExt = webpImage.name.split('.').pop();
+
+        const fileName = `home-${safeSection}-${Date.now()}.${fileExt}`;
 
         toast.loading("Compressing & uploading image...", { id: toastId });
 
-        const webpImage = await convertToWebp(image);
 
         const { error: uploadError } = await supabase.storage
           .from("home_images")
           .upload(fileName, webpImage, {
             upsert: true,
             cacheControl: "3600",
-            contentType: "image/webp",
+            contentType: webpImage.type || 'image/webp',
           });
 
         if (uploadError) {
@@ -382,14 +394,14 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item, existingSe
       onClose();
     } catch (error) {
       console.error("Failed to save:", error);
-      
+
       // Use the improved error handler to get backend message with fallback
       const errorMessage = getOperationErrorMessage(
         error,
         isCreate ? 'create' : 'update',
         'section'
       );
-      
+
       toast.error(errorMessage, { id: toastId });
     } finally {
       setLoading(false);
@@ -417,7 +429,7 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item, existingSe
       while (usedPositions.has(smallestUnused) && smallestUnused <= maxPosition) {
         smallestUnused++;
       }
-      
+
       reset({
         title: "",
         content: "",
@@ -553,13 +565,12 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item, existingSe
                             setShowSectionTypeDropdown(false);
                           }
                         }}
-                        className={`w-full px-3 sm:px-4 py-2 text-left text-sm transition flex items-center justify-between ${
-                          isCurrentSectionType
-                            ? "bg-orange-50 text-orange-600 cursor-pointer"
-                            : isActive
+                        className={`w-full px-3 sm:px-4 py-2 text-left text-sm transition flex items-center justify-between ${isCurrentSectionType
+                          ? "bg-orange-50 text-orange-600 cursor-pointer"
+                          : isActive
                             ? "text-gray-700 bg-white hover:bg-gray-100 cursor-not-allowed"
                             : "text-gray-400 bg-gray-50 cursor-not-allowed"
-                        }`}
+                          }`}
                       >
                         <div className="flex items-center gap-2">
                           <span>{type}</span>
@@ -587,7 +598,7 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item, existingSe
               {/* Order Position */}
               <div className="space-y-2" ref={positionDropdownRef}>
                 <label className="text-sm font-medium text-gray-700">Order Position <span className="text-red-500">*</span></label>
-                
+
                 {/* Custom dropdown for position */}
                 <div className="relative">
                   <button
@@ -624,13 +635,12 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item, existingSe
                                 setShowPositionDropdown(false);
                               }
                             }}
-                            className={`w-full px-3 py-2 text-left text-sm transition flex items-center justify-between ${
-                              isCurrent
-                                ? "bg-orange-50 text-orange-600 cursor-pointer"
-                                : isDisabled
+                            className={`w-full px-3 py-2 text-left text-sm transition flex items-center justify-between ${isCurrent
+                              ? "bg-orange-50 text-orange-600 cursor-pointer"
+                              : isDisabled
                                 ? "text-gray-400 bg-gray-50 cursor-not-allowed"
                                 : "text-gray-700 hover:bg-gray-100 cursor-pointer"
-                            }`}
+                              }`}
                           >
                             <span>{pos}</span>
                             <div className="flex items-center gap-1">
@@ -657,14 +667,12 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item, existingSe
                   <button
                     type="button"
                     onClick={() => setValue("isActive", !watchIsActive)}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      watchIsActive ? "bg-green-500" : "bg-gray-300"
-                    }`}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${watchIsActive ? "bg-green-500" : "bg-gray-300"
+                      }`}
                   >
                     <span
-                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                        watchIsActive ? "translate-x-6" : "translate-x-1"
-                      }`}
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${watchIsActive ? "translate-x-6" : "translate-x-1"
+                        }`}
                     />
                   </button>
                   <span className={`text-sm ${watchIsActive ? "text-green-600" : "text-gray-500"}`}>
@@ -682,7 +690,7 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item, existingSe
                 <div className="space-y-1.5">
                   <span className="text-sm font-medium text-gray-700">Image</span>
                 </div>
-                <label className="relative group block rounded-lg overflow-hidden border border-gray-300 bg-white shadow-sm cursor-pointer">
+                <label className="relative group block rounded-lg overflow-hidden border border-gray-300 bg-white shadow-sm cursor-pointer" onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }} onDrop={(e) => { e.preventDefault(); e.stopPropagation(); if (e.dataTransfer.files && e.dataTransfer.files.length > 0) { handleImageChange({ target: { files: e.dataTransfer.files } }); } }}>
                   <img
                     src={
                       image
@@ -710,7 +718,7 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item, existingSe
 
                   <input
                     type="file"
-                    accept="image/*"
+                    accept=".jpg,.jpeg,.png,.webp,.gif,.svg,.heic"
                     className="hidden"
                     onChange={handleImageChange}
                   />
@@ -745,9 +753,8 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item, existingSe
                   {/* URL Validation Feedback */}
                   {urlValidation.isValid !== null && (
                     <div
-                      className={`flex items-center gap-1.5 text-xs ${
-                        urlValidation.isValid ? "text-green-600" : "text-red-500"
-                      }`}
+                      className={`flex items-center gap-1.5 text-xs ${urlValidation.isValid ? "text-green-600" : "text-red-500"
+                        }`}
                     >
                       {urlValidation.isValid ? (
                         <CheckCircleIcon className="w-4 h-4" />
