@@ -5,6 +5,7 @@ import api from "../../lib/api";
 import Loader from "../../components/ui/Loader";
 import { Helmet } from "react-helmet-async";
 import Footer from "../../components/layout/Footer";
+import { motion } from "framer-motion";
 import { HiUsers } from "react-icons/hi";
 import { Button } from "../../components/ui/Button";
 
@@ -27,22 +28,22 @@ export default function ProgramDetail() {
         ]);
 
         const programData = programRes.data?.data || programRes.data;
-        
+
         if (programData) {
           setProgram(programData);
 
           // Get projects from nested program data (if joined) OR from the full projects list
           const nestedProjects = programData.projects || programData.Project || [];
-          
+
           if (nestedProjects.length > 0) {
             setProjects(nestedProjects);
             console.log("Projects found via nested API join:", nestedProjects.length);
           } else {
             // Fallback: Manually filter all projects that mention this program ID
-            const allProjects = Array.isArray(projectsRes.data) 
-              ? projectsRes.data 
+            const allProjects = Array.isArray(projectsRes.data)
+              ? projectsRes.data
               : projectsRes.data?.data || projectsRes.data?.projects || [];
-            
+
             const linkedProjects = allProjects.filter(p => {
               const pProgs = Array.isArray(p.programs) ? p.programs : [];
               return pProgs.some(prog => {
@@ -50,7 +51,7 @@ export default function ProgramDetail() {
                 return String(progId) === String(id);
               });
             });
-            
+
             setProjects(linkedProjects);
             console.log("Projects found via manual filter from /projects:", linkedProjects.length);
           }
@@ -90,6 +91,10 @@ export default function ProgramDetail() {
     );
   }
 
+  const nameParts = (program?.program_name || "").trim().split(" ");
+  const topName = nameParts[0] || "";
+  const bottomName = nameParts.slice(1).join(" ");
+
   return (
     <div className="bg-white min-h-screen">
       <Helmet>
@@ -114,12 +119,36 @@ export default function ProgramDetail() {
         {/* Content */}
         <div className="relative max-w-[1248px] mx-auto min-h-screen flex items-center px-6">
           <div className="max-w-[520px] text-white">
-            <h1 className="text-[48px] md:text-[64px] leading-tight font-bold font-[Roboto_Condensed] mb-6 uppercase">
-              {program.program_name}
+            <h1 className="flex flex-col overflow-hidden text-[48px] md:text-[64px] leading-tight font-bold font-[Roboto_Condensed] mb-6 uppercase">
+              {topName && (
+                <motion.span
+                  initial={{ opacity: 0, x: -50 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
+                  className="block"
+                >
+                  {topName}
+                </motion.span>
+              )}
+              {bottomName && (
+                <motion.span
+                  initial={{ opacity: 0, x: 50 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1], delay: 0.15 }}
+                  className="block"
+                >
+                  {bottomName}
+                </motion.span>
+              )}
             </h1>
-            <p className="text-[18px] leading-[30px] font-[Roboto] text-gray-200">
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1], delay: 0.3 }}
+              className="text-[18px] leading-[30px] font-[Roboto] text-gray-200"
+            >
               {program.description}
-            </p>
+            </motion.p>
           </div>
         </div>
       </div>
@@ -127,12 +156,24 @@ export default function ProgramDetail() {
       {/* PROGRAM OVERVIEW */}
       <section className="relative w-full min-h-[600px] flex items-center overflow-hidden py-24 bg-gray-50">
         <div className="max-w-[900px] mx-auto text-center px-6">
-          <h2 className="text-red-700 mb-8 font-[Roboto_Condensed] font-bold text-[56px] md:text-[64px] uppercase">
+          <motion.h2
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1], delay: 0.3 }}
+            className="text-red-700 mb-8 font-[Roboto_Condensed] font-bold text-[56px] md:text-[64px] uppercase"
+          >
             Program Overview
-          </h2>
-          <p className="text-gray-700 leading-relaxed font-[Roboto] text-[20px] md:text-[24px] whitespace-pre-wrap wrap-break-word">
+          </motion.h2>
+          <motion.p
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1], delay: 0.3 }}
+            className="text-gray-700 leading-relaxed font-[Roboto] text-[20px] md:text-[24px] whitespace-pre-wrap wrap-break-word"
+          >
             {program.overview || program.description}
-          </p>
+          </motion.p>
         </div>
       </section>
 
@@ -173,36 +214,42 @@ export default function ProgramDetail() {
               return (
                 <div
                   key={project.id}
-                  className="bg-white rounded-[24px] shadow-sm border border-gray-100 overflow-hidden flex flex-col group/card hover:shadow-xl transition-all duration-300"
+                  className="bg-white rounded-[24px] overflow-hidden border border-gray-100 shadow-[8px_8px_20_rgba(0,0,0,0.04)] flex flex-col h-full hover:shadow-[12px_12px_30px_rgba(0,0,0,0.08)] transition-all hover:-translate-y-1"
                 >
-                  <div className="h-[220px] overflow-hidden">
+                  {/* Image */}
+                  <Link to={`/projects/${project.id}`} className="block h-[240px] w-full overflow-hidden bg-gray-100 relative group">
                     <img
                       src={resolveAssetUrl(imgVal)}
                       alt={project.title || project.name}
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover/card:scale-105"
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                     />
-                  </div>
+                    {(project.date || project.created_at) && (
+                      <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-lg text-[11px] font-bold text-brand-primary uppercase tracking-wider shadow-sm">
+                        {project.date || project.created_at.split('T')[0]}
+                      </div>
+                    )}
+                  </Link>
 
-                {/* Card Content */}
-                <div className="p-8 flex flex-col grow">
-                  <h3 className="text-2xl font-bold text-gray-900 mb-3 line-clamp-2 leading-tight group-hover/card:text-brand-primary transition-colors font-[Roboto_Condensed]">
-                    {project.title || project.name}
-                  </h3>
-                  <p className="text-gray-500 text-[15px] leading-relaxed mb-8 line-clamp-3">
-                    {project.description || project.overview || project.desc}
-                  </p>
+                  {/* Card Content */}
+                  <div className="p-8 flex flex-col grow">
+                    <h3 className="text-2xl font-bold text-gray-900 mb-3 line-clamp-2 leading-tight">
+                      {project.title || project.name}
+                    </h3>
+                    <p className="text-gray-500 text-[15px] leading-relaxed mb-8 line-clamp-3">
+                      {project.description || project.overview || project.desc}
+                    </p>
 
-                  <div className="mt-auto flex items-center justify-between">
-                    <div className="flex items-center gap-1.5 text-gray-400">
-                      <HiUsers className="text-lg" />
-                      <span className="text-[14px] font-bold">{project.students?.length || 0}</span>
+                    <div className="mt-auto flex items-center justify-between">
+                      <div className="flex items-center gap-1.5 text-gray-400">
+                        <HiUsers className="text-lg" />
+                        <span className="text-[14px] font-bold">{project.students?.length || 0}</span>
+                      </div>
+                      <Button variant="link" asChild>
+                        <Link to={`/projects/${project.id}`}>
+                          Read More
+                        </Link>
+                      </Button>
                     </div>
-                    <Button variant="link" asChild className="p-0 h-auto text-brand-primary font-bold">
-                      <Link to={`/projects/${project.id}`}>
-                        Read More
-                      </Link>
-                    </Button>
-                  </div>
                   </div>
                 </div>
               );

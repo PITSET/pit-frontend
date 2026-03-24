@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { Link, useLocation, useSearchParams, useNavigate } from "react-router-dom";
 import api from "../../lib/api";
-import resolveAssetUrl from "../../lib/resolveAssetUrl"; 
-import { Button } from "../../components/ui/Button"; 
-import Loader from "../../components/ui/Loader"; 
+import resolveAssetUrl from "../../lib/resolveAssetUrl";
+import { Button } from "../../components/ui/Button";
+import Loader from "../../components/ui/Loader";
+import { motion } from "framer-motion";
 
 import Footer from "../../components/layout/Footer";
 
@@ -17,6 +18,36 @@ const programSectionId = (value) => {
 
 
 import { usePrograms } from "../../hooks/usePrograms";
+
+const cardVariants = {
+  hidden: { opacity: 0, y: 30 },
+  visible: (i) => ({
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.6,
+      ease: [0.22, 1, 0.36, 1],
+      delay: i * 0.15,
+      staggerChildren: 0.1,
+      delayChildren: 0.2 + i * 0.15
+    }
+  })
+};
+
+const textVariants = {
+  hidden: { opacity: 0, y: 15 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } }
+};
+
+const titleLeftVariant = {
+  hidden: { opacity: 0, x: -30 },
+  visible: { opacity: 1, x: 0, transition: { duration: 0.4, ease: "easeOut" } }
+};
+
+const titleRightVariant = {
+  hidden: { opacity: 0, x: 30 },
+  visible: { opacity: 1, x: 0, transition: { duration: 0.4, ease: "easeOut" } }
+};
 
 export default function Programs() {
   const location = useLocation();
@@ -62,14 +93,20 @@ export default function Programs() {
 
   return (
     <div className="h-screen overflow-y-auto snap-y snap-mandatory scroll-smooth bg-gray-100">
-      
+
       {/* SECTION 1: PROGRAMS LIST */}
       <section className="min-h-screen snap-start pt-12 pb-20 px-8">
         <div className="w-full">
 
-          <h1 className="text-[56px] font-bold text-brand-primary mb-12 font-[Roboto_Condensed] leading-none">
+          <motion.h1
+            initial={{ opacity: 0, y: -20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.8 }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+            className="text-[56px] font-bold text-brand-primary mb-12 font-[Roboto_Condensed] leading-none"
+          >
             Programs
-          </h1>
+          </motion.h1>
 
           {/* Programs Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 justify-items-center">
@@ -79,60 +116,87 @@ export default function Programs() {
                 No programs found.
               </p>
             ) : (
-              filteredPrograms.map((program) => (
-                <div
-                  key={program.id}
-                  className="bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col overflow-hidden group border border-gray-100"
-                  id={programSectionId(program?.program_name)}
-                  style={{ width: "100%", maxWidth: "400px", height: "540px" }}
-                >
+              filteredPrograms.map((program, index) => {
+                const nameParts = (program?.program_name || "").trim().split(" ");
+                const topName = nameParts[0] || "";
+                const bottomName = nameParts.slice(1).join(" ");
 
-                  {/* Program Image */}
-                  <div className="h-[280px] overflow-hidden shrink-0">
-                    <img
-                      src={resolveAssetUrl(program.image_url)}
-                      alt={program.program_name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                  </div>
+                return (
+                  <motion.div
+                    custom={index % 4}
+                    variants={cardVariants}
+                    initial="hidden"
+                    whileInView="visible"
+                    viewport={{ once: true, amount: 0.1 }}
+                    whileHover={{ y: -8 }}
+                    key={program.id}
+                    className="bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col overflow-hidden group border border-gray-100"
+                    id={programSectionId(program?.program_name)}
+                    style={{ width: "100%", maxWidth: "400px", height: "540px" }}
+                  >
 
-                  {/* Content */}
-                  <div className="p-8 flex flex-col grow">
-
-                    {/* Title */}
-                    <h3
-                      className="text-brand-primary mb-4"
-                      style={{
-                        fontFamily: "Roboto Condensed",
-                        fontWeight: "700",
-                        fontSize: "32px",
-                        lineHeight: "1.1",
-                      }}
-                    >
-                      {program.program_name}
-                    </h3>
-
-                    {/* Description */}
-                    <p className="text-gray-600 text-[16px] leading-relaxed font-[Roboto] line-clamp-4">
-                      {program.description}
-                    </p>
-
-                    <div className="mt-auto flex justify-end pt-6">
-                      <Button
-                        variant="link"
-                        className="text-brand-primary font-bold hover:gap-2 transition-all p-0 flex items-center gap-1"
-                        onClick={() => {
-                          setIsNavigating(true);
-                          navigate(`/programs/${program.id}`);
-                        }}
-                      >
-                        Read More <span className="text-xl">→</span>
-                      </Button>
+                    {/* Program Image */}
+                    <div className="h-[280px] overflow-hidden shrink-0">
+                      <img
+                        src={resolveAssetUrl(program.image_url)}
+                        alt={program.program_name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
                     </div>
 
-                  </div>
-                </div>
-              ))
+                    {/* Content */}
+                    <div className="p-8 flex flex-col grow">
+
+                      {/* Title */}
+                      <div
+                        className="mb-4 flex flex-col overflow-hidden"
+                        style={{
+                          fontFamily: "Roboto Condensed",
+                          fontWeight: "700",
+                          fontSize: "32px",
+                          lineHeight: "1.1",
+                        }}
+                      >
+                        {topName && (
+                          <motion.h3
+                            variants={titleLeftVariant}
+                            className="text-brand-primary block"
+                          >
+                            {topName}
+                          </motion.h3>
+                        )}
+                        {bottomName && (
+                          <motion.h3
+                            variants={titleRightVariant}
+                            className="text-brand-primary block"
+                          >
+                            {bottomName}
+                          </motion.h3>
+                        )}
+                      </div>
+
+                      {/* Description */}
+                      <motion.p variants={textVariants} className="text-gray-600 text-[16px] leading-relaxed font-[Roboto] line-clamp-4">
+                        {program.description}
+                      </motion.p>
+
+                      <motion.div variants={textVariants} className="mt-auto flex justify-end pt-6">
+                        <Button
+                          variant="link"
+                          className="text-brand-primary font-bold hover:gap-2 transition-all p-0 flex items-center gap-1"
+                          onClick={() => {
+                            setIsNavigating(true);
+                            navigate(`/programs/${program.id}`);
+                          }}
+                        >
+                          Read More <span className="text-xl"></span>
+                        </Button>
+                      </motion.div>
+
+                    </div>
+                  </motion.div>
+                );
+              })
             )}
           </div>
         </div>
