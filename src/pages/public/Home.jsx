@@ -113,16 +113,15 @@ export default function Home() {
         const heroes = sortedItems.filter(
           (item) => normalizeSectionType(item?.section_type) === "hero",
         );
-
-        // const abouts = sortedItems.filter(
-        //   (item) => normalizeSectionType(item?.section_type) === "about",
-        // );
+        const aboutsFromHome = sortedItems.filter(
+          (item) => normalizeSectionType(item?.section_type) === "about",
+        );
         const programs = sortedItems.filter(
           (item) => normalizeSectionType(item?.section_type) === "program",
         );
 
         const hero = pickOne(heroes, "latest_updated");
-        const about = pickOne(filterAbouts, "lowest_order_position") || pickOne(activeAboutItems, "lowest_order_position");
+        const about = pickOne(aboutsFromHome, "lowest_order_position") || pickOne(filterAbouts, "lowest_order_position") || pickOne(activeAboutItems, "lowest_order_position");
         const program = pickOne(programs, "lowest_order_position");
 
         if (!isActive) return;
@@ -288,9 +287,21 @@ export default function Home() {
           }}
         />
 
-        <div className="absolute inset-0 bg-black/50"></div>
+        {/* YouTube Video Background */}
+        {aboutSection?.video_url && (
+          <div className="absolute inset-0 w-full h-full pointer-events-none overflow-hidden z-0">
+            <iframe
+              className="absolute top-1/2 left-1/2 w-screen h-[56.25vw] min-h-screen min-w-[177.77vh] transform -translate-x-1/2 -translate-y-1/2 scale-110"
+              src={`https://www.youtube.com/embed/${getYoutubeId(aboutSection.video_url)}?autoplay=1&mute=1&controls=0&loop=1&playlist=${getYoutubeId(aboutSection.video_url)}&showinfo=0&rel=0&iv_load_policy=3&modestbranding=1&disablekb=1`}
+              frameBorder="0"
+              allow="autoplay; encrypted-media"
+            />
+          </div>
+        )}
 
-        <div className="relative max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-12 flex justify-center lg:justify-center">
+        <div className="absolute inset-0 bg-black/50 z-10"></div>
+
+        <div className="relative z-20 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-12 flex justify-center lg:justify-center">
 
           <div className="max-w-md text-white text-center lg:text-left">
 
@@ -321,6 +332,8 @@ export default function Home() {
 
       </section >
 
+
+      {/* PROGRAMS */}
       <section className="relative w-screen min-h-dvh flex items-center justify-center snap-start overflow-hidden shrink-0">
 
         {/* Background Image */}
@@ -331,11 +344,23 @@ export default function Home() {
           }}
         />
 
+        {/* YouTube Video Background */}
+        {programSection?.video_url && (
+          <div className="absolute inset-0 w-full h-full pointer-events-none overflow-hidden z-0">
+            <iframe
+              className="absolute top-1/2 left-1/2 w-screen h-[56.25vw] min-h-screen min-w-[177.77vh] transform -translate-x-1/2 -translate-y-1/2 scale-110"
+              src={`https://www.youtube.com/embed/${getYoutubeId(programSection.video_url)}?autoplay=1&mute=1&controls=0&loop=1&playlist=${getYoutubeId(programSection.video_url)}&showinfo=0&rel=0&iv_load_policy=3&modestbranding=1&disablekb=1`}
+              frameBorder="0"
+              allow="autoplay; encrypted-media"
+            />
+          </div>
+        )}
+
         {/* Overlay */}
-        <div className="absolute inset-0 bg-black/40"></div>
+        <div className="absolute inset-0 bg-black/40 z-10"></div>
 
         {/* Content */}
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 w-full flex justify-center lg:justify-center">
+        <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 w-full flex justify-center lg:justify-center">
 
           <div className="max-w-md text-white text-center lg:text-left">
 
