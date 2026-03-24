@@ -174,12 +174,13 @@ export default function AboutModal({ isOpen, onClose, onRefresh, item, existingS
           .replace(/\s+/g, "-")
           .toLowerCase();
 
-        const fileExt = webpImage.name ? webpImage.name.split('.').pop() : 'webp';
+
+        const webpImage = await convertToWebp(image);
+        const fileExt = webpImage.name.split('.').pop();
         const fileName = `about-${safeSection}-${Date.now()}.${fileExt}`;
 
         toast.loading("Compressing & uploading image...", { id: toastId });
 
-        const webpImage = await convertToWebp(image);
 
         const { error: uploadError } = await supabase.storage
           .from("about_images")
@@ -265,7 +266,7 @@ export default function AboutModal({ isOpen, onClose, onRefresh, item, existingS
         }
 
         // Check if only position changed - use updateAboutSection with just order_position
-        const onlyPositionChanged = 
+        const onlyPositionChanged =
           data.title === item.title &&
           data.content === item.content &&
           image === null &&
@@ -292,14 +293,14 @@ export default function AboutModal({ isOpen, onClose, onRefresh, item, existingS
       onClose();
     } catch (error) {
       console.error("Failed to save:", error);
-      
+
       // Use the improved error handler to get backend message with fallback
       const errorMessage = getOperationErrorMessage(
         error,
         isCreate ? 'create' : 'update',
         'section'
       );
-      
+
       toast.error(errorMessage, { id: toastId });
     } finally {
       setLoading(false);
@@ -325,7 +326,7 @@ export default function AboutModal({ isOpen, onClose, onRefresh, item, existingS
       while (usedPositions.has(smallestUnused) && smallestUnused <= maxPosition) {
         smallestUnused++;
       }
-      
+
       reset({
         title: "",
         content: "",
@@ -391,8 +392,8 @@ export default function AboutModal({ isOpen, onClose, onRefresh, item, existingS
             {/* Title */}
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-700">
-                  Title <span className="text-red-500">*</span>
-                </label>
+                Title <span className="text-red-500">*</span>
+              </label>
 
               <input
                 type="text"
@@ -463,13 +464,12 @@ export default function AboutModal({ isOpen, onClose, onRefresh, item, existingS
                             setShowSectionTypeDropdown(false);
                           }
                         }}
-                        className={`w-full px-3 sm:px-4 py-2 text-left text-sm transition flex items-center justify-between ${
-                          isCurrentSectionType
+                        className={`w-full px-3 sm:px-4 py-2 text-left text-sm transition flex items-center justify-between ${isCurrentSectionType
                             ? "bg-orange-50 text-orange-600 cursor-pointer"
                             : isActive
-                            ? "text-gray-700 bg-white hover:bg-gray-100 cursor-not-allowed"
-                            : "text-gray-400 bg-gray-50 cursor-not-allowed"
-                        }`}
+                              ? "text-gray-700 bg-white hover:bg-gray-100 cursor-not-allowed"
+                              : "text-gray-400 bg-gray-50 cursor-not-allowed"
+                          }`}
                       >
                         <div className="flex items-center gap-2">
                           <span>{type}</span>
@@ -497,7 +497,7 @@ export default function AboutModal({ isOpen, onClose, onRefresh, item, existingS
               {/* Order Position */}
               <div className="space-y-2" ref={positionDropdownRef}>
                 <label className="text-sm font-medium text-gray-700">Order Position <span className="text-red-500">*</span></label>
-                
+
                 {/* Custom dropdown for position */}
                 <div className="relative">
                   <button
@@ -534,13 +534,12 @@ export default function AboutModal({ isOpen, onClose, onRefresh, item, existingS
                                 setShowPositionDropdown(false);
                               }
                             }}
-                            className={`w-full px-3 py-2 text-left text-sm transition flex items-center justify-between ${
-                              isCurrent
+                            className={`w-full px-3 py-2 text-left text-sm transition flex items-center justify-between ${isCurrent
                                 ? "bg-orange-50 text-orange-600 cursor-pointer"
                                 : isDisabled
-                                ? "text-gray-400 bg-gray-50 cursor-not-allowed"
-                                : "text-gray-700 hover:bg-gray-100 cursor-pointer"
-                            }`}
+                                  ? "text-gray-400 bg-gray-50 cursor-not-allowed"
+                                  : "text-gray-700 hover:bg-gray-100 cursor-pointer"
+                              }`}
                           >
                             <span>{pos}</span>
                             <div className="flex items-center gap-1">
@@ -567,14 +566,12 @@ export default function AboutModal({ isOpen, onClose, onRefresh, item, existingS
                   <button
                     type="button"
                     onClick={() => setValue("isActive", !watchIsActive)}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      watchIsActive ? "bg-green-500" : "bg-gray-300"
-                    }`}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${watchIsActive ? "bg-green-500" : "bg-gray-300"
+                      }`}
                   >
                     <span
-                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                        watchIsActive ? "translate-x-6" : "translate-x-1"
-                      }`}
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${watchIsActive ? "translate-x-6" : "translate-x-1"
+                        }`}
                     />
                   </button>
                   <span className={`text-sm font-medium ${watchIsActive ? "text-green-600" : "text-gray-500"}`}>

@@ -141,32 +141,32 @@ export default function About() {
           </div>
 
         </div>
-{/* HISTORY */}
-<div id="history" className="max-w-[950px] mx-auto grid grid-cols-1 md:grid-cols-2 items-center gap-1 mt-[300px]">
+        {/* HISTORY */}
+        <div id="history" className="max-w-[950px] mx-auto grid grid-cols-1 md:grid-cols-2 items-center gap-1 mt-[300px]">
 
-  {/* IMAGE */}
-  <div className="flex justify-center md:justify-start">
-    <img
-      src={resolveAssetUrl(history.image_url)}
-      alt="history"
-      className="w-[400px] h-[400px] object-cover rounded-xl"
-    />
-  </div>
+          {/* IMAGE */}
+          <div className="flex justify-center md:justify-start">
+            <img
+              src={resolveAssetUrl(history.image_url)}
+              alt="history"
+              className="w-[400px] h-[400px] object-cover rounded-xl"
+            />
+          </div>
 
-  {/* TEXT */}
-  <div className="max-w-[480px]">
+          {/* TEXT */}
+          <div className="max-w-[480px]">
 
-    <h2 className="font-roboto-condensed font-bold text-[56px] text-brand-primary mb-4">
-      {history.title}
-    </h2>
+            <h2 className="font-roboto-condensed font-bold text-[56px] text-brand-primary mb-4">
+              {history.title}
+            </h2>
 
-    <p className="text-gray-600 text-[16px] leading-relaxed">
-      {history.content}
-    </p>
+            <p className="text-gray-600 text-[16px] leading-relaxed">
+              {history.content}
+            </p>
 
-  </div>
+          </div>
 
-</div>
+        </div>
         {/* MISSION (UNCHANGED) */}
         <div id="mission" className="mx-0 grid grid-cols-1 md:grid-cols-2 items-center gap-10 mt-[330px]">
 
@@ -198,46 +198,46 @@ export default function About() {
 
         </div>
 
-   {/* VISION */}
-<div id="vision" className="mx-4 md:mx-16 lg:mx-32 grid grid-cols-1 md:grid-cols-2 items-center gap-10 mt-[120px] md:mt-[50px]">
+        {/* VISION */}
+        <div id="vision" className="mx-4 md:mx-16 lg:mx-32 grid grid-cols-1 md:grid-cols-2 items-center gap-10 mt-[120px] md:mt-[50px]">
 
-{/* TEXT SECTION */}
-<div className="flex items-start gap-6">
+          {/* TEXT SECTION */}
+          <div className="flex items-start gap-6">
 
-  {/* Text */}
-  <div className="flex flex-col">
+            {/* Text */}
+            <div className="flex flex-col">
 
-    <h2 className="font-roboto-condensed font-bold text-[28px] md:text-[40px] text-brand-primary mb-3 md:ml-20">
-      {vision.title}
-    </h2>
+              <h2 className="font-roboto-condensed font-bold text-[28px] md:text-[40px] text-brand-primary mb-3 md:ml-20">
+                {vision.title}
+              </h2>
 
-    <p className="font-roboto text-[16px] text-gray-600 max-w-md leading-relaxed md:ml-20">
-      {vision.content}
-    </p>
+              <p className="font-roboto text-[16px] text-gray-600 max-w-md leading-relaxed md:ml-20">
+                {vision.content}
+              </p>
 
-  </div>
+            </div>
 
-  {/* Gradient Line */}
-  <div className="w-[3px] h-[137px] bg-linear-to-b from-brand-primary via-brand-accent to-brand-primary-dark" />
+            {/* Gradient Line */}
+            <div className="w-[3px] h-[137px] bg-linear-to-b from-brand-primary via-brand-accent to-brand-primary-dark" />
 
-</div>
+          </div>
 
-{/* IMAGE SECTION */}
-<div className="flex justify-center md:justify-start">
-  <img
-    src={resolveAssetUrl(vision.image_url)}
-    alt="vision"
-    className="w-[400px] h-[400px] object-cover rounded-[16px]"
-  />
-</div>
+          {/* IMAGE SECTION */}
+          <div className="flex justify-center md:justify-start">
+            <img
+              src={resolveAssetUrl(vision.image_url)}
+              alt="vision"
+              className="w-[400px] h-[400px] object-cover rounded-[16px]"
+            />
+          </div>
 
-</div>
+        </div>
 
-      
+
 
         {/* FOUNDERS */}
         <div className="mt-24 md:mt-32">
-         
+
 
           <div className="space-y-16 md:space-y-24">
             {displayFounders.slice(0, 2).map((founder, index) => {
@@ -286,7 +286,7 @@ export default function About() {
                         {programName}
                       </p>
                     )}
-                    <p className="font-roboto text-[16px] font-normal text-gray-600 leading-relaxed max-w-xl">
+                    <p className="fonts-roboto text-[16px] font-normal text-gray-600 leading-relaxed max-w-xl">
                       {bio}
                     </p>
                   </div>
@@ -296,7 +296,7 @@ export default function About() {
           </div>
         </div>
 
-        </div>
+      </div>
 
     </div>
   );
