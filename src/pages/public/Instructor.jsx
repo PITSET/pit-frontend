@@ -24,12 +24,12 @@ function getPrimaryProgramName(instructor) {
   return sorted?.[0]?.programs?.program_name || "";
 }
 
+import { useInstructors } from "../../hooks/useInstructors";
+
 export default function Instructor() {
   const [searchParams] = useSearchParams();
-  const [instructors, setInstructors] = useState([]);
+  const { data: instructors = [], isLoading: loading, error } = useInstructors();
   const [activeTab, setActiveTab] = useState("All");
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
   const [isNavigating, setIsNavigating] = useState(false);
   const navigate = useNavigate();
 
@@ -43,41 +43,6 @@ export default function Instructor() {
 
     if (match) setActiveTab(match);
   }, [searchParams]);
-
-  // FETCH DATA
-  useEffect(() => {
-    let isMounted = true;
-
-    api
-      .get("/team-members")
-      .then((res) => {
-        if (!isMounted) return;
-        const members = res.data?.data?.data ?? res.data?.data ?? [];
-
-        if (!Array.isArray(members)) {
-          throw new Error("Unexpected API response shape for /team-members");
-        }
-
-        setInstructors(members.filter((m) => m?.is_instructor));
-        setError("");
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error("Failed to load instructors:", err);
-        if (!isMounted) return;
-        const message =
-          err?.response?.data?.message ||
-          err?.response?.data?.error ||
-          err?.message ||
-          "Failed to load instructors.";
-        setError(message);
-        setLoading(false);
-      });
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
 
   // FILTER
   const filtered =

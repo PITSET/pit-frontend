@@ -1,32 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import logo from "../../assets/logo/logo.svg";
-import api from "../../lib/api";
+import { usePrograms } from "../../hooks/usePrograms";
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDesktopProgramOpen, setIsDesktopProgramOpen] = useState(false);
   const [isProgramOpen, setIsProgramOpen] = useState(false);
   const [activeMobileProgram, setActiveMobileProgram] = useState(null);
-  const [programs, setPrograms] = useState([]);
-  const [loadingPrograms, setLoadingPrograms] = useState(true);
+  
+  const { data: programs = [], isLoading: loadingPrograms } = usePrograms();
   const location = useLocation();
-
-  const fetchPrograms = async () => {
-    try {
-      const res = await api.get("/programs");
-      const data = Array.isArray(res.data) ? res.data : res.data?.data || [];
-      setPrograms(data.filter(p => p.is_active !== false));
-    } catch (err) {
-      console.error("Failed to load nav programs:", err);
-    } finally {
-      setLoadingPrograms(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchPrograms();
-  }, []);
 
   // Close all menus on route change
   useEffect(() => {

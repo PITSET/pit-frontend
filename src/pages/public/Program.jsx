@@ -16,37 +16,14 @@ const programSectionId = (value) => {
 };
 
 
+import { usePrograms } from "../../hooks/usePrograms";
+
 export default function Programs() {
   const location = useLocation();
   const [searchParams] = useSearchParams();
-  const [programs, setPrograms] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const { data: programs = [], isLoading: loading, error } = usePrograms();
   const [isNavigating, setIsNavigating] = useState(false);
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const fetchPrograms = async () => {
-      try {
-        const res = await api.get("/programs");
-
-        console.log("API Response:", res.data);
-
-        const data = Array.isArray(res.data)
-          ? res.data
-          : res.data.data || [];
-
-        setPrograms(data);
-      } catch (err) {
-        console.error("API Error:", err);
-        setError("Failed to load programs");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchPrograms();
-  }, []);
 
   useEffect(() => {
     const id = (location.hash || "").replace(/^#/, "");
