@@ -207,16 +207,46 @@ export default function ContactPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-brand-primary text-white py-4 rounded-xl font-bold tracking-widest flex items-center justify-center gap-3 hover:bg-brand-primary/95 shadow-lg shadow-brand-primary/10 transition transform active:scale-[0.98]"
+                className="group relative w-full flex items-center justify-center bg-brand-primary text-white text-[20px] px-[1em] py-[0.8em] rounded-[16px] overflow-hidden transition-all duration-200 cursor-pointer active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed shadow-lg shadow-brand-primary/10"
               >
                 {loading ? (
                   <>
-                    <span className="w-5 h-5 border-3 border-white border-t-transparent rounded-full animate-spin"></span>
-                    SENDING...
+                    <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-3"></span>
+                    <span className="block font-bold tracking-widest text-sm">SENDING...</span>
                   </>
                 ) : (
-                  "SEND MESSAGE"
+                  <>
+                    <div className="svg-wrapper-1">
+                      <div className="svg-wrapper animate-fly-1">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 24 24"
+                          width="24"
+                          height="24"
+                          className="block origin-center transition-transform duration-300 ease-in-out group-hover:translate-x-[1.2em] group-hover:rotate-45 group-hover:scale-110"
+                        >
+                          <path fill="none" d="M0 0h24v24H0z"></path>
+                          <path
+                            fill="currentColor"
+                            d="M1.946 9.315c-.522-.174-.527-.455.01-.634l19.087-6.362c.529-.176.832.12.684.638l-5.454 19.086c-.15.529-.455.547-.679.045L12 14l6-8-8 6-8.054-2.685z"
+                          ></path>
+                        </svg>
+                      </div>
+                    </div>
+                    <span className="block ml-[0.5em] font-bold tracking-widest text-[16px] transition-all duration-300 ease-in-out group-hover:translate-x-[5em] group-hover:opacity-0">
+                      SEND MESSAGE
+                    </span>
+                  </>
                 )}
+                <style>{`
+                  @keyframes fly-1 {
+                    from { transform: translateY(0.1em); }
+                    to { transform: translateY(-0.1em); }
+                  }
+                  .group:hover .animate-fly-1 {
+                    animation: fly-1 0.6s ease-in-out infinite alternate;
+                  }
+                `}</style>
               </button>
             </form>
           </div>
