@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import api from "../../lib/api";
 import resolveAssetUrl from "../../lib/resolveAssetUrl";
 import Loader from "../../components/ui/Loader";
-import Breadcrumbs from "../../components/ui/Breadcrumbs";
 import Footer from "../../components/layout/Footer";
 
 const defaultSections = {
@@ -109,10 +108,6 @@ export default function About() {
 
         {/* LEFT PANEL — text */}
         <div className="relative z-10 w-full md:w-1/2 flex flex-col justify-center px-10 md:px-16 py-12 bg-[#E9E9EB]">
-          {/* Breadcrumbs only in first section */}
-          <div className="absolute top-4 left-10 md:left-16">
-            <Breadcrumbs />
-          </div>
 
           {/* Badge */}
           <div className="flex items-center gap-0 mb-8 mt-10">

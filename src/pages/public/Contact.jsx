@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { FaMapMarkerAlt, FaEnvelope, FaPhone } from "react-icons/fa";
 import api from "../../lib/api";
-import Breadcrumbs from "../../components/ui/Breadcrumbs";
 import Footer from "../../components/layout/Footer";
 
 export default function ContactPage() {
@@ -83,9 +82,6 @@ export default function ContactPage() {
       
       {/* SECTION 1: HERO & BREADCRUMBS */}
       <section className="relative h-screen snap-start flex flex-col pt-12">
-        <div className="w-full px-8 mb-4 shrink-0">
-          <Breadcrumbs />
-        </div>
 
         <div
           className="relative flex-grow bg-cover bg-center flex items-center"

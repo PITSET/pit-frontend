@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import api from "../../lib/api";
 import resolveAssetUrl from "../../lib/resolveAssetUrl";
 import Loader from "../../components/ui/Loader";
-import Breadcrumbs from "../../components/ui/Breadcrumbs";
 
 export default function InstructorDetail() {
   const { id } = useParams();
@@ -65,9 +64,6 @@ export default function InstructorDetail() {
 
   return (
     <div className="bg-white min-h-screen py-12">
-      <div className="max-w-[1248px] mx-auto px-6 py-4">
-        <Breadcrumbs />
-      </div>
       <div className="max-w-[1248px] mx-auto pb-16 px-6">
 
       {/* CONTENT */}

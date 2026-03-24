@@ -4,7 +4,6 @@ import resolveAssetUrl from "../../lib/resolveAssetUrl";
 import api from "../../lib/api";
 import Loader from "../../components/ui/Loader";
 import { Helmet } from "react-helmet-async";
-import Breadcrumbs from "../../components/ui/Breadcrumbs";
 import Footer from "../../components/layout/Footer";
 
 export default function ProgramDetail() {
@@ -71,10 +70,6 @@ export default function ProgramDetail() {
       {/* HERO SECTION */}
       <div className="relative w-full min-h-screen overflow-hidden">
         
-        {/* Breadcrumb Overlay */}
-        <div className="absolute top-12 left-0 w-full px-8 z-30">
-          <Breadcrumbs />
-        </div>
 
         {/* Background Image */}
         <img

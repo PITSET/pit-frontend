@@ -5,7 +5,6 @@ import resolveAssetUrl from "../../lib/resolveAssetUrl";
 import { Button } from "../../components/ui/Button"; 
 import Loader from "../../components/ui/Loader"; 
 
-import Breadcrumbs from "../../components/ui/Breadcrumbs"; 
 import Footer from "../../components/layout/Footer";
 
 const programSectionId = (value) => {
@@ -90,9 +89,6 @@ export default function Programs() {
       {/* SECTION 1: PROGRAMS LIST */}
       <section className="min-h-screen snap-start pt-12 pb-20 px-8">
         <div className="w-full">
-          <div className="pb-8">
-            <Breadcrumbs />
-          </div>
 
           <h1 className="text-[56px] font-bold text-brand-primary mb-12 font-[Roboto_Condensed] leading-none">
             Programs

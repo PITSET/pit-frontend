@@ -4,7 +4,6 @@ import api from "../../lib/api";
 import resolveAssetUrl from "../../lib/resolveAssetUrl";
 import Loader from "../../components/ui/Loader";
 import { Button } from "../../components/ui/Button";
-import Breadcrumbs from "../../components/ui/Breadcrumbs";
 import Footer from "../../components/layout/Footer";
 
 const TABS = [
@@ -94,9 +93,6 @@ export default function Instructor() {
       {/* SECTION 1: INSTRUCTORS GRID */}
       <section className="min-h-screen snap-start py-12 px-6">
         <div className="max-w-[1248px] mx-auto">
-          <div className="py-4">
-            <Breadcrumbs />
-          </div>
 
           {/* TITLE */}
           <h1 className="text-center text-brand-primary font-bold text-[64px] mb-12">
