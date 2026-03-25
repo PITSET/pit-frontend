@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Helmet } from "react-helmet-async";
 import logoImage from "../../assets/logo/logo_image.svg";
 import { Link, useNavigate } from "react-router-dom";
@@ -61,14 +61,150 @@ const getYoutubeId = (url) => {
   return match && match[2].length === 11 ? match[2] : null;
 };
 
+const HorizontalProgramsCarousel = ({ programs, programSection, mainRef }) => {
+  const slides = [...(programSection ? [{ isHero: true, ...programSection }] : []), ...(programs || [])];
+  const slideCount = slides.length;
+
+  const targetRef = useRef(null);
+  const { scrollYProgress } = useScroll({
+    target: targetRef,
+    container: mainRef,
+    offset: ["start start", "end end"],
+  });
+
+  const x = useTransform(
+    scrollYProgress,
+    [0, 1],
+    // Shift left by exactly (slideCount - 1) viewports
+    ["0%", `-${slideCount > 1 ? ((slideCount - 1) * 100) / slideCount : 0}%`]
+  );
+
+  if (slideCount === 0) return null;
+
+  return (
+    <section 
+      ref={targetRef} 
+      className="relative w-full" 
+      style={{ height: `calc((100dvh - 90px) * ${slideCount})` }}
+    >
+      <div className="sticky top-0 h-[calc(100dvh-90px)] w-full overflow-hidden bg-black">
+        <motion.div 
+          className="flex h-full will-change-transform"
+          style={{ 
+            x, 
+            width: `${slideCount * 100}%` 
+          }}
+        >
+          {slides.map((slide, i) => (
+            <div 
+              key={slide.id || i} 
+              className="relative h-full flex items-center justify-center overflow-hidden shrink-0"
+              style={{ width: `${100 / slideCount}%` }}
+            >
+              {slide.isHero ? (
+                <>
+                  {/* Background Image */}
+                  <div
+                    className="absolute inset-0 bg-cover bg-center"
+                    style={{
+                      backgroundImage: slide?.image_url ? `url('${resolveAssetUrl(slide.image_url)}')` : "none",
+                    }}
+                  />
+
+                  {/* YouTube Video Background */}
+                  {slide?.video_url && (
+                    <div className="absolute inset-0 w-full h-full pointer-events-none overflow-hidden z-0">
+                      <iframe
+                        className="absolute top-1/2 left-1/2 w-full h-[56.25vw] min-h-screen min-w-[177.77vh] transform -translate-x-1/2 -translate-y-1/2 scale-110"
+                        src={`https://www.youtube.com/embed/${getYoutubeId(slide.video_url)}?autoplay=1&mute=1&controls=0&loop=1&playlist=${getYoutubeId(slide.video_url)}&showinfo=0&rel=0&iv_load_policy=3&modestbranding=1&disablekb=1`}
+                        frameBorder="0"
+                        allow="autoplay; encrypted-media"
+                      />
+                    </div>
+                  )}
+
+                  <div className="absolute inset-0 bg-black/40 z-10"></div>
+
+                  {/* Content */}
+                  <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 w-full flex justify-center lg:justify-center">
+                    <motion.div 
+                      className="max-w-md text-white text-center lg:text-left"
+                      initial={{ opacity: 0, y: 40 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true, amount: 0.3, root: mainRef }}
+                      transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+                    >
+                      <h2 className="font-bold text-3xl md:text-5xl mb-4">
+                        {slide?.title || "Programs"}
+                      </h2>
+                      <p className="text-sm md:text-base text-gray-200 mb-6">
+                        {slide?.content ||
+                          "Our programs are designed to provide strong technical foundations, practical skills, and industry-relevant knowledge to prepare students for future careers in technology."}
+                      </p>
+                      <Button asChild variant="primary" size="lg">
+                        <Link to="/programs">VIEW ALL PROGRAMS</Link>
+                      </Button>
+                    </motion.div>
+                  </div>
+                </>
+              ) : (
+                <>
+                  {/* Background Image */}
+                  <div
+                    className="absolute inset-0 bg-cover bg-center"
+                    style={{
+                      backgroundImage: slide?.image_url || slide?.cover_url || slide?.image ? `url('${resolveAssetUrl(slide?.image_url || slide?.cover_url || slide?.image)}')` : "none",
+                    }}
+                  />
+                  <div className="absolute inset-0 bg-black/40 z-10"></div>
+                  
+                  {/* Content */}
+                  <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 w-full flex justify-center lg:justify-start">
+                    <motion.div 
+                      className="max-w-md md:max-w-2xl text-white text-center lg:text-left"
+                      initial={{ opacity: 0, y: 40 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true, amount: 0.3, root: mainRef }}
+                      transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+                    >
+                      <h2 className="font-bold text-3xl md:text-5xl mb-4">
+                        {slide?.program_name || slide?.name || slide?.title || "Program"}
+                      </h2>
+                      <p className="text-sm md:text-base text-gray-200 mb-6 line-clamp-4">
+                        {slide?.description || slide?.content || slide?.overview || ""}
+                      </p>
+                      <Button asChild variant="primary" size="lg">
+                        <Link to={`/programs/${slide?.id || ""}`}>LEARN MORE</Link>
+                      </Button>
+                    </motion.div>
+                  </div>
+                </>
+              )}
+            </div>
+          ))}
+        </motion.div>
+      </div>
+
+      {/* Snap Points */}
+      <div className="absolute top-0 left-0 w-full h-full pointer-events-none flex flex-col">
+        {slides.map((_, i) => (
+          <div key={i} className="h-[calc(100dvh-90px)] w-full snap-start shrink-0" />
+        ))}
+      </div>
+    </section>
+  );
+};
+
 export default function Home() {
 
-  const { scrollYProgress } = useScroll();
+  const mainRef = useRef(null);
+  const { scrollYProgress } = useScroll({ container: mainRef });
   const titleX = useTransform(scrollYProgress, [0, 0.2], [0, -100]);
 
   const [heroSection, setHeroSection] = useState(null);
   const [aboutSection, setAboutSection] = useState(null);
   const [programSection, setProgramSection] = useState(null);
+  const [programsList, setProgramsList] = useState([]);
   const [projects, setProjects] = useState([]);
   const [isLoadingProjects, setIsLoadingProjects] = useState(true);
   const [isNavigating, setIsNavigating] = useState(false);
@@ -102,6 +238,9 @@ export default function Home() {
         const allPrograms = Array.isArray(programsRes.data)
           ? programsRes.data
           : programsRes.data?.data || programsRes.data?.programs || [];
+        
+        const activePrograms = allPrograms.filter((p) => p.is_active !== false);
+        setProgramsList(activePrograms);
 
         const raw = Array.isArray(homeRes.data) ? homeRes.data : homeRes.data?.data || homeRes.data?.home || [];
         const activeItems = (Array.isArray(raw) ? raw : []).filter((item) => item?.is_active === true);
@@ -212,7 +351,7 @@ export default function Home() {
   }
 
   return (
-    <main className="w-full h-[calc(100dvh-90px)] overflow-y-auto overflow-x-hidden snap-y snap-mandatory scroll-smooth relative">
+    <main ref={mainRef} className="w-full h-[calc(100dvh-90px)] overflow-y-auto overflow-x-hidden snap-y snap-mandatory scroll-smooth relative">
 
       <Helmet>
         <title>Home - Prometheus Institute</title>
@@ -357,60 +496,7 @@ export default function Home() {
 
 
       {/* PROGRAMS */}
-      <section className="relative w-full min-h-[calc(100dvh-90px)] flex items-center justify-center snap-start overflow-hidden shrink-0">
-
-        {/* Background Image */}
-        <div
-          className="absolute inset-0 bg-cover bg-center"
-          style={{
-            backgroundImage: programSection?.image_url ? `url('${resolveAssetUrl(programSection.image_url)}')` : "none",
-          }}
-        />
-
-        {/* YouTube Video Background */}
-        {programSection?.video_url && (
-          <div className="absolute inset-0 w-full h-full pointer-events-none overflow-hidden z-0">
-            <iframe
-              className="absolute top-1/2 left-1/2 w-full h-[56.25vw] min-h-screen min-w-[177.77vh] transform -translate-x-1/2 -translate-y-1/2 scale-110"
-              src={`https://www.youtube.com/embed/${getYoutubeId(programSection.video_url)}?autoplay=1&mute=1&controls=0&loop=1&playlist=${getYoutubeId(programSection.video_url)}&showinfo=0&rel=0&iv_load_policy=3&modestbranding=1&disablekb=1`}
-              frameBorder="0"
-              allow="autoplay; encrypted-media"
-            />
-          </div>
-        )}
-
-        {/* Overlay */}
-        <div className="absolute inset-0 bg-black/40 z-10"></div>
-
-        {/* Content */}
-        <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 w-full flex justify-center lg:justify-center">
-
-          <motion.div 
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.3 }}
-            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-            className="max-w-md text-white text-center lg:text-left"
-          >
-
-            <h2 className="font-bold text-3xl md:text-5xl mb-4">
-              {programSection?.title || "Programs"}
-            </h2>
-
-            <p className="text-sm md:text-base text-gray-200 mb-6">
-              {programSection?.content ||
-                "Our programs are designed to provide strong technical foundations, practical skills, and industry-relevant knowledge to prepare students for future careers in technology."}
-            </p>
-
-            <Button asChild variant="primary" size="lg">
-              <Link to="/programs">VIEW ALL PROGRAMS</Link>
-            </Button>
-
-          </motion.div >
-
-        </div >
-
-      </section >
+      <HorizontalProgramsCarousel programs={programsList} programSection={programSection} mainRef={mainRef} />
 
       {/* PROJECTS */}
       <section className="relative w-full min-h-[calc(100dvh-90px)] flex items-center justify-center snap-start overflow-hidden shrink-0">
