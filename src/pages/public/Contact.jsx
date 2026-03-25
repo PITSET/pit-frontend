@@ -78,10 +78,10 @@ export default function ContactPage() {
   };
 
   return (
-    <div className="h-screen overflow-y-auto snap-y snap-mandatory scroll-smooth bg-gray-100">
-      
-      {/* SECTION 1: HERO & BREADCRUMBS */}
-      <section className="relative h-screen snap-start flex flex-col pt-12">
+    <div className="h-[calc(100dvh-90px)] overflow-y-auto snap-y snap-mandatory scroll-smooth bg-gray-100">
+
+
+      <section className="relative min-h-[calc(100dvh-90px)] snap-start flex flex-col">
 
         <div
           className="relative flex-grow bg-cover bg-center flex items-center"
@@ -91,7 +91,7 @@ export default function ContactPage() {
           }}
         >
           <div className="absolute inset-0 bg-white/60"></div>
-          
+
           <div className="relative w-full px-8">
             <h1 className="text-5xl md:text-6xl font-bold text-brand-primary leading-tight">
               Prometheus Institute of Technology
@@ -194,11 +194,10 @@ export default function ContactPage() {
               {/* STATUS MESSAGE */}
               {status && (
                 <div
-                  className={`p-4 rounded-xl text-center text-sm font-medium ${
-                    statusType === "error"
+                  className={`p-4 rounded-xl text-center text-sm font-medium ${statusType === "error"
                       ? "bg-red-50 text-brand-primary"
                       : "bg-green-50 text-green-700"
-                  }`}
+                    }`}
                 >
                   {status}
                 </div>
