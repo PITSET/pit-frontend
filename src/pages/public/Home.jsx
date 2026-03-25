@@ -11,6 +11,7 @@ import ProjectsCarousel from "../../components/ui/ProjectsCarousel";
 import Loader from "../../components/ui/Loader";
 import { Button } from "../../components/ui/Button";
 import Footer from "../../components/layout/Footer";
+import ScrollToTopButton from "../../components/ui/ScrollToTopButton";
 
 const normalizeSectionType = (value) => String(value || "").trim().toLowerCase();
 
@@ -505,6 +506,8 @@ export default function Home() {
       <section className="snap-start pt-[90px]">
         <Footer />
       </section>
+      
+      <ScrollToTopButton scrollContainerRef={mainRef} />
     </main>
   );
 }
