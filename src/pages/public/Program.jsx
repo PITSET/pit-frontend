@@ -92,7 +92,7 @@ export default function Programs() {
     : programs;
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-24 pb-12">
+    <div className="min-h-screen bg-gray-50 pt-24 pb-12 overflow-x-hidden">
 
       {/* SECTION 1: PROGRAMS LIST */}
       <section className="px-6 md:px-12 max-w-[1440px] mx-auto">

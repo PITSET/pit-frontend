@@ -70,7 +70,7 @@ export default function Navbar() {
 
             {/* DROPDOWN CONTENT */}
             <div
-              className={`absolute top-[90px] left-1/2 -translate-x-1/2 
+              className={`absolute top-[90px] right-0 lg:right-[-100px] xl:right-[-150px]
               w-max min-w-[800px] max-w-[95vw]
               transition-all duration-300 ease-out z-60 ${isDesktopProgramOpen
                   ? "opacity-100 visible translate-y-0"

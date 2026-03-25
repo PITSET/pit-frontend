@@ -212,7 +212,7 @@ export default function Home() {
   }
 
   return (
-    <main className="w-full h-dvh overflow-y-auto overflow-x-hidden snap-y snap-mandatory scroll-smooth relative">
+    <main className="w-full h-[calc(100dvh-90px)] overflow-y-auto overflow-x-hidden snap-y snap-mandatory scroll-smooth relative">
 
       <Helmet>
         <title>Home - Prometheus Institute</title>
@@ -220,7 +220,7 @@ export default function Home() {
       </Helmet>
 
       {/* HERO */}
-      <section className="relative w-screen min-h-dvh flex items-center justify-center snap-start overflow-hidden pt-[90px] shrink-0">
+      <section className="relative w-full min-h-[calc(100dvh-90px)] flex items-center justify-center snap-start overflow-hidden shrink-0">
 
         {/* Background Image (Fallback or Overlay while loading) */}
         <div
@@ -234,7 +234,7 @@ export default function Home() {
         {heroSection?.video_url && (
           <div className="absolute inset-0 w-full h-full pointer-events-none overflow-hidden z-0">
             <iframe
-              className="absolute top-1/2 left-1/2 w-screen h-[56.25vw] min-h-screen min-w-[177.77vh] transform -translate-x-1/2 -translate-y-1/2 scale-110"
+              className="absolute top-1/2 left-1/2 w-full h-[56.25vw] min-h-screen min-w-[177.77vh] transform -translate-x-1/2 -translate-y-1/2 scale-110"
               src={`https://www.youtube.com/embed/${getYoutubeId(heroSection.video_url)}?autoplay=1&mute=1&controls=0&loop=1&playlist=${getYoutubeId(heroSection.video_url)}&showinfo=0&rel=0&iv_load_policy=3&modestbranding=1&disablekb=1`}
               frameBorder="0"
               allow="autoplay; encrypted-media"
@@ -297,7 +297,7 @@ export default function Home() {
 
 
       {/* ABOUT SECTION */}
-      <section className="relative w-screen min-h-dvh flex items-center justify-center snap-start overflow-hidden shrink-0" >
+      <section className="relative w-full min-h-[calc(100dvh-90px)] flex items-center justify-center snap-start overflow-hidden shrink-0" >
 
         <div
           className="absolute inset-0 bg-cover bg-top"
@@ -310,7 +310,7 @@ export default function Home() {
         {aboutSection?.video_url && (
           <div className="absolute inset-0 w-full h-full pointer-events-none overflow-hidden z-0">
             <iframe
-              className="absolute top-1/2 left-1/2 w-screen h-[56.25vw] min-h-screen min-w-[177.77vh] transform -translate-x-1/2 -translate-y-1/2 scale-110"
+              className="absolute top-1/2 left-1/2 w-full h-[56.25vw] min-h-screen min-w-[177.77vh] transform -translate-x-1/2 -translate-y-1/2 scale-110"
               src={`https://www.youtube.com/embed/${getYoutubeId(aboutSection.video_url)}?autoplay=1&mute=1&controls=0&loop=1&playlist=${getYoutubeId(aboutSection.video_url)}&showinfo=0&rel=0&iv_load_policy=3&modestbranding=1&disablekb=1`}
               frameBorder="0"
               allow="autoplay; encrypted-media"
@@ -357,7 +357,7 @@ export default function Home() {
 
 
       {/* PROGRAMS */}
-      <section className="relative w-screen min-h-dvh flex items-center justify-center snap-start overflow-hidden shrink-0">
+      <section className="relative w-full min-h-[calc(100dvh-90px)] flex items-center justify-center snap-start overflow-hidden shrink-0">
 
         {/* Background Image */}
         <div
@@ -371,7 +371,7 @@ export default function Home() {
         {programSection?.video_url && (
           <div className="absolute inset-0 w-full h-full pointer-events-none overflow-hidden z-0">
             <iframe
-              className="absolute top-1/2 left-1/2 w-screen h-[56.25vw] min-h-screen min-w-[177.77vh] transform -translate-x-1/2 -translate-y-1/2 scale-110"
+              className="absolute top-1/2 left-1/2 w-full h-[56.25vw] min-h-screen min-w-[177.77vh] transform -translate-x-1/2 -translate-y-1/2 scale-110"
               src={`https://www.youtube.com/embed/${getYoutubeId(programSection.video_url)}?autoplay=1&mute=1&controls=0&loop=1&playlist=${getYoutubeId(programSection.video_url)}&showinfo=0&rel=0&iv_load_policy=3&modestbranding=1&disablekb=1`}
               frameBorder="0"
               allow="autoplay; encrypted-media"
@@ -413,7 +413,7 @@ export default function Home() {
       </section >
 
       {/* PROJECTS */}
-      <section className="relative w-screen min-h-dvh flex items-center justify-center snap-start overflow-hidden shrink-0">
+      <section className="relative w-full min-h-[calc(100dvh-90px)] flex items-center justify-center snap-start overflow-hidden shrink-0">
         <ProjectsCarousel projects={projects} isLoadingProjects={isLoadingProjects} />
       </section>
       <section className="snap-start pt-[90px]">
