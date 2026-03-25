@@ -83,7 +83,7 @@ export default function Projects() {
       {/* SECTION 1: PROJECTS COLLECTION */}
       <section className="min-h-screen snap-start pt-12 pb-20 px-8">
         <div className="w-full">
-          <ProjectsCollection projects={projects} isLoading={loading} linkToProgram={true} />
+          <ProjectsCollection projects={projects} isLoading={loading} />
         </div>
       </section>
 
