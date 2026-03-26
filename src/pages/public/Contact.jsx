@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { FaMapMarkerAlt, FaEnvelope, FaPhone } from "react-icons/fa";
 import api from "../../lib/api";
 import Footer from "../../components/layout/Footer";
+import SuccessModal from "../../components/ui/SuccessModal";
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -32,6 +33,17 @@ export default function ContactPage() {
 
     fetchAdminContact();
   }, []);
+
+  // Auto-clear status message after 5 seconds
+  React.useEffect(() => {
+    if (status) {
+      const timer = setTimeout(() => {
+        setStatus("");
+        setStatusType("");
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [status]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -67,7 +79,7 @@ export default function ContactPage() {
       const data = response?.data;
 
       if (data?.success) {
-        setStatus("✅ Message sent successfully!");
+        setStatus("Message sent successfully!");
         setStatusType("success");
 
         setFormData({
@@ -220,14 +232,9 @@ export default function ContactPage() {
                 className="w-full bg-[#F7F8F8] border border-gray-200 rounded-xl px-4 py-4 focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary outline-none transition resize-none"
               ></textarea>
 
-              {/* STATUS MESSAGE */}
-              {status && (
-                <div
-                  className={`p-4 rounded-xl text-center text-sm font-medium ${statusType === "error"
-                      ? "bg-red-50 text-brand-primary"
-                      : "bg-green-50 text-green-700"
-                    }`}
-                >
+              {/* ERROR MESSAGE */}
+              {status && statusType === "error" && (
+                <div className="p-4 rounded-xl text-center text-sm font-medium bg-red-50 text-brand-primary">
                   {status}
                 </div>
               )}
@@ -285,6 +292,15 @@ export default function ContactPage() {
       <section className="snap-start py-10 bg-white">
         <Footer />
       </section>
+
+      {/* Success Modal */}
+      <SuccessModal 
+        isOpen={statusType === "success"}
+        onClose={() => {
+          setStatus("");
+          setStatusType("");
+        }}
+      />
     </div>
   );
 }
