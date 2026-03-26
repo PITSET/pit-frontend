@@ -1,9 +1,9 @@
 import {
   require_react
-} from "./chunk-VX2H6PUQ.js";
+} from "./chunk-5C6DFZPZ.js";
 import {
   __toESM
-} from "./chunk-G3PMV62Z.js";
+} from "./chunk-PR4QN5HX.js";
 
 // node_modules/@heroicons/react/24/solid/esm/AcademicCapIcon.js
 var React = __toESM(require_react(), 1);
