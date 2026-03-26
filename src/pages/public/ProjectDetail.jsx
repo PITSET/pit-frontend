@@ -1,0 +1,375 @@
+import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import { BsArrowUpRightSquare, BsCheckCircleFill, BsListCheck } from "react-icons/bs";
+import resolveAssetUrl from "../../lib/resolveAssetUrl";
+import api from "../../lib/api";
+import Loader from "../../components/ui/Loader";
+import Footer from "../../components/layout/Footer";
+
+const formatProjectDate = (value) => {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+
+  return new Intl.DateTimeFormat("en-US", {
+    month: "long",
+    year: "numeric",
+  }).format(date);
+};
+
+export default function ProjectDetail() {
+  const { id } = useParams();
+  const [project, setProject] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [totalImages, setTotalImages] = useState(0);
+  const [programNames, setProgramNames] = useState([]);
+  const [studentNames, setStudentNames] = useState([]);
+  const [studentCount, setStudentCount] = useState(0);
+
+  // Auto-slide: advance every 5 seconds when there are multiple images
+  useEffect(() => {
+    if (totalImages <= 1) return;
+    const timer = setInterval(() => {
+      setActiveImageIndex((prev) => (prev + 1) % totalImages);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, [totalImages]);
+
+  // Scroll to top whenever navigating to a new project
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "instant" });
+  }, [id]);
+
+  useEffect(() => {
+    let isActive = true;
+
+    const fetchProject = async () => {
+      setLoading(true);
+      try {
+        const [projectRes, programsRes] = await Promise.all([
+          api.get(`/projects/${id}`),
+          api.get("/programs").catch(() => ({ data: [] })),
+        ]);
+
+        // Support either standard project array return with single object or object wrapper
+        const data = Array.isArray(projectRes.data)
+          ? projectRes.data[0]
+          : projectRes.data?.data || projectRes.data?.project || projectRes.data;
+
+        if (isActive && data) {
+          setProject(data);
+
+          // Resolve program names (handle IDs or Objects)
+          const allPrograms = Array.isArray(programsRes.data)
+            ? programsRes.data
+            : programsRes.data?.data || programsRes.data?.programs || [];
+
+          const projectPrograms = Array.isArray(data.programs) ? data.programs : [];
+          const pNames = projectPrograms
+            .map((pOrId) => {
+              if (typeof pOrId === "object" && pOrId !== null) {
+                return pOrId.program_name || pOrId.name;
+              }
+              const found = allPrograms.find((p) => String(p.id) === String(pOrId));
+              return found?.program_name || found?.name || null;
+            })
+            .filter(Boolean);
+          setProgramNames(pNames);
+
+          // Resolve student names from project data (no separate fetch needed)
+          const studentsData = Array.isArray(data.students) ? data.students : [];
+
+          setStudentCount(studentsData.length);
+
+          const sNames = studentsData
+            .map(s => {
+              if (typeof s === 'object' && s !== null) {
+                return s.full_name || s.name;
+              }
+              return null;
+            })
+            .filter(Boolean);
+
+          setStudentNames(sNames);
+        }
+      } catch (err) {
+        console.error("Failed to fetch project detail:", err);
+      } finally {
+        if (isActive) {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchProject();
+
+    return () => {
+      isActive = false;
+    };
+  }, [id]);
+
+  if (loading) {
+    return <Loader label="Loading project..." />;
+  }
+
+  if (!project) {
+    return (
+      <div className="min-h-screen flex items-center justify-center flex-col gap-4">
+        <h2 className="text-3xl font-bold font-sans text-gray-800">Project Not Found</h2>
+        <p className="text-gray-500">The project you are looking for does not exist or was removed.</p>
+      </div>
+    );
+  }
+
+  // Handle various image formats
+  let coverImage = "";
+  let allImages = [];
+
+  const mainImage = project.image || project.image_url || project.cover || project.cover_url;
+
+  if (mainImage) {
+    allImages.push(resolveAssetUrl(mainImage));
+  }
+
+  if (project.images) {
+    let imagesArray = project.images;
+    if (typeof imagesArray === "string" && imagesArray.startsWith("[")) {
+      try {
+        imagesArray = JSON.parse(imagesArray);
+      } catch (e) {
+        imagesArray = [imagesArray];
+      }
+    }
+
+    if (Array.isArray(imagesArray)) {
+      imagesArray.forEach(img => {
+        const resolved = resolveAssetUrl(img);
+        if (!allImages.includes(resolved)) {
+          allImages.push(resolved);
+        }
+      });
+    }
+  }
+
+  if (allImages.length === 0) {
+    // Fallback gray image if literally no images exist
+    coverImage = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='600' viewBox='0 0 800 600'%3E%3Crect fill='%23e5e7eb' width='800' height='600'/%3E%3C/svg%3E";
+    allImages = [coverImage];
+  } else {
+    coverImage = allImages[activeImageIndex];
+  }
+
+  // Keep totalImages in sync so the auto-slide interval can reference the count
+  if (totalImages !== allImages.length) {
+    setTotalImages(allImages.length);
+  }
+
+  // Helper arrays for mapping details safely
+  const objectivesArray = Array.isArray(project.objectives) ? project.objectives : [];
+  const tasksArray = Array.isArray(project.tasks) ? project.tasks : [];
+
+  return (
+    <div className="min-h-screen bg-white">
+      <div className="max-w-7xl mx-auto px-6 py-12 lg:py-16">
+
+        {/* PAGE TITLE */}
+        <h1 className="text-4xl md:text-[44px] font-bold text-brand-primary mb-10 tracking-tight font-[Roboto_Condensed] uppercase">
+          Project Detail
+        </h1>
+
+        {/* HERO CARD SPLIT - Fixed Frame Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-10 bg-[#1A1A1A] rounded-[24px] overflow-hidden shadow-xl mb-16">
+
+          {/* LEFT: Fixed Image Frame */}
+          <div className="lg:col-span-6 relative h-[300px] sm:h-[400px] lg:h-[550px] bg-black">
+            <img
+              src={coverImage}
+              alt={project.name || "Project"}
+              className="w-full h-full object-cover"
+            />
+
+            {/* Image pagination dots over image */}
+            {allImages.length > 1 && (
+              <div className="absolute bottom-6 left-0 right-0 flex justify-center gap-3">
+                {allImages.map((_, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setActiveImageIndex(idx)}
+                    className={`h-[8px] rounded-full transition-all ${idx === activeImageIndex ? 'w-8 bg-white' : 'w-2 bg-brand-primary/80 hover:bg-brand-primary'}`}
+                    aria-label={`View image ${idx + 1}`}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* RIGHT: Stats Details */}
+          <div className="lg:col-span-4 text-white p-8 lg:p-12 flex flex-col justify-center">
+
+            <h2 className="text-3xl lg:text-[38px] font-bold text-brand-accent mb-10 leading-snug">
+              {project.name || project.title || "Unnamed Project"}
+            </h2>
+
+            <div className="space-y-5 text-sm md:text-[15px] font-medium tracking-wide">
+              {project.leader && (
+                <div className="flex items-center">
+                  <span className="w-28 text-white font-bold shrink-0">Leader :</span>
+                  <span className="text-gray-300">{project.leader}</span>
+                </div>
+              )}
+
+              <div className="flex items-start">
+                <span className="w-28 text-white font-bold shrink-0">Program :</span>
+                {programNames.length > 0 ? (
+                  <div className="flex flex-wrap gap-2">
+                    {programNames.map((name, i) => (
+                      <span
+                        key={i}
+                        className="bg-brand-primary/20 text-red-200 border border-brand-primary/40 text-xs font-semibold px-3 py-1 rounded-full shadow-sm"
+                      >
+                        {name}
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  <span className="text-gray-500">—</span>
+                )}
+              </div>
+
+              {project.duration && (
+                <div className="flex items-center">
+                  <span className="w-28 text-white font-bold shrink-0">Duration :</span>
+                  <span className="text-gray-300">{project.duration} Weeks</span>
+                </div>
+              )}
+
+              <div className="flex items-center">
+                <span className="w-28 text-white font-bold shrink-0">Released :</span>
+                <span className="text-gray-300">
+                  {formatProjectDate(project.created_at || project.date || project.updated_at)}
+                </span>
+              </div>
+
+              <div className="flex items-start">
+                <span className="w-28 text-white font-bold shrink-0">Contributors :</span>
+                {studentNames.length > 0 ? (
+                  <div className="flex flex-wrap gap-2">
+                    {studentNames.map((name, i) => (
+                      <span
+                        key={i}
+                        className="bg-brand-accent/20 text-orange-100 border border-brand-accent/40 text-xs font-semibold px-3 py-1 rounded-full shadow-sm"
+                      >
+                        {name}
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  <span className="text-gray-300">
+                    {studentCount} Students
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Source Code Section */}
+            <div className="mt-14">
+              <h3 className="text-white font-bold tracking-widest uppercase mb-4 text-[13px] md:text-sm">
+                Project Source Code
+              </h3>
+              <div className="flex items-center">
+                <input
+                  type="text"
+                  readOnly
+                  value={project.github_url || "No repository linked"}
+                  className="bg-white text-gray-800 text-sm py-3 px-4 rounded-l border border-white focus:outline-none w-full truncate font-mono"
+                />
+                <a
+                  href={project.github_url || "#"}
+                  target="_blank"
+                  rel="noreferrer"
+                  className={`bg-brand-accent hover:opacity-90 text-white p-3 rounded-r transition-colors flex items-center justify-center shrink-0 border border-brand-accent ${!project.github_url ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  onClick={(e) => !project.github_url && e.preventDefault()}
+                >
+                  <BsArrowUpRightSquare className="text-xl" />
+                </a>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        {/* OVERVIEW SECTION */}
+        <div className="mb-16">
+          <h2 className="text-2xl lg:text-[28px] font-bold text-[#000000] mb-5 tracking-tight">
+            Overview
+          </h2>
+          <p className="text-gray-800 text-[15px] md:text-[16px] leading-relaxed max-w-5xl">
+            {project.overview || project.desc || project.description || "No overview available for this project."}
+          </p>
+        </div>
+
+        {/* SPLIT LISTS SECTION */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-14 mb-20 max-w-5xl">
+
+          {/* Objectives Card */}
+          <div className="bg-white rounded-[20px] shadow-[0_8px_30px_rgb(0,0,0,0.06)] overflow-hidden border border-gray-100 flex flex-col h-full">
+            <div className="bg-[#1A1A1A] py-5 px-8 flex items-center gap-4">
+              <BsCheckCircleFill className="text-brand-accent text-2xl" />
+              <h3 className="text-white text-2xl font-bold">Objectives</h3>
+            </div>
+            <div className="p-8 grow">
+              {objectivesArray.length > 0 ? (
+                <ul className="space-y-4">
+                  {objectivesArray.map((obj, i) => (
+                    <li key={i} className="flex items-start gap-4">
+                      <span className="w-2 h-2 rounded-full bg-black mt-2 shrink-0"></span>
+                      <span className="text-gray-700 font-medium text-[15px]">{obj}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-gray-500 italic">No objectives listed.</p>
+              )}
+            </div>
+          </div>
+
+          {/* Tasks & Activities Card */}
+          <div className="bg-white rounded-[20px] shadow-[0_8px_30px_rgb(0,0,0,0.06)] overflow-hidden border border-gray-100 flex flex-col h-full">
+            <div className="bg-[#1A1A1A] py-5 px-8 flex items-center gap-4">
+              <BsListCheck className="text-brand-accent text-[28px]" />
+              <h3 className="text-white text-2xl font-bold">Tasks & Activities</h3>
+            </div>
+            <div className="p-8 grow">
+              {tasksArray.length > 0 ? (
+                <ul className="space-y-4">
+                  {tasksArray.map((task, i) => (
+                    <li key={i} className="flex items-start gap-4">
+                      <span className="w-2 h-2 rounded-full bg-black mt-2 shrink-0"></span>
+                      <span className="text-gray-700 font-medium text-[15px]">{task}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-gray-500 italic">No tasks listed.</p>
+              )}
+            </div>
+          </div>
+
+        </div>
+
+        {/* RESULTS SECTION */}
+        <div className="mb-10 w-full max-w-5xl">
+          <h2 className="text-2xl lg:text-[28px] font-bold text-[#000000] mb-5 tracking-tight">
+            Results & Conclusion
+          </h2>
+          <p className="text-gray-800 text-[15px] md:text-[16px] leading-relaxed w-full break-words whitespace-normal">
+            {project.result || "Results and conclusions are not yet documented for this project."}
+          </p>
+        </div>
+
+      </div>
+      <Footer />
+    </div>
+  );
+}
