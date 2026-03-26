@@ -722,7 +722,7 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
                 ) : (
                   (watchAcademicAchievements || []).map((achievement, index) => (
                     <div key={`achievement-${index}`} className="flex items-start gap-2 bg-white p-2 rounded-lg border border-gray-200 shadow-sm hover:border-orange-300 transition group">
-                      <div className="flex-shrink-0 w-6 h-6 bg-orange-100 rounded-full flex items-center justify-center mt-1">
+                      <div className="shrink-0 w-6 h-6 bg-orange-100 rounded-full flex items-center justify-center mt-1">
                         <span className="text-xs font-medium text-orange-600">{index + 1}</span>
                       </div>
                       <textarea
@@ -740,7 +740,7 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
                       <button
                         type="button"
                         onClick={() => removeAcademicAchievement(index)}
-                        className="flex-shrink-0 text-gray-400 hover:text-red-500 p-2 rounded-lg hover:bg-red-50 transition opacity-0 group-hover:opacity-100 mt-1"
+                        className="shrink-0 text-gray-400 hover:text-red-500 p-2 rounded-lg hover:bg-red-50 transition opacity-0 group-hover:opacity-100 mt-1"
                         title="Remove achievement"
                       >
                         <TrashIcon className="w-5 h-5" />
@@ -772,7 +772,7 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
                 ) : (
                   (watchSkills || []).map((skill, index) => (
                     <div key={`skill-${index}`} className="flex items-start gap-2 bg-white p-2 rounded-lg border border-gray-200 shadow-sm hover:border-orange-300 transition group">
-                      <div className="flex-shrink-0 w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center mt-1">
+                      <div className="shrink-0 w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center mt-1">
                         <StarIcon className="w-3 h-3 text-blue-600" />
                       </div>
                       <textarea
@@ -790,7 +790,7 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
                       <button
                         type="button"
                         onClick={() => removeSkill(index)}
-                        className="flex-shrink-0 text-gray-400 hover:text-red-500 p-2 rounded-lg hover:bg-red-50 transition opacity-0 group-hover:opacity-100 mt-1"
+                        className="shrink-0 text-gray-400 hover:text-red-500 p-2 rounded-lg hover:bg-red-50 transition opacity-0 group-hover:opacity-100 mt-1"
                         title="Remove skill"
                       >
                         <TrashIcon className="w-5 h-5" />
