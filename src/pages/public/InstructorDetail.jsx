@@ -102,45 +102,41 @@ export default function InstructorDetail() {
             </span>
 
             {/* ACADEMIC */}
-            <h3 className="text-brand-primary-dark font-semibold mt-8 mb-2">
+            <h3 className="text-brand-primary-dark font-semibold mt-8 mb-4">
               Academic achievement
             </h3>
 
-            <ul className="text-sm text-gray-700 list-disc list-outside ml-6 space-y-4">
-              <li>
-                <p>
-                  <strong>Bachelor's Degree</strong>
-                  <br />
-                  Bachelor of Science ({program})
-                </p>
-              </li>
-              <li>
-                <p>
-                  <strong>Master's Degree</strong>
-                  <br />
-                  Master of Science ({program})
-                </p>
-              </li>
-            </ul>
+            <div className="text-sm text-gray-700 space-y-3">
+              {instructor.academic_achievements && Array.isArray(instructor.academic_achievements) && instructor.academic_achievements.length > 0 ? (
+                instructor.academic_achievements.map((achievement, index) => (
+                  <div key={index} className="flex gap-3">
+                    <span className="w-1.5 h-1.5 rounded-full bg-brand-primary mt-1.5 shrink-0" />
+                    <p className="text-gray-800 leading-relaxed font-medium">
+                      {achievement}
+                    </p>
+                  </div>
+                ))
+              ) : (
+                <p className="text-gray-500 italic">No academic achievements listed.</p>
+              )}
+            </div>
 
             {/* INFORMATION */}
-            <h3 className="text-brand-primary-dark font-semibold mt-8 mb-2">
+            <h3 className="text-brand-primary-dark font-semibold mt-10 mb-5">
               Information
             </h3>
 
-            <div className="space-y-8">
-
+            <div className="space-y-6">
               {/* POSITION */}
-              <div className="flex items-center gap-6">
-
-                <div className="w-[53px] h-[46px] flex items-center justify-center bg-white border rounded-[4px] shadow-md">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-10 flex items-center justify-center bg-white border border-gray-100 rounded shadow-md">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    className="w-7 h-7 text-brand-primary-dark"
+                    className="w-5 h-5 text-brand-primary-dark"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
-                    strokeWidth="1.8"
+                    strokeWidth="2"
                   >
                     <path
                       strokeLinecap="round"
@@ -156,52 +152,79 @@ export default function InstructorDetail() {
                 </div>
 
                 <div>
-                  <p className="text-xl font-semibold text-gray-900">
+                  <h4 className="text-sm font-bold text-gray-900 leading-none mb-1">
                     Position
-                  </p>
-                  <p className="text-lg text-gray-700">
+                  </h4>
+                  <p className="text-[15px] text-gray-600">
                     {instructor.position_title}
                   </p>
                 </div>
-
               </div>
 
               {/* EMAIL */}
-              <div className="flex items-center gap-6">
-
-                <div className="w-[53px] h-[46px] flex items-center justify-center bg-white border rounded-[4px] shadow-md">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-10 flex items-center justify-center bg-white border border-gray-100 rounded shadow-md">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    className="w-7 h-7 text-brand-primary-dark"
+                    className="w-5 h-5 text-brand-primary-dark"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
-                    strokeWidth="1.8"
+                    strokeWidth="2"
                   >
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
-                      d="M4 4h16v16H4z"
-                    />
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M4 6l8 7 8-7"
+                      d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-3.586a1 1 0 00-.707.293l-1.414 1.414a1 1 0 01-.707.293h-2.122a1 1 0 01-.707-.293l-1.414-1.414A1 1 0 008.586 13H4"
                     />
                   </svg>
                 </div>
 
                 <div>
-                  <p className="text-xl font-semibold text-gray-900">
+                  <h4 className="text-sm font-bold text-gray-900 leading-none mb-1">
                     Email
-                  </p>
-                  <p className="text-lg text-gray-700">
+                  </h4>
+                  <p className="text-[15px] text-gray-600">
                     {instructor.email}
                   </p>
                 </div>
-
               </div>
+            </div>
 
+            {/* SKILLS */}
+            <h3 className="text-brand-primary-dark font-semibold mt-10 mb-4">
+              Skills
+            </h3>
+            <div className="flex flex-wrap gap-2">
+              {(() => {
+                let skillsArray = [];
+                try {
+                  if (Array.isArray(instructor.skills)) {
+                    skillsArray = instructor.skills;
+                  } else if (typeof instructor.skills === "string") {
+                    if (instructor.skills.startsWith("[")) {
+                      skillsArray = JSON.parse(instructor.skills);
+                    } else if (instructor.skills.trim()) {
+                      skillsArray = instructor.skills.split(",").map(s => s.trim());
+                    }
+                  }
+                } catch (e) {
+                  console.error("Failed to parse skills:", e);
+                }
+
+                return skillsArray.length > 0 ? (
+                  skillsArray.map((skill, index) => (
+                    <span
+                      key={index}
+                      className="bg-[#FFE5D8] text-gray-800 px-4 py-1.5 rounded-full text-xs font-semibold border border-[#FFD8C4]"
+                    >
+                      {skill}
+                    </span>
+                  ))
+                ) : (
+                  <p className="text-gray-500 italic text-sm">No specific skills listed.</p>
+                );
+              })()}
             </div>
           </div>
         </div>
