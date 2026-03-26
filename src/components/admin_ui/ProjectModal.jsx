@@ -339,7 +339,7 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
         duration: duration?.trim() || null,
         github_url: githubUrl?.trim() || null,
         images: imageUrls.length > 0 ? imageUrls : [],
-        video_url: result?.trim() || null,
+        result: result?.trim() || null,
         is_featured: isActive,
         program_ids: programIds,
         // student_ids is sent separately in the create flow only
@@ -460,7 +460,7 @@ export default function ProjectModal({ isOpen, onClose, onRefresh, item }) {
     setLeader(item?.leader || "");
     setDuration(item?.duration?.toString() || "");
     setGithubUrl(item?.github_url || "");
-    setResult(item?.video_url || ""); // Use video_url from backend
+    setResult(item?.result || ""); // Use result from backend
     setExistingImages(item?.images || []);
     setNewImages([]);
     setIsActive(item?.is_featured || false); // Use is_featured field from backend
