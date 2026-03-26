@@ -370,12 +370,43 @@ export default function MemberModal({ isOpen, onClose, onRefresh, item }) {
   // Reset form
   const resetForm = () => {
     if (item) {
+      // Handle parsing of potential JSON strings from backend
+      let parsedSkills = [];
+      try {
+        if (Array.isArray(item.skills)) {
+          parsedSkills = item.skills;
+        } else if (typeof item.skills === "string") {
+          if (item.skills.startsWith("[")) {
+            parsedSkills = JSON.parse(item.skills);
+          } else if (item.skills.trim()) {
+            parsedSkills = item.skills.split(",").map(s => s.trim());
+          }
+        }
+      } catch (e) {
+        console.error("Failed to parse skills:", e);
+      }
+
+      let parsedAchievements = [];
+      try {
+        if (Array.isArray(item.academic_achievements)) {
+          parsedAchievements = item.academic_achievements;
+        } else if (typeof item.academic_achievements === "string") {
+          if (item.academic_achievements.startsWith("[")) {
+            parsedAchievements = JSON.parse(item.academic_achievements);
+          } else if (item.academic_achievements.trim()) {
+            parsedAchievements = item.academic_achievements.split(",").map(a => a.trim());
+          }
+        }
+      } catch (e) {
+        console.error("Failed to parse achievements:", e);
+      }
+
       reset({
         name: item?.name || "",
         bio: item?.bio || "",
         email: item?.email || "",
-        academicAchievements: Array.isArray(item?.academic_achievements) ? item.academic_achievements : [],
-        skills: Array.isArray(item?.skills) ? item.skills : [],
+        academicAchievements: parsedAchievements,
+        skills: parsedSkills,
         isFounder: item?.is_founder || false,
         isInstructor: item?.is_instructor || false,
         programIds: item?.team_member_programs?.map(p => p.programs?.id) || [],
