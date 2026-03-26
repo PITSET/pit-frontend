@@ -13,10 +13,24 @@ export default function ContactPage() {
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState("");
   const [statusType, setStatusType] = useState(""); // success | error
+  const [adminContact, setAdminContact] = useState(null);
 
-  // Scroll to top on mount
+  // Scroll to top on mount and fetch contact info
   React.useEffect(() => {
     window.scrollTo({ top: 0, behavior: "instant" });
+
+    const fetchAdminContact = async () => {
+      try {
+        const response = await api.get("/admincontacts");
+        if (response.data?.success && response.data?.data?.length > 0) {
+          setAdminContact(response.data.data[0]);
+        }
+      } catch (error) {
+        console.error("Failed to fetch admin contact:", error);
+      }
+    };
+
+    fetchAdminContact();
   }, []);
 
   const handleChange = (e) => {
@@ -112,8 +126,8 @@ export default function ContactPage() {
           {/* MAP */}
           <div className="w-full h-[500px] md:h-full min-h-[400px] bg-gray-50 rounded-2xl shadow-sm overflow-hidden">
             <iframe
-              title="Thoo Mweh Khee Learning Center"
-              src="https://maps.google.com/maps?q=Thoo%20Mweh%20Khee%20Learning%20Center,%20351,%20Phop%20Phra,%20Tak%2063160,%20Thailand&z=15&output=embed"
+              title="Location Map"
+              src={adminContact?.address ? `https://maps.google.com/maps?q=${encodeURIComponent(adminContact.address)}&z=15&output=embed` : "https://maps.google.com/maps?q=Thoo%20Mweh%20Khee%20Learning%20Center,%20351,%20Phop%20Phra,%20Tak%2063160,%20Thailand&z=15&output=embed"}
               className="w-full h-full border-0"
               loading="lazy"
             ></iframe>
@@ -140,23 +154,38 @@ export default function ContactPage() {
                 <div className="p-3 bg-white rounded-full shadow-sm">
                   <FaMapMarkerAlt className="text-brand-primary text-xl" />
                 </div>
-                <p className="text-gray-700">
-                  351, Moo 3, District Phop Phra, Province Tak, Postcode 63150
-                </p>
+                <div className="text-gray-700">
+                  {adminContact?.map_url ? (
+                    <a
+                      href={adminContact.map_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:text-brand-primary transition-colors hover:underline"
+                    >
+                      {adminContact?.address || "351, Moo 3, District Phop Phra, Province Tak, Postcode 63150"}
+                    </a>
+                  ) : (
+                    adminContact?.address || "351, Moo 3, District Phop Phra, Province Tak, Postcode 63150"
+                  )}
+                </div>
               </div>
 
               <div className="flex items-center gap-4 group">
                 <div className="p-3 bg-white rounded-full shadow-sm">
                   <FaEnvelope className="text-brand-primary text-xl" />
                 </div>
-                <p className="text-gray-700">pit@technology.com</p>
+                <p className="text-gray-700">
+                  {adminContact?.email || "pit@technology.com"}
+                </p>
               </div>
 
               <div className="flex items-center gap-4 group">
                 <div className="p-3 bg-white rounded-full shadow-sm">
                   <FaPhone className="text-brand-primary text-xl" />
                 </div>
-                <p className="text-gray-700">123-456-789-0</p>
+                <p className="text-gray-700">
+                  {adminContact?.phone || "123-456-789-0"}
+                </p>
               </div>
             </div>
 
