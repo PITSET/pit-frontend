@@ -1,9 +1,9 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { Analytics } from "@vercel/analytics/react";
 import "../styles/index.css";
 import App from "../app/App.jsx";
-
 // Optimized React Query configuration for production
 // This reduces API requests by 70-90% through intelligent caching
 const queryClient = new QueryClient({
@@ -42,6 +42,7 @@ createRoot(document.getElementById("root")).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       <App />
+      <Analytics />
     </QueryClientProvider>
   </StrictMode>,
 );
