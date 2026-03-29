@@ -84,7 +84,9 @@ api.interceptors.response.use(
     // Handle 429 Rate Limiting
     if (parsedError.type === ErrorType.RATE_LIMIT) {
       console.warn("Rate limit exceeded");
-      toast.error("Too many requests. Please wait a moment and try again.");
+      if (error.config?.method?.toLowerCase() !== 'get') {
+        toast.error("Too many requests. Please wait a moment and try again.");
+      }
       return Promise.reject(error);
     }
 

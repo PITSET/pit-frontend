@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from "react";
-import api from "../../lib/api";
+import React from "react";
 import resolveAssetUrl from "../../lib/resolveAssetUrl";
 import { motion } from "framer-motion";
 import Loader from "../../components/ui/Loader";
 import Footer from "../../components/layout/Footer";
+import { useAbout } from "../../hooks/useAbout";
+import { useFounders } from "../../hooks/useFounders";
 
 const defaultSections = {
   hero: {
@@ -50,36 +51,17 @@ const defaultFounders = [
 ];
 
 export default function About() {
-  const [sections, setSections] = useState([]);
-  const [founders, setFounders] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { data: aboutData, isLoading: isAboutLoading } = useAbout();
+  const { data: foundersData, isLoading: isFoundersLoading } = useFounders({ enabled: !!aboutData });
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [aboutRes, foundersRes] = await Promise.all([
-          api.get("/about"),
-          api.get("/team-members/founders").catch(() => null),
-        ]);
+  const loading = isAboutLoading || isFoundersLoading || !aboutData || (!foundersData && isFoundersLoading !== false);
 
-        const allowedTypes = ["hero", "history", "mission", "vision"];
-        const aboutSections = (aboutRes.data?.data || [])
-          .filter((s) => allowedTypes.includes(s.section_type))
-          .sort((a, b) => (a.order_position || 0) - (b.order_position || 0));
-        setSections(aboutSections);
+  const allowedTypes = ["hero", "history", "mission", "vision"];
+  const sections = (aboutData || [])
+    .filter((s) => allowedTypes.includes(s.section_type))
+    .sort((a, b) => (a.order_position || 0) - (b.order_position || 0));
 
-        const foundersData = foundersRes?.data?.data || foundersRes?.data || [];
-        if (Array.isArray(foundersData) && foundersData.length > 0) {
-          setFounders(foundersData);
-        }
-      } catch (err) {
-        console.log("About page fetch error:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
-  }, []);
+  const founders = Array.isArray(foundersData) && foundersData.length > 0 ? foundersData : [];
 
   const getSection = (type) =>
     sections.find((s) => s.section_type === type) || defaultSections[type];
@@ -118,7 +100,7 @@ export default function About() {
 
           {/* Badge */}
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.3 }} className="flex items-center gap-0 mb-8 mt-10">
-            <span className="bg-gradient-to-r from-brand-primary to-brand-accent text-white text-[13px] font-bold px-5 py-2 tracking-widest uppercase transition-colors duration-1000">
+            <span className="bg-linear-to-r from-brand-primary to-brand-accent text-white text-[13px] font-bold px-5 py-2 tracking-widest uppercase transition-colors duration-1000">
               WHO
             </span>
             <span className="text-gray-700 group-hover:bg-slate-800 group-hover:text-white transition-colors duration-1000 text-[13px] font-bold px-5 py-2 tracking-widest uppercase bg-white/70">

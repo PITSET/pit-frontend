@@ -1,15 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
 import api from "../lib/api";
 
-export function usePrograms(options = {}) {
+export function useAbout(options = {}) {
   return useQuery({
-    queryKey: ["programs"],
+    queryKey: ["about"],
     queryFn: async () => {
-      const res = await api.get("/programs");
+      const res = await api.get("/about");
       const data = Array.isArray(res.data) ? res.data : res.data?.data || [];
-      return data.filter((p) => p.is_active !== false);
+      return data.filter((item) => item?.is_active === true);
     },
-    // Keep data fresh for 10 minutes (matching main.jsx config)
     staleTime: 1000 * 60 * 10,
     ...options,
   });

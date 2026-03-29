@@ -5,7 +5,10 @@ import logoImage from "../../assets/logo/logo_image.svg";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, useScroll, useTransform } from "framer-motion";
 
-import api from "../../lib/api";
+import { useHome } from "../../hooks/useHome";
+import { useProjects } from "../../hooks/useProjects";
+import { usePrograms } from "../../hooks/usePrograms";
+import { useAbout } from "../../hooks/useAbout";
 import resolveAssetUrl from "../../lib/resolveAssetUrl";
 import ProjectsCarousel from "../../components/ui/ProjectsCarousel";
 import Loader from "../../components/ui/Loader";
@@ -202,146 +205,65 @@ export default function Home() {
   const { scrollYProgress } = useScroll({ container: mainRef });
   const titleX = useTransform(scrollYProgress, [0, 0.2], [0, -100]);
 
-  const [heroSection, setHeroSection] = useState(null);
-  const [aboutSection, setAboutSection] = useState(null);
-  const [programSection, setProgramSection] = useState(null);
-  const [programsList, setProgramsList] = useState([]);
-  const [projects, setProjects] = useState([]);
-  const [isLoadingProjects, setIsLoadingProjects] = useState(true);
   const [isNavigating, setIsNavigating] = useState(false);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    let isActive = true;
+  const { data: homeData, isLoading: isHomeLoading } = useHome();
+  const { data: projectsData, isLoading: isProjectsLoading } = useProjects({ enabled: !!homeData });
+  const { data: programsData, isLoading: isProgramsLoading } = usePrograms({ enabled: !!projectsData });
+  const { data: aboutData, isLoading: isAboutLoading } = useAbout({ enabled: !!programsData });
 
-    const load = async () => {
-      setIsLoadingProjects(true);
-      try {
-        const [homeRes, projectsRes, programsRes, aboutRes] = await Promise.all([
-          api.get("/home").catch((e) => {
-            console.error("Failed to load /api/home:", e);
-            return { data: [] };
-          }),
-          api.get("/projects").catch((e) => {
-            console.error("Failed to load /api/projects:", e);
-            return { data: [] };
-          }),
-          api.get("/programs").catch((e) => {
-            console.error("Failed to load /api/programs:", e);
-            return { data: [] };
-          }),
-          api.get("/about").catch((e) => {
-            console.error("Failed to load /api/about:", e);
-            return { data: [] };
-          }),
-        ]);
+  const isLoadingProjects = isHomeLoading || isProjectsLoading || isProgramsLoading || isAboutLoading || !homeData || !projectsData || !programsData || !aboutData;
 
-        const allPrograms = Array.isArray(programsRes.data)
-          ? programsRes.data
-          : programsRes.data?.data || programsRes.data?.programs || [];
-        
-        const activePrograms = allPrograms.filter((p) => p.is_active !== false);
-        setProgramsList(activePrograms);
+  const programsList = programsData || [];
 
-        const raw = Array.isArray(homeRes.data) ? homeRes.data : homeRes.data?.data || homeRes.data?.home || [];
-        const activeItems = (Array.isArray(raw) ? raw : []).filter((item) => item?.is_active === true);
-        const sortedItems = [...activeItems].sort(
-          (a, b) => (Number(a?.order_position) || 0) - (Number(b?.order_position) || 0),
-        );
-        // 1. gete all active items from the about endpoint
-        const aboutRaw = Array.isArray(aboutRes.data) ? aboutRes.data : aboutRes.data?.data || [];
-        const activeAboutItems = (Array.isArray(aboutRaw) ? aboutRaw : []).filter((item) => item?.is_active === true);
-        // 2. filter out the items that are not about
-        const filterAbouts = activeAboutItems.filter((item) => normalizeSectionType(item?.section_type) === "about");
+  const filterAbouts = (aboutData || []).filter((item) => normalizeSectionType(item?.section_type) === "about");
 
-        const heroes = sortedItems.filter(
-          (item) => normalizeSectionType(item?.section_type) === "hero",
-        );
-        const aboutsFromHome = sortedItems.filter(
-          (item) => normalizeSectionType(item?.section_type) === "about",
-        );
-        const programs = sortedItems.filter(
-          (item) => normalizeSectionType(item?.section_type) === "program",
-        );
+  const heroes = (homeData || []).filter((item) => normalizeSectionType(item?.section_type) === "hero");
+  const aboutsFromHome = (homeData || []).filter((item) => normalizeSectionType(item?.section_type) === "about");
+  const programs = (homeData || []).filter((item) => normalizeSectionType(item?.section_type) === "program");
 
-        const hero = pickOne(heroes, "latest_updated");
-        const about = pickOne(aboutsFromHome, "lowest_order_position") || pickOne(filterAbouts, "lowest_order_position") || pickOne(activeAboutItems, "lowest_order_position");
-        const program = pickOne(programs, "lowest_order_position");
+  const heroSection = pickOne(heroes, "latest_updated");
+  const aboutSection = pickOne(aboutsFromHome, "lowest_order_position") || pickOne(filterAbouts, "lowest_order_position") || pickOne(aboutData || [], "lowest_order_position");
+  const programSection = pickOne(programs, "lowest_order_position");
 
-        if (!isActive) return;
-        setHeroSection(hero);
-        setAboutSection(about);
-        setProgramSection(program);
-
-        const rawProjects = Array.isArray(projectsRes.data) ? projectsRes.data : projectsRes.data?.data || projectsRes.data?.projects || [];
-        const projectItems = rawProjects
-          .filter((item) => item?.is_active !== false)
-          .sort((a, b) => (Number(a?.order_position) || 0) - (Number(b?.order_position) || 0))
-          .map((item) => {
-            let imgVal = item?.image || item?.image_url || item?.cover || item?.cover_url;
-            if (!imgVal && item?.images) {
-              imgVal = Array.isArray(item.images) ? item.images[0] : item.images;
-              if (typeof imgVal === "string" && imgVal.startsWith("[")) {
-                try {
-                  const parsed = JSON.parse(imgVal);
-                  imgVal = Array.isArray(parsed) ? parsed[0] : imgVal;
-                } catch (e) {
-                  // ignore
-                }
-              }
-            }
-
-            // Resolve program names (handle IDs or Objects)
-            const projectPrograms = Array.isArray(item.programs) ? item.programs : [];
-            const programNames = projectPrograms
-              .map((pOrId) => {
-                if (typeof pOrId === "object" && pOrId !== null) {
-                  return pOrId.program_name || pOrId.name;
-                }
-                const found = allPrograms.find((p) => String(p.id) === String(pOrId));
-                return found?.program_name || found?.name || null;
-              })
-              .filter(Boolean);
-
-            // Resolve student count (calculate from linked students only)
-            const studentCount = Array.isArray(item.students)
-              ? item.students.length
-              : 0; // Don't use team_size per user instruction
-
-            return {
-              ...item,
-              image: resolveAssetUrl(imgVal || ""),
-              date: formatProjectDate(
-                item?.created_at || item?.updated_at || item?.date || item?.published_at
-              ),
-              title: item?.name || item?.title || "",
-              desc: item?.overview || item?.desc || item?.description || item?.content || "",
-              programNames,
-              studentCount,
-            };
-          })
-          .filter((item) => item.title || item.desc || item.image);
-
-        setProjects(projectItems);
-      } catch (e) {
-        console.error("Failed to load data in Home:", e);
-        if (!isActive) return;
-        setHeroSection(null);
-        setAboutSection(null);
-        setProgramSection(null);
-        setProjects([]);
+  const projects = (projectsData || []).map((item) => {
+    let imgVal = item?.image || item?.image_url || item?.cover || item?.cover_url;
+    if (!imgVal && item?.images) {
+      imgVal = Array.isArray(item.images) ? item.images[0] : item.images;
+      if (typeof imgVal === "string" && imgVal.startsWith("[")) {
+        try {
+          const parsed = JSON.parse(imgVal);
+          imgVal = Array.isArray(parsed) ? parsed[0] : imgVal;
+        } catch (e) {
+          // ignore
+        }
       }
+    }
 
-      if (!isActive) return;
-      setIsLoadingProjects(false);
+    const projectPrograms = Array.isArray(item.programs) ? item.programs : [];
+    const programNames = projectPrograms
+      .map((pOrId) => {
+        if (typeof pOrId === "object" && pOrId !== null) {
+          return pOrId.program_name || pOrId.name;
+        }
+        const found = programsList.find((p) => String(p.id) === String(pOrId));
+        return found?.program_name || found?.name || null;
+      })
+      .filter(Boolean);
+
+    const studentCount = Array.isArray(item.students) ? item.students.length : 0;
+
+    return {
+      ...item,
+      image: resolveAssetUrl(imgVal || ""),
+      date: formatProjectDate(item?.created_at || item?.updated_at || item?.date || item?.published_at),
+      title: item?.name || item?.title || "",
+      desc: item?.overview || item?.desc || item?.description || item?.content || "",
+      programNames,
+      studentCount,
     };
-
-    load();
-
-    return () => {
-      isActive = false;
-    };
-  }, []);
+  }).filter((item) => item.title || item.desc || item.image);
 
   if (isLoadingProjects) {
     return <Loader label="Loading Prometheus Institute..." />;
