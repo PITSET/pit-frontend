@@ -105,33 +105,6 @@ export default function ContactPage() {
 
   return (
     <div className="h-[calc(100dvh-90px)] overflow-y-auto snap-y snap-mandatory scroll-smooth bg-gray-100">
-
-
-      <section className="relative min-h-[calc(100dvh-90px)] snap-start flex flex-col">
-
-        <div
-          className="relative flex-grow bg-cover bg-center flex items-center"
-          style={{
-            backgroundImage:
-              "url('https://images.unsplash.com/photo-1500530855697-b586d89ba3ee')",
-          }}
-        >
-          <div className="absolute inset-0 bg-white/60"></div>
-
-          <div className="relative w-full px-8">
-            <h1 className="text-5xl md:text-6xl font-bold text-brand-primary leading-tight">
-              Prometheus Institute of Technology
-            </h1>
-
-            <p className="mt-6 text-gray-700 max-w-xl text-lg">
-              Prometheus Institute of Technology aims to educate Knyaw on the
-              Thai-Myanmar border in Science, Technology, Engineering, and Math
-              (STEM).
-            </p>
-          </div>
-        </div>
-      </section>
-
       {/* SECTION 2: CONTACT SECTION */}
       <section className="min-h-screen snap-start flex items-center py-20 bg-white">
         <div className="w-full px-8 grid md:grid-cols-2 gap-16 items-start">
@@ -294,7 +267,7 @@ export default function ContactPage() {
       </section>
 
       {/* Success Modal */}
-      <SuccessModal 
+      <SuccessModal
         isOpen={statusType === "success"}
         onClose={() => {
           setStatus("");
