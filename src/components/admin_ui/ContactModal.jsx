@@ -108,7 +108,7 @@ export default function ContactModal({ isOpen, onClose, onRefresh, item }) {
       {/* Modal */}
       <div className="bg-[#FEF2F3] w-full max-w-[720px] max-h-[90vh] rounded-2xl shadow-xl animate-[fadeIn_0.2s_ease-out] overflow-hidden flex flex-col my-4">
         {/* Header - Fixed */}
-        <div className="flex-shrink-0 bg-white rounded-t-2xl px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200 sticky top-0 z-10">
+        <div className="shrink-0 bg-white rounded-t-2xl px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200 sticky top-0 z-10">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 sm:gap-3">
               <div className="bg-red-200 p-2 sm:p-3 rounded-xl">
@@ -220,6 +220,9 @@ export default function ContactModal({ isOpen, onClose, onRefresh, item }) {
             <label className="text-sm font-medium text-gray-700">
               Map URL <span className="text-red-500">*</span>
             </label>
+            <p className="text-[10px] text-gray-500 leading-tight">
+              Paste a standard Google Maps link or for best results, an <strong>Embed Map</strong> URL from "Share &gt; Embed map".
+            </p>
             
             <div className="flex rounded-lg border border-gray-300 overflow-hidden bg-white focus-within:ring-2 focus-within:ring-orange-400">
               <input
