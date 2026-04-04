@@ -47,6 +47,20 @@ export default function ContactPage() {
   // Scroll to top on mount
   React.useEffect(() => {
     window.scrollTo({ top: 0, behavior: "instant" });
+
+    const fetchAdminContact = async () => {
+      try {
+        const response = await api.get("/admincontacts/public");
+        if (response.data?.success && response.data?.data?.length > 0) {
+          setAdminContact(response.data.data[0]);
+        }
+      } catch (error) {
+        console.error("Failed to fetch admin contact:", error);
+      }
+    };
+
+    fetchAdminContact();
+
   }, []);
 
   // Auto-clear status message after 5 seconds
