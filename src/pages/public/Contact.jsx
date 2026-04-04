@@ -1,11 +1,9 @@
 import React, { useState } from "react";
 import { FaMapMarkerAlt, FaEnvelope, FaPhone } from "react-icons/fa";
-
+import { useQuery } from "@tanstack/react-query";
 import api from "../../lib/api";
 import Footer from "../../components/layout/Footer";
 import SuccessModal from "../../components/ui/SuccessModal";
-import { useQuery } from "@tanstack/react-query";
-import { getAllContacts } from "../../lib/services/adminContactService";
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -17,51 +15,16 @@ export default function ContactPage() {
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState("");
   const [statusType, setStatusType] = useState(""); // success | error
-
-  // Fetch contact info via TanStack Query (shares cache with admin page)
-  const { data: contacts, isLoading } = useQuery({
-    queryKey: ["contacts"],
+  const { data: adminContact } = useQuery({
+    queryKey: ["adminContact", "public"],
     queryFn: async () => {
-      const res = await getAllContacts();
-      return res.data || [];
-    },
-    staleTime: 0, // Always fetch fresh data on mount to reflect admin updates instantly
-    cacheTime: 1000 * 60 * 5, // Keep in cache for 5 minutes if inactive
-  });
-
-  const adminContact = contacts?.length > 0 ? contacts[contacts.length - 1] : null;
-
-  // Helper to determine map src
-  const getMapSrc = () => {
-    // 1. Prioritize a direct Embed URL if provided (contains /maps/embed or pb=)
-    if (adminContact?.map_url?.includes("google.com/maps/embed") || adminContact?.map_url?.includes("pb=")) {
-      return adminContact.map_url;
-    }
-
-    // 2. Fallback to Search Query URL if address exists
-    if (adminContact?.address) {
-      return `https://maps.google.com/maps?q=${encodeURIComponent(adminContact.address)}&z=15&output=embed`;
-    }
-  };
-
-  // Scroll to top on mount
-  React.useEffect(() => {
-    window.scrollTo({ top: 0, behavior: "instant" });
-
-    const fetchAdminContact = async () => {
-      try {
-        const response = await api.get("/admincontacts/public");
-        if (response.data?.success && response.data?.data?.length > 0) {
-          setAdminContact(response.data.data[0]);
-        }
-      } catch (error) {
-        console.error("Failed to fetch admin contact:", error);
+      const response = await api.get("/admincontacts/public");
+      if (response.data?.success && response.data?.data?.length > 0) {
+        return response.data.data[0];
       }
-    };
-
-    fetchAdminContact();
-
-  }, []);
+      return null;
+    },
+  });
 
   // Auto-clear status message after 5 seconds
   React.useEffect(() => {
@@ -139,19 +102,12 @@ export default function ContactPage() {
         <div className="w-full px-8 grid md:grid-cols-2 gap-16 items-start">
           {/* MAP */}
           <div className="w-full h-[500px] md:h-full min-h-[400px] bg-gray-50 rounded-2xl shadow-sm overflow-hidden">
-            {isLoading ? (
-              <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-100 animate-pulse">
-                <div className="w-12 h-12 border-4 border-brand-primary border-t-transparent rounded-full animate-spin mb-4"></div>
-                <p className="text-gray-400 font-medium">Loading Map...</p>
-              </div>
-            ) : (
-              <iframe
-                title="Location Map"
-                src={getMapSrc()}
-                className="w-full h-full border-0"
-                loading="lazy"
-              ></iframe>
-            )}
+            <iframe
+              title="Location Map"
+              src={adminContact?.address ? `https://maps.google.com/maps?q=${encodeURIComponent(adminContact.address)}&z=15&output=embed` : "https://maps.google.com/maps?q=Thoo%20Mweh%20Khee%20Learning%20Center,%20351,%20Phop%20Phra,%20Tak%2063160,%20Thailand&z=15&output=embed"}
+              className="w-full h-full border-0"
+              loading="lazy"
+            ></iframe>
           </div>
 
           {/* CONTACT FORM */}
@@ -170,56 +126,45 @@ export default function ContactPage() {
             </p>
 
             {/* CONTACT INFO */}
-            {isLoading ? (
-              <div className="bg-gray-50 rounded-2xl p-8 mb-10 space-y-6 animate-pulse">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-white rounded-full"></div>
-                    <div className="h-4 w-48 bg-white/60 rounded"></div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="bg-gray-50 rounded-2xl p-8 mb-10 space-y-6">
-                <div className="flex items-center gap-4 group">
-                  <div className="p-3 bg-white rounded-full shadow-sm">
-                    <FaMapMarkerAlt className="text-brand-primary text-xl" />
-                  </div>
-                  <div className="text-gray-700">
-                    {adminContact?.map_url ? (
-                      <a
-                        href={adminContact.map_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="hover:text-brand-primary transition-colors hover:underline"
-                      >
-                        {adminContact?.address}
-                      </a>
-                    ) : (
-                      adminContact?.address
-                    )}
-                  </div>
+            <div className="bg-gray-50 rounded-2xl p-8 mb-10 space-y-6">
+              <div className="flex items-center gap-4 group">
+                <div className="p-3 bg-white rounded-full shadow-sm">
+                  <FaMapMarkerAlt className="text-brand-primary text-xl" />
                 </div>
-
-                <div className="flex items-center gap-4 group">
-                  <div className="p-3 bg-white rounded-full shadow-sm">
-                    <FaEnvelope className="text-brand-primary text-xl" />
-                  </div>
-                  <p className="text-gray-700">
-                    {adminContact?.email}
-                  </p>
-                </div>
-
-                <div className="flex items-center gap-4 group">
-                  <div className="p-3 bg-white rounded-full shadow-sm">
-                    <FaPhone className="text-brand-primary text-xl" />
-                  </div>
-                  <p className="text-gray-700">
-                    {adminContact?.phone}
-                  </p>
+                <div className="text-gray-700">
+                  {adminContact?.map_url ? (
+                    <a
+                      href={adminContact.map_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:text-brand-primary transition-colors hover:underline"
+                    >
+                      {adminContact?.address || "351, Moo 3, District Phop Phra, Province Tak, Postcode 63150"}
+                    </a>
+                  ) : (
+                    adminContact?.address || "351, Moo 3, District Phop Phra, Province Tak, Postcode 63150"
+                  )}
                 </div>
               </div>
-            )}
+
+              <div className="flex items-center gap-4 group">
+                <div className="p-3 bg-white rounded-full shadow-sm">
+                  <FaEnvelope className="text-brand-primary text-xl" />
+                </div>
+                <p className="text-gray-700">
+                  {adminContact?.email || "pit@technology.com"}
+                </p>
+              </div>
+
+              <div className="flex items-center gap-4 group">
+                <div className="p-3 bg-white rounded-full shadow-sm">
+                  <FaPhone className="text-brand-primary text-xl" />
+                </div>
+                <p className="text-gray-700">
+                  {adminContact?.phone || "123-456-789-0"}
+                </p>
+              </div>
+            </div>
 
             {/* FORM */}
             <form onSubmit={handleSubmit} className="space-y-6">
