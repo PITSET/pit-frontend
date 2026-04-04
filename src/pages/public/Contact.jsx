@@ -22,7 +22,7 @@ export default function ContactPage() {
 
     const fetchAdminContact = async () => {
       try {
-        const response = await api.get("/admincontacts");
+        const response = await api.get("/admincontacts/public");
         if (response.data?.success && response.data?.data?.length > 0) {
           setAdminContact(response.data.data[0]);
         }
