@@ -72,9 +72,7 @@ export default function About() {
   const vision = getSection("vision");
   const displayFounders = founders.length > 0 ? founders : defaultFounders;
 
-  const titleParts = whoWeAre.title.split(" ");
-  const line1 = titleParts[0];
-  const line2 = titleParts.slice(1).join(" ");
+
 
   if (loading) {
     return <Loader label="Loading About..." />;
@@ -107,11 +105,8 @@ export default function About() {
               WE ARE
             </span>
           </motion.div>
-
           <motion.h1 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.4 }} className="font-[Roboto_Condensed] font-bold text-[52px] md:text-[68px] lg:text-[80px] text-brand-primary group-hover:text-white transition-colors duration-1000 leading-none mb-8">
-            {line1}
-            <br />
-            {line2}
+            {whoWeAre.title}
           </motion.h1>
 
           <motion.p initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.5 }} className="text-gray-600 group-hover:text-gray-300 transition-colors duration-500 text-[15px] md:text-[17px] leading-relaxed max-w-[480px]">
