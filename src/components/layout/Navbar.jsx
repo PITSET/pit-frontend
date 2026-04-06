@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import logo from "../../assets/logo/logo.svg";
+import logo from "../../assets/logo/logo_image.svg";
 import { usePrograms } from "../../hooks/usePrograms";
 
 export default function Navbar() {

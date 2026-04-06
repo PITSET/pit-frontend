@@ -5,7 +5,7 @@ import {
   FaYoutube,
   
 } from "react-icons/fa6";
-import logo from "../../assets/logo/logo.svg";
+import logo from "../../assets/logo/logo_image.svg";
 
 export default function Footer() {
   const year = new Date().getFullYear();
