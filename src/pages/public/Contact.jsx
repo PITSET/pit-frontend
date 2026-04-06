@@ -16,7 +16,7 @@ export default function ContactPage() {
   const [status, setStatus] = useState("");
   const [statusType, setStatusType] = useState(""); // success | error
   const { data: adminContact } = useQuery({
-    queryKey: ["adminContact", "public"],
+    queryKey: ["contacts", "public"],
     queryFn: async () => {
       const response = await api.get("/admincontacts/public");
       if (response.data?.success && response.data?.data?.length > 0) {
@@ -95,6 +95,35 @@ export default function ContactPage() {
     }
   };
 
+  // Helper to extract the map source URL
+  const getMapSrc = () => {
+    // 1. Check if we have a direct map URL from admin
+    if (adminContact?.map_url) {
+      let url = adminContact.map_url;
+
+      // If user pasted the entire <iframe> tag, extract only the src="URL" part
+      if (url.includes("<iframe")) {
+        const srcMatch = url.match(/src="([^"]+)"/);
+        if (srcMatch) return srcMatch[1];
+      }
+      
+      // If it's already an embed URL (contains /embed), return it
+      if (url.includes("/embed") || url.includes("google.com/maps/embed")) {
+        return url;
+      }
+    }
+
+    // 2. Fallback: Generate an embed URL based on the address
+    if (adminContact?.address) {
+      return `https://maps.google.com/maps?q=${encodeURIComponent(
+        adminContact.address
+      )}&z=15&output=embed`;
+    }
+
+    // 3. Ultimate fallback: Default location
+    return "https://maps.google.com/maps?q=Thoo%20Mweh%20Khee%20Learning%20Center,%20351,%20Phop%20Phra,%20Tak%2063160,%20Thailand&z=15&output=embed";
+  };
+
   return (
     <div className="h-[calc(100dvh-90px)] overflow-y-auto snap-y snap-mandatory scroll-smooth bg-gray-100">
       {/* SECTION 2: CONTACT SECTION */}
@@ -104,7 +133,7 @@ export default function ContactPage() {
           <div className="w-full h-[500px] md:h-full min-h-[400px] bg-gray-50 rounded-2xl shadow-sm overflow-hidden">
             <iframe
               title="Location Map"
-              src={adminContact?.address ? `https://maps.google.com/maps?q=${encodeURIComponent(adminContact.address)}&z=15&output=embed` : "https://maps.google.com/maps?q=Thoo%20Mweh%20Khee%20Learning%20Center,%20351,%20Phop%20Phra,%20Tak%2063160,%20Thailand&z=15&output=embed"}
+              src={getMapSrc()}
               className="w-full h-full border-0"
               loading="lazy"
             ></iframe>
