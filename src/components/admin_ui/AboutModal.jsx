@@ -174,32 +174,14 @@ export default function AboutModal({ isOpen, onClose, onRefresh, item, existingS
           .replace(/\s+/g, "-")
           .toLowerCase();
 
-
         const webpImage = await convertToWebp(image);
-        const fileExt = webpImage.name.split('.').pop();
-        const fileName = `about-${safeSection}-${Date.now()}.${fileExt}`;
-
         toast.loading("Compressing & uploading image...", { id: toastId });
 
-
-        const { error: uploadError } = await supabase.storage
-          .from("about_images")
-          .upload(fileName, webpImage, {
-            upsert: true,
-            cacheControl: "3600",
-            contentType: webpImage.type || 'image/webp',
-          });
-
-        if (uploadError) {
-          throw uploadError;
-        }
-
-        const { data: urlData } = supabase.storage
-          .from("about_images")
-          .getPublicUrl(fileName);
-
+        // Use the storage service instead of direct supabase calls
+        const uploadResult = await uploadFile(webpImage, "about_images");
+        
         // prevent browser cache
-        imageUrl = `${uploadData.publicUrl}?t=${Date.now()}`;
+        imageUrl = `${uploadResult.publicUrl}?t=${Date.now()}`;
       }
 
       const sectionData = {

@@ -291,28 +291,9 @@ export default function HomeModal({ isOpen, onClose, onRefresh, item, existingSe
           .toLowerCase();
 
         const webpImage = await convertToWebp(image);
-        const fileExt = webpImage.name.split('.').pop();
-
-        const fileName = `home-${safeSection}-${Date.now()}.${fileExt}`;
-
         toast.loading("Compressing & uploading image...", { id: toastId });
 
-
-        const { error: uploadError } = await supabase.storage
-          .from("home_images")
-          .upload(fileName, webpImage, {
-            upsert: true,
-            cacheControl: "3600",
-            contentType: webpImage.type || 'image/webp',
-          });
-
-        if (uploadError) {
-          throw uploadError;
-        }
-
-        const { data: urlData } = supabase.storage
-          .from("home_images")
-          .getPublicUrl(fileName);
+        // Use the storage service instead of direct supabase calls
         const uploadData = await uploadFile(webpImage, "home_images");
 
         // prevent browser cache
